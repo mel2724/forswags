@@ -16,7 +16,9 @@ const Players = () => {
           </div>
           
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Button variant="ghost" onClick={() => navigate("/")}>Home</Button>
+            <Button variant="ghost" onClick={() => navigate("/")} className="text-secondary hover:text-secondary/80 font-bold">
+              Home
+            </Button>
             <Button onClick={() => navigate("/auth")} className="btn-hero">
               Sign Up
             </Button>

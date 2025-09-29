@@ -88,7 +88,7 @@ const Auth = () => {
             <img src={logoFull} alt="ForSWAGs" className="h-12" />
           </div>
           
-          <Button variant="ghost" onClick={() => navigate("/")}>
+          <Button variant="ghost" onClick={() => navigate("/")} className="text-secondary hover:text-secondary/80 font-bold">
             Back to Home
           </Button>
         </div>
