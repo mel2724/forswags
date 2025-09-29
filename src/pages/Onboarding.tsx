@@ -71,11 +71,11 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-primary/10 p-4">
-      <Card className="w-full max-w-2xl p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
+      <Card className="w-full max-w-2xl p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gradient-primary">Choose Your Role</h1>
-          <p className="text-muted-foreground">How will you be using ForSWAGs?</p>
+          <h1 className="text-4xl font-black uppercase tracking-tight glow-text">Pick Your Position</h1>
+          <p className="text-muted-foreground uppercase text-sm tracking-wider">How will you dominate?</p>
         </div>
 
         <RadioGroup value={selectedRole} onValueChange={(value) => setSelectedRole(value as Role)}>

@@ -8,9 +8,65 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* ForSWAGs Brand Colors */
-    --background: 343 45% 97%; /* #FCF7F8 */
-    --foreground: 0 0% 0%; /* #000000 */
+    /* ForSWAGs Dark Athletic Theme */
+    --background: 0 0% 8%; /* Dark background */
+    --foreground: 0 0% 98%; /* Near white text */
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary: Electric Purple #9B51E0 */
+    --primary: 276 67% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 276 67% 70%;
+    
+    /* Accent: Championship Gold #FFD623 */
+    --secondary: 48 100% 57%;
+    --secondary-foreground: 0 0% 0%;
+    --secondary-glow: 48 100% 67%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 48 100% 57%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
+    --ring: 276 67% 60%;
+
+    --radius: 0.75rem;
+    
+    /* Athletic gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(276 67% 60%), hsl(276 67% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 5%), hsl(276 67% 25%));
+    --gradient-accent: linear-gradient(135deg, hsl(48 100% 57%), hsl(48 100% 67%));
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 8%), hsl(0 0% 4%));
+    
+    /* Effects */
+    --shadow-glow: 0 0 60px hsl(276 67% 60% / 0.4);
+    --shadow-gold: 0 0 40px hsl(48 100% 57% / 0.5);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 276 67% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 48 100% 57%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 276 67% 60%;
+  }
+
+  .light {
+    --background: 343 45% 97%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
@@ -18,12 +74,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    /* Primary: Purple #9B51E0 */
     --primary: 276 67% 60%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 276 67% 70%;
-    
-    /* Accent: Gold #FFD623 */
+
     --secondary: 48 100% 57%;
     --secondary-foreground: 0 0% 0%;
     --secondary-glow: 48 100% 67%;
@@ -40,19 +94,7 @@ All colors MUST be HSL.
     --border: 276 20% 90%;
     --input: 276 20% 90%;
     --ring: 276 67% 60%;
-
-    --radius: 0.75rem;
     
-    /* Athletic gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(276 67% 60%), hsl(276 67% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(276 67% 60%), hsl(276 67% 50%));
-    --gradient-accent: linear-gradient(135deg, hsl(48 100% 57%), hsl(48 100% 67%));
-    
-    /* Effects */
-    --shadow-glow: 0 0 40px hsl(276 67% 60% / 0.3);
-    --shadow-gold: 0 0 30px hsl(48 100% 57% / 0.4);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
     --sidebar-background: 343 45% 97%;
     --sidebar-foreground: 0 0% 0%;
     --sidebar-primary: 276 67% 60%;
@@ -60,47 +102,6 @@ All colors MUST be HSL.
     --sidebar-accent: 48 100% 57%;
     --sidebar-accent-foreground: 0 0% 0%;
     --sidebar-border: 276 20% 90%;
-    --sidebar-ring: 276 67% 60%;
-  }
-
-  .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 100%;
-
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 100%;
-
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 100%;
-
-    --primary: 276 67% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 276 67% 70%;
-
-    --secondary: 48 100% 57%;
-    --secondary-foreground: 0 0% 0%;
-    --secondary-glow: 48 100% 67%;
-
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
-
-    --accent: 48 100% 57%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 276 67% 60%;
-    
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 276 67% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 48 100% 57%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 20%;
     --sidebar-ring: 276 67% 60%;
   }
 }
@@ -129,10 +130,20 @@ All colors MUST be HSL.
   }
   
   .btn-hero {
-    @apply bg-gradient-to-r from-primary to-primary-glow text-white font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+    @apply bg-gradient-to-r from-primary to-primary-glow text-white font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(155,81,224,0.6)];
   }
   
   .btn-accent {
-    @apply bg-gradient-to-r from-secondary to-secondary-glow text-black font-semibold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+    @apply bg-gradient-to-r from-secondary to-secondary-glow text-black font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,214,35,0.6)];
+  }
+  
+  .sports-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(155, 81, 224, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 214, 35, 0.1) 0%, transparent 50%);
+  }
+  
+  .glow-text {
+    text-shadow: 0 0 20px rgba(155, 81, 224, 0.5);
   }
 }

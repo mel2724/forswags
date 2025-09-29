@@ -80,15 +80,15 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-primary/10 p-4">
-      <Card className="w-full max-w-md p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
+      <Card className="w-full max-w-md p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
         <div className="flex justify-center mb-6">
-          <img src={logoFull} alt="ForSWAGs" className="h-16" />
+          <img src={logoFull} alt="ForSWAGs" className="h-20 drop-shadow-2xl" />
         </div>
 
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gradient-primary">Welcome to ForSWAGs</h1>
-          <p className="text-muted-foreground">For Students With Athletic Goals</p>
+          <h1 className="text-3xl font-black uppercase tracking-tight glow-text">Join the Team</h1>
+          <p className="text-muted-foreground uppercase text-sm tracking-wider">For Students With Athletic Goals</p>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
