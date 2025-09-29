@@ -294,8 +294,8 @@ const Dashboard = () => {
                       </CardTitle>
                       <CardDescription>Our team's recommendations based on your profile</CardDescription>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/matches")}>
-                      View All
+                    <Button variant="outline" size="sm" onClick={() => navigate("/prime-dime")}>
+                      View Prime Dime
                     </Button>
                   </div>
                 </CardHeader>

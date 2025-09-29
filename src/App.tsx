@@ -9,6 +9,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Players from "./pages/Players";
 import Profile from "./pages/Profile";
+import PrimeDime from "./pages/PrimeDime";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/players" element={<Players />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/prime-dime" element={<PrimeDime />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
