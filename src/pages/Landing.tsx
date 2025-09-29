@@ -9,6 +9,31 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <img src={logoFull} alt="ForSWAGs" className="h-12" />
+          </div>
+          
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+            <a href="#features" className="text-foreground/80 hover:text-primary transition-colors">Features</a>
+            <a href="#pricing" className="text-foreground/80 hover:text-primary transition-colors">Pricing</a>
+            <Button variant="ghost" onClick={() => navigate("/players")}>Athletes</Button>
+            <Button onClick={() => navigate("/auth")} className="btn-hero">
+              Sign Up
+            </Button>
+          </nav>
+
+          <Button 
+            className="md:hidden btn-hero" 
+            onClick={() => navigate("/auth")}
+          >
+            Sign Up
+          </Button>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Animated background */}
@@ -16,17 +41,6 @@ const Landing = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)]"></div>
         
         <div className="container mx-auto px-4 py-20 text-center relative z-10">
-          <div className="mb-8 animate-in fade-in duration-700">
-            <img 
-              src={logoFull} 
-              alt="ForSWAGs" 
-              className="h-32 md:h-40 mx-auto"
-              style={{
-                filter: 'brightness(0) saturate(100%) invert(85%) sepia(72%) saturate(1384%) hue-rotate(360deg) brightness(104%) contrast(105%)'
-              }}
-            />
-          </div>
-          
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 glow-text">
             DOMINATE
             <br />
@@ -76,7 +90,7 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 relative">
+      <section id="features" className="py-24 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-card/30 to-background"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
@@ -153,7 +167,7 @@ const Landing = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 relative overflow-hidden">
+      <section id="pricing" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
@@ -275,14 +289,7 @@ const Landing = () => {
       <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-6">
-            <img 
-              src={logoFull} 
-              alt="ForSWAGs" 
-              className="h-24 mx-auto"
-              style={{
-                filter: 'brightness(0) saturate(100%) invert(85%) sepia(72%) saturate(1384%) hue-rotate(360deg) brightness(104%) contrast(105%)'
-              }}
-            />
+            <img src={logoFull} alt="ForSWAGs" className="h-20 mx-auto" />
             
             <div className="max-w-3xl mx-auto">
               <p className="text-xs text-muted-foreground leading-relaxed border-l-4 border-secondary pl-4 text-left">

@@ -71,19 +71,22 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background sports-pattern">
-      <header className="border-b border-border bg-card/50 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <img 
-              src={logoIcon} 
-              alt="ForSWAGs" 
-              className="h-12"
-              style={{
-                filter: 'brightness(0) saturate(100%) invert(85%) sepia(72%) saturate(1384%) hue-rotate(360deg) brightness(104%) contrast(105%)'
-              }}
-            />
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logoIcon} alt="ForSWAGs" className="h-12" />
           </div>
-          <Button variant="ghost" onClick={handleSignOut} className="hover:text-primary">
+          
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+            <Button variant="ghost" onClick={() => navigate("/players")}>Athletes</Button>
+            <Button variant="ghost" onClick={() => navigate("/courses")}>Courses</Button>
+            <Button variant="ghost" onClick={() => navigate("/evaluations")}>Evaluations</Button>
+            {role === "admin" && (
+              <Button variant="ghost" onClick={() => navigate("/admin")}>Admin</Button>
+            )}
+          </nav>
+
+          <Button variant="ghost" onClick={handleSignOut} className="text-foreground/80 hover:text-primary">
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
           </Button>
@@ -92,7 +95,7 @@ const Dashboard = () => {
 
       <main className="container mx-auto px-4 py-12">
         <div className="mb-12">
-          <h1 className="text-5xl font-black mb-3 uppercase tracking-tight glow-text">
+          <h1 className="text-5xl font-black mb-3 uppercase tracking-tight">
             Welcome back, {profile?.full_name || "Athlete"}!
           </h1>
           <p className="text-muted-foreground uppercase text-sm tracking-wider">

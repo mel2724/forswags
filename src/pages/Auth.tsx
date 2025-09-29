@@ -80,23 +80,26 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
-      <Card className="w-full max-w-md p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
-        <div className="flex justify-center mb-6">
-          <img 
-            src={logoFull} 
-            alt="ForSWAGs" 
-            className="h-24"
-            style={{
-              filter: 'brightness(0) saturate(100%) invert(85%) sepia(72%) saturate(1384%) hue-rotate(360deg) brightness(104%) contrast(105%)'
-            }}
-          />
+    <>
+      {/* Navigation Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logoFull} alt="ForSWAGs" className="h-12" />
+          </div>
+          
+          <Button variant="ghost" onClick={() => navigate("/")}>
+            Back to Home
+          </Button>
         </div>
+      </header>
 
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-black uppercase tracking-tight glow-text">Join the Team</h1>
-          <p className="text-muted-foreground uppercase text-sm tracking-wider">For Students With Athletic Goals</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
+        <Card className="w-full max-w-md p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-black uppercase tracking-tight glow-text">Join the Team</h1>
+            <p className="text-muted-foreground uppercase text-sm tracking-wider">For Students With Athletic Goals</p>
+          </div>
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -183,6 +186,7 @@ const Auth = () => {
         </Tabs>
       </Card>
     </div>
+    </>
   );
 };
 
