@@ -517,16 +517,15 @@ const Dashboard = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary/50 transition-colors cursor-pointer">
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/evaluations")}>
                       <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                          <Star className="h-4 w-4 text-secondary" />
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Get Evaluated</h5>
+                        <h5 className="font-semibold text-sm mb-1">Coach Evaluations</h5>
                         <p className="text-xs text-muted-foreground">Professional coach assessment</p>
-                        <Badge variant="secondary" className="mt-2 text-xs">Coming Soon</Badge>
                       </div>
                     </div>
                   </div>
