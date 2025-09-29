@@ -13,6 +13,7 @@ import PrimeDime from "./pages/PrimeDime";
 import OfferTracker from "./pages/OfferTracker";
 import StatsManager from "./pages/StatsManager";
 import CollegePreferences from "./pages/CollegePreferences";
+import MediaGallery from "./pages/MediaGallery";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/offers" element={<OfferTracker />} />
           <Route path="/stats" element={<StatsManager />} />
           <Route path="/preferences" element={<CollegePreferences />} />
+          <Route path="/media" element={<MediaGallery />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

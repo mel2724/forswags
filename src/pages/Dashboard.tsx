@@ -459,6 +459,18 @@ const Dashboard = () => {
                       </div>
                     </div>
 
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/media")}>
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Video className="h-4 w-4 text-primary" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-semibold text-sm mb-1">Media Gallery</h5>
+                        <p className="text-xs text-muted-foreground">Upload introduction and community videos</p>
+                      </div>
+                    </div>
+
                     <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/prime-dime")}>
                       <div className="flex-shrink-0 mt-1">
                         <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
