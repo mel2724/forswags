@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import logoFull from "@/assets/logo-full-dark.png";
+import logoFull from "@/assets/forswags-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -83,7 +83,14 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
       <Card className="w-full max-w-md p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
         <div className="flex justify-center mb-6">
-          <img src={logoFull} alt="ForSWAGs" className="h-20 drop-shadow-2xl" />
+          <img 
+            src={logoFull} 
+            alt="ForSWAGs" 
+            className="h-24 drop-shadow-2xl brightness-200 contrast-125"
+            style={{
+              filter: 'brightness(2) contrast(1.25) drop-shadow(0 0 30px rgba(255, 214, 35, 0.7)) drop-shadow(0 0 15px rgba(155, 81, 224, 0.5))'
+            }}
+          />
         </div>
 
         <div className="text-center space-y-2">

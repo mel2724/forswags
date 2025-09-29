@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import logoIcon from "@/assets/logo-icon-dark.png";
+import logoIcon from "@/assets/forswags-logo.png";
 import { Trophy, GraduationCap, FileText, Star, LogOut } from "lucide-react";
 
 const Dashboard = () => {
@@ -74,8 +74,14 @@ const Dashboard = () => {
       <header className="border-b border-border bg-card/50 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src={logoIcon} alt="ForSWAGs" className="h-10" />
-            <span className="text-xl font-black uppercase tracking-tight text-gradient-primary">ForSWAGs</span>
+            <img 
+              src={logoIcon} 
+              alt="ForSWAGs" 
+              className="h-12"
+              style={{
+                filter: 'brightness(2) contrast(1.25) drop-shadow(0 0 20px rgba(255, 214, 35, 0.6))'
+              }}
+            />
           </div>
           <Button variant="ghost" onClick={handleSignOut} className="hover:text-primary">
             <LogOut className="h-4 w-4 mr-2" />

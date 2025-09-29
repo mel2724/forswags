@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import logoFull from "@/assets/logo-full-dark.png";
-import { Trophy, GraduationCap, Target, TrendingUp, Users, Star, Zap, Award, BarChart3, Dumbbell, Medal, Flame } from "lucide-react";
+import logoFull from "@/assets/forswags-logo.png";
+import { Trophy, GraduationCap, Target, TrendingUp, Users, Star, Zap, Award, BarChart3, Medal } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -15,19 +15,16 @@ const Landing = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/10 to-background sports-pattern"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)]"></div>
         
-        {/* Floating sports icons */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <Trophy className="absolute top-20 left-[10%] h-16 w-16 text-primary/20 animate-pulse" />
-          <Zap className="absolute top-40 right-[15%] h-20 w-20 text-secondary/20 animate-bounce" style={{ animationDuration: '3s' }} />
-          <Medal className="absolute bottom-32 left-[20%] h-12 w-12 text-primary/20 animate-pulse" style={{ animationDelay: '1s' }} />
-          <Flame className="absolute bottom-40 right-[10%] h-16 w-16 text-secondary/30 animate-bounce" style={{ animationDuration: '4s' }} />
-          <Award className="absolute top-1/2 left-[5%] h-14 w-14 text-primary/15 animate-pulse" style={{ animationDelay: '2s' }} />
-          <Dumbbell className="absolute top-1/3 right-[8%] h-12 w-12 text-secondary/20" />
-        </div>
-        
         <div className="container mx-auto px-4 py-20 text-center relative z-10">
           <div className="mb-8 animate-in fade-in duration-700">
-            <img src={logoFull} alt="ForSWAGs" className="h-24 mx-auto drop-shadow-2xl" />
+            <img 
+              src={logoFull} 
+              alt="ForSWAGs" 
+              className="h-32 md:h-40 mx-auto drop-shadow-2xl brightness-200 contrast-125"
+              style={{
+                filter: 'brightness(2) contrast(1.25) drop-shadow(0 0 40px rgba(255, 214, 35, 0.8)) drop-shadow(0 0 20px rgba(155, 81, 224, 0.6))'
+              }}
+            />
           </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 glow-text">
@@ -278,7 +275,14 @@ const Landing = () => {
       <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-6">
-            <img src={logoFull} alt="ForSWAGs" className="h-20 mx-auto" />
+            <img 
+              src={logoFull} 
+              alt="ForSWAGs" 
+              className="h-24 mx-auto brightness-200 contrast-125"
+              style={{
+                filter: 'brightness(2) contrast(1.25) drop-shadow(0 0 30px rgba(255, 214, 35, 0.7))'
+              }}
+            />
             
             <div className="max-w-3xl mx-auto">
               <p className="text-xs text-muted-foreground leading-relaxed border-l-4 border-secondary pl-4 text-left">
