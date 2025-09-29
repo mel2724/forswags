@@ -79,7 +79,7 @@ const Dashboard = () => {
               alt="ForSWAGs" 
               className="h-12"
               style={{
-                filter: 'brightness(2) contrast(1.25) drop-shadow(0 0 20px rgba(255, 214, 35, 0.6))'
+                filter: 'brightness(0) saturate(100%) invert(85%) sepia(72%) saturate(1384%) hue-rotate(360deg) brightness(104%) contrast(105%)'
               }}
             />
           </div>

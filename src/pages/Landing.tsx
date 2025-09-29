@@ -20,9 +20,9 @@ const Landing = () => {
             <img 
               src={logoFull} 
               alt="ForSWAGs" 
-              className="h-32 md:h-40 mx-auto drop-shadow-2xl brightness-200 contrast-125"
+              className="h-32 md:h-40 mx-auto"
               style={{
-                filter: 'brightness(2) contrast(1.25) drop-shadow(0 0 40px rgba(255, 214, 35, 0.8)) drop-shadow(0 0 20px rgba(155, 81, 224, 0.6))'
+                filter: 'brightness(0) saturate(100%) invert(85%) sepia(72%) saturate(1384%) hue-rotate(360deg) brightness(104%) contrast(105%)'
               }}
             />
           </div>
@@ -278,9 +278,9 @@ const Landing = () => {
             <img 
               src={logoFull} 
               alt="ForSWAGs" 
-              className="h-24 mx-auto brightness-200 contrast-125"
+              className="h-24 mx-auto"
               style={{
-                filter: 'brightness(2) contrast(1.25) drop-shadow(0 0 30px rgba(255, 214, 35, 0.7))'
+                filter: 'brightness(0) saturate(100%) invert(85%) sepia(72%) saturate(1384%) hue-rotate(360deg) brightness(104%) contrast(105%)'
               }}
             />
             
