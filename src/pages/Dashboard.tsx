@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { 
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -180,10 +181,13 @@ const Dashboard = () => {
             )}
           </nav>
 
-          <Button variant="ghost" onClick={handleSignOut} className="text-primary hover:text-primary/80 font-bold">
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationDropdown />
+            <Button variant="ghost" onClick={handleSignOut} className="text-primary hover:text-primary/80 font-bold">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
