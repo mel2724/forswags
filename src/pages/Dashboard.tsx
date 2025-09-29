@@ -11,7 +11,7 @@ import logoIcon from "@/assets/forswags-logo.png";
 import { 
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
-  Video, User, MapPin, Calendar
+  Video, User, MapPin, Calendar, Award
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -201,10 +201,16 @@ const Dashboard = () => {
                     <CardTitle className="uppercase tracking-tight">Profile Strength</CardTitle>
                     <CardDescription>Complete your profile to attract more colleges</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button size="sm" onClick={() => navigate("/offers")}>
+                      <Award className="h-4 w-4 mr-2" />
+                      Offers
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>

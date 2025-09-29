@@ -106,7 +106,7 @@ export default function OfferTracker() {
       .from("college_offers")
       .select(`
         *,
-        schools (
+        schools!college_offers_school_id_fkey (
           id,
           name,
           location_city,
@@ -117,7 +117,7 @@ export default function OfferTracker() {
       .eq("athlete_id", athleteId)
       .order("offer_date", { ascending: false });
 
-    setOffers(data || []);
+    setOffers(data as any || []);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
