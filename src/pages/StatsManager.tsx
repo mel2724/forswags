@@ -1,0 +1,416 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { z } from "zod";
+import logoIcon from "@/assets/forswags-logo.png";
+import { 
+  ArrowLeft, BarChart3, Plus, Pencil, Trash2, TrendingUp,
+  Calendar, Target, Award, Loader2
+} from "lucide-react";
+
+interface AthleteStat {
+  id: string;
+  stat_name: string;
+  stat_value: number;
+  season: string;
+  created_at: string;
+}
+
+const currentYear = new Date().getFullYear();
+const seasons = [
+  `${currentYear - 1}-${currentYear}`,
+  `${currentYear}-${currentYear + 1}`,
+  `${currentYear + 1}-${currentYear + 2}`,
+  `${currentYear + 2}-${currentYear + 3}`,
+];
+
+const statSchema = z.object({
+  stat_name: z.string().min(1, "Stat name is required").max(100),
+  stat_value: z.number().min(0, "Value must be positive"),
+  season: z.string().min(1, "Season is required"),
+});
+
+const StatsManager = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [athleteId, setAthleteId] = useState<string | null>(null);
+  const [stats, setStats] = useState<AthleteStat[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingStat, setEditingStat] = useState<AthleteStat | null>(null);
+
+  // Form fields
+  const [statName, setStatName] = useState("");
+  const [statValue, setStatValue] = useState("");
+  const [season, setSeason] = useState(seasons[0]);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate("/auth");
+          return;
+        }
+
+        // Get athlete profile
+        const { data: athlete } = await supabase
+          .from("athletes")
+          .select("id")
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (!athlete) {
+          toast.error("This feature is only available for athlete profiles");
+          navigate("/dashboard");
+          return;
+        }
+
+        setAthleteId(athlete.id);
+
+        // Fetch stats
+        const { data: statsData, error } = await supabase
+          .from("athlete_stats")
+          .select("*")
+          .eq("athlete_id", athlete.id)
+          .order("season", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setStats(statsData || []);
+      } catch (error: any) {
+        toast.error(error.message || "Error loading stats");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, [navigate]);
+
+  const resetForm = () => {
+    setStatName("");
+    setStatValue("");
+    setSeason(seasons[0]);
+    setEditingStat(null);
+  };
+
+  const openEditDialog = (stat: AthleteStat) => {
+    setEditingStat(stat);
+    setStatName(stat.stat_name);
+    setStatValue(stat.stat_value.toString());
+    setSeason(stat.season);
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!athleteId) return;
+    setSaving(true);
+
+    try {
+      const data = statSchema.parse({
+        stat_name: statName.trim(),
+        stat_value: parseFloat(statValue),
+        season: season,
+      });
+
+      if (editingStat) {
+        // Update existing stat
+        const { error } = await supabase
+          .from("athlete_stats")
+          .update({
+            stat_name: data.stat_name,
+            stat_value: data.stat_value,
+            season: data.season,
+          })
+          .eq("id", editingStat.id);
+
+        if (error) throw error;
+
+        setStats(stats.map(s => 
+          s.id === editingStat.id 
+            ? { ...s, stat_name: data.stat_name, stat_value: data.stat_value, season: data.season }
+            : s
+        ));
+
+        toast.success("Stat updated successfully!");
+      } else {
+        // Create new stat
+        const { data: newStat, error } = await supabase
+          .from("athlete_stats")
+          .insert({
+            athlete_id: athleteId,
+            stat_name: data.stat_name,
+            stat_value: data.stat_value,
+            season: data.season,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setStats([newStat, ...stats]);
+        toast.success("Stat added successfully!");
+      }
+
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error(error.message || "Error saving stat");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (statId: string) => {
+    if (!confirm("Are you sure you want to delete this stat?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("athlete_stats")
+        .delete()
+        .eq("id", statId);
+
+      if (error) throw error;
+
+      setStats(stats.filter(s => s.id !== statId));
+      toast.success("Stat deleted successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Error deleting stat");
+    }
+  };
+
+  const groupedStats = stats.reduce((acc, stat) => {
+    if (!acc[stat.season]) {
+      acc[stat.season] = [];
+    }
+    acc[stat.season].push(stat);
+    return acc;
+  }, {} as Record<string, AthleteStat[]>);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background sports-pattern flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background sports-pattern">
+      <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
+            <div>
+              <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">Stats Manager</h1>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Track Your Performance</p>
+            </div>
+          </div>
+          
+          <nav className="flex items-center space-x-4">
+            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+          </nav>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-black uppercase mb-2 text-gradient-accent">
+              Performance Statistics
+            </h2>
+            <p className="text-muted-foreground">
+              Track your athletic performance across seasons
+            </p>
+          </div>
+
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button className="btn-hero">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Stat
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="uppercase tracking-tight">
+                  {editingStat ? "Edit Stat" : "Add New Stat"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingStat 
+                    ? "Update your performance statistic" 
+                    : "Add a new performance statistic to your profile"}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="statName">Stat Name *</Label>
+                  <Input
+                    id="statName"
+                    value={statName}
+                    onChange={(e) => setStatName(e.target.value)}
+                    placeholder="e.g., Touchdowns, Points, Goals"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="statValue">Value *</Label>
+                  <Input
+                    id="statValue"
+                    type="number"
+                    step="0.01"
+                    value={statValue}
+                    onChange={(e) => setStatValue(e.target.value)}
+                    placeholder="e.g., 12, 45.5, 3.8"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="season">Season *</Label>
+                  <Select value={season} onValueChange={setSeason}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select season" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {seasons.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    resetForm();
+                  }}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={saving}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {editingStat ? "Update" : "Add"} Stat
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {stats.length === 0 ? (
+          <Card className="p-16 text-center bg-card/50 backdrop-blur border-2 border-primary/20">
+            <BarChart3 className="h-20 w-20 text-primary mx-auto mb-6" />
+            <h3 className="text-3xl font-black uppercase mb-4 text-gradient-primary">No Stats Yet</h3>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Start tracking your performance by adding your first statistic. Showcase your achievements to college recruiters!
+            </p>
+            <Button 
+              className="btn-accent" 
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Your First Stat
+            </Button>
+          </Card>
+        ) : (
+          <div className="space-y-8">
+            {Object.entries(groupedStats).map(([seasonName, seasonStats]) => (
+              <Card key={seasonName} className="border-2 border-primary/20 overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-card to-card/50 border-b-2 border-primary/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="h-5 w-5 text-primary" />
+                      <div>
+                        <CardTitle className="text-2xl font-black uppercase">
+                          Season {seasonName}
+                        </CardTitle>
+                        <CardDescription>
+                          {seasonStats.length} {seasonStats.length === 1 ? "stat" : "stats"} recorded
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge className="bg-primary/10 text-primary border-primary">
+                      {seasonStats.length}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {seasonStats.map((stat) => (
+                      <div 
+                        key={stat.id} 
+                        className="p-4 rounded-lg border-2 border-border hover:border-primary transition-all duration-200 bg-card/50 backdrop-blur"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-sm text-muted-foreground uppercase tracking-wider mb-1">
+                              {stat.stat_name}
+                            </h4>
+                            <div className="flex items-baseline space-x-2">
+                              <span className="text-3xl font-black text-gradient-primary">
+                                {stat.stat_value % 1 === 0 
+                                  ? stat.stat_value 
+                                  : stat.stat_value.toFixed(2)}
+                              </span>
+                              <TrendingUp className="h-4 w-4 text-secondary" />
+                            </div>
+                          </div>
+                          <Target className="h-8 w-8 text-primary/30" />
+                        </div>
+                        
+                        <div className="flex items-center space-x-2 mt-4 pt-3 border-t border-border">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => openEditDialog(stat)}
+                          >
+                            <Pencil className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(stat.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default StatsManager;

@@ -215,6 +215,10 @@ const Dashboard = () => {
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Profile
                     </Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/stats")}>
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Stats
+                    </Button>
                     <Button size="sm" onClick={() => navigate("/offers")}>
                       <Award className="h-4 w-4 mr-2" />
                       Offers
