@@ -12,7 +12,7 @@ import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { 
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
-  Video, User, MapPin, Calendar, Award
+  Video, User, MapPin, Calendar, Award, Share2
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -526,6 +526,18 @@ const Dashboard = () => {
                       <div className="flex-1">
                         <h5 className="font-semibold text-sm mb-1">Coach Evaluations</h5>
                         <p className="text-xs text-muted-foreground">Professional coach assessment</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/social")}>
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Share2 className="h-4 w-4 text-primary" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-semibold text-sm mb-1">Social Media</h5>
+                        <p className="text-xs text-muted-foreground">Create and share your content</p>
                       </div>
                     </div>
                   </div>
