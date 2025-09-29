@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileArchive } from "lucide-react";
 import { ScormPlayer } from "@/components/ScormPlayer";
-import { ScormUploader } from "@/components/ScormUploader";
+import { ScormUpload } from "@/components/ScormUpload";
 
 interface Lesson {
   id: string;

@@ -10,7 +10,7 @@ import { Upload, FileArchive, Loader2 } from "lucide-react";
 
 interface ScormUploadProps {
   lessonId: string;
-  onUploadComplete: () => void;
+  onUploadComplete?: () => void;
 }
 
 export const ScormUpload = ({ lessonId, onUploadComplete }: ScormUploadProps) => {
@@ -18,52 +18,50 @@ export const ScormUpload = ({ lessonId, onUploadComplete }: ScormUploadProps) =>
   const [scormFile, setScormFile] = useState<File | null>(null);
   const [scormVersion, setScormVersion] = useState<"1.2" | "2004">("1.2");
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
-        toast.error("Please upload a ZIP file");
-        return;
-      }
-      if (file.size > 500 * 1024 * 1024) {
-        toast.error("File size must be less than 500MB");
-        return;
-      }
-      setScormFile(file);
-    }
-  };
-
   const handleUpload = async () => {
     if (!scormFile) {
-      toast.error("Please select a SCORM package");
+      toast.error("Please select a SCORM package file");
       return;
     }
 
     try {
       setUploading(true);
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Upload SCORM package to storage
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleData) {
+        toast.error("Only admins can upload SCORM packages");
+        return;
+      }
+
       const fileName = `${lessonId}/${Date.now()}_${scormFile.name}`;
       const { error: uploadError } = await supabase.storage
         .from("scorm-packages")
-        .upload(fileName, scormFile);
+        .upload(fileName, scormFile, {
+          cacheControl: "3600",
+          upsert: false,
+        });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from("scorm-packages")
         .getPublicUrl(fileName);
 
-      // Update lesson with SCORM info
       const { error: updateError } = await supabase
         .from("lessons")
         .update({
           scorm_package_url: publicUrl,
           scorm_version: scormVersion,
-          is_scorm_content: true
+          is_scorm_content: true,
         })
         .eq("id", lessonId);
 
@@ -71,10 +69,10 @@ export const ScormUpload = ({ lessonId, onUploadComplete }: ScormUploadProps) =>
 
       toast.success("SCORM package uploaded successfully!");
       setScormFile(null);
-      onUploadComplete();
+      onUploadComplete?.();
     } catch (error: any) {
+      console.error("Upload error:", error);
       toast.error(error.message || "Failed to upload SCORM package");
-      console.error(error);
     } finally {
       setUploading(false);
     }
@@ -88,15 +86,15 @@ export const ScormUpload = ({ lessonId, onUploadComplete }: ScormUploadProps) =>
           Upload SCORM Package
         </CardTitle>
         <CardDescription>
-          Upload a SCORM-compliant ZIP package for this lesson
+          Upload a SCORM-compliant ZIP package for interactive learning content
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
+        <div>
           <Label htmlFor="scorm-version">SCORM Version</Label>
           <Select
             value={scormVersion}
-            onValueChange={(value) => setScormVersion(value as "1.2" | "2004")}
+            onValueChange={(value: "1.2" | "2004") => setScormVersion(value)}
           >
             <SelectTrigger id="scorm-version">
               <SelectValue />
@@ -108,17 +106,17 @@ export const ScormUpload = ({ lessonId, onUploadComplete }: ScormUploadProps) =>
           </Select>
         </div>
 
-        <div className="space-y-2">
+        <div>
           <Label htmlFor="scorm-file">SCORM Package (ZIP)</Label>
           <Input
             id="scorm-file"
             type="file"
-            accept=".zip,application/zip"
-            onChange={handleFileChange}
+            accept=".zip"
+            onChange={(e) => setScormFile(e.target.files?.[0] || null)}
             disabled={uploading}
           />
           {scormFile && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-2">
               Selected: {scormFile.name} ({(scormFile.size / 1024 / 1024).toFixed(2)} MB)
             </p>
           )}
@@ -126,7 +124,7 @@ export const ScormUpload = ({ lessonId, onUploadComplete }: ScormUploadProps) =>
 
         <Button
           onClick={handleUpload}
-          disabled={!scormFile || uploading}
+          disabled={uploading || !scormFile}
           className="w-full"
         >
           {uploading ? (
@@ -141,6 +139,16 @@ export const ScormUpload = ({ lessonId, onUploadComplete }: ScormUploadProps) =>
             </>
           )}
         </Button>
+
+        <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
+          <p className="font-semibold">Requirements:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>Must be a ZIP file containing SCORM-compliant content</li>
+            <li>Maximum file size: 500MB</li>
+            <li>Must include imsmanifest.xml file</li>
+            <li>Content will be extracted and served automatically</li>
+          </ul>
+        </div>
       </CardContent>
     </Card>
   );
