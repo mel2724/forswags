@@ -174,6 +174,9 @@ const Dashboard = () => {
             <Button variant="ghost" onClick={() => navigate("/rankings")} className="text-primary hover:text-primary/80 font-bold">
               Rankings
             </Button>
+            <Button variant="ghost" onClick={() => navigate("/badges")} className="text-primary hover:text-primary/80 font-bold">
+              Badges
+            </Button>
             {role === "admin" && (
               <Button variant="ghost" onClick={() => navigate("/admin")} className="text-primary hover:text-primary/80 font-bold">
                 Admin
@@ -502,6 +505,18 @@ const Dashboard = () => {
                       </div>
                     </div>
 
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/badges")}>
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Award className="h-4 w-4 text-primary" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-semibold text-sm mb-1">View Achievements</h5>
+                        <p className="text-xs text-muted-foreground">Track your badges and milestones</p>
+                      </div>
+                    </div>
+
                     <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary/50 transition-colors cursor-pointer">
                       <div className="flex-shrink-0 mt-1">
                         <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
@@ -536,6 +551,14 @@ const Dashboard = () => {
               </div>
               <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Playbook for Life</h3>
               <p className="text-sm text-muted-foreground">Master the game on and off the field</p>
+            </Card>
+
+            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/badges")}>
+              <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+                <Award className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Achievements</h3>
+              <p className="text-sm text-muted-foreground">Earn badges and track milestones</p>
             </Card>
 
             {role === "admin" && (
