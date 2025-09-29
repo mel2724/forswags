@@ -170,6 +170,9 @@ const Dashboard = () => {
             <Button variant="ghost" onClick={() => navigate("/players")} className="text-primary hover:text-primary/80 font-bold">
               Athletes
             </Button>
+            <Button variant="ghost" onClick={() => navigate("/rankings")} className="text-primary hover:text-primary/80 font-bold">
+              Rankings
+            </Button>
             {role === "admin" && (
               <Button variant="ghost" onClick={() => navigate("/admin")} className="text-primary hover:text-primary/80 font-bold">
                 Admin
