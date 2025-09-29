@@ -243,6 +243,57 @@ export type Database = {
           },
         ]
       }
+      college_offers: {
+        Row: {
+          athlete_id: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          offer_date: string
+          offer_type: string
+          response_deadline: string | null
+          scholarship_amount: number | null
+          school_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          offer_date?: string
+          offer_type: string
+          response_deadline?: string | null
+          scholarship_amount?: number | null
+          school_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          offer_date?: string
+          offer_type?: string
+          response_deadline?: string | null
+          scholarship_amount?: number | null
+          school_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           created_at: string
