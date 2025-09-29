@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [matches, setMatches] = useState<any[]>([]);
   const [stats, setStats] = useState<any[]>([]);
   const [membership, setMembership] = useState<any>(null);
+  const [offers, setOffers] = useState<any[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -94,6 +95,14 @@ const Dashboard = () => {
               .limit(5);
             
             setStats(statsData || []);
+
+            // Get offers
+            const { data: offersData } = await supabase
+              .from("college_offers")
+              .select("*")
+              .eq("athlete_id", athleteData.id);
+            
+            setOffers(offersData || []);
           }
         }
       }
@@ -227,7 +236,7 @@ const Dashboard = () => {
             </Card>
 
             {/* Stats Overview */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
               <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -282,6 +291,19 @@ const Dashboard = () => {
                       <p className="text-xs text-muted-foreground mt-1">College options</p>
                     </div>
                     <School className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20 cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/offers")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Offers</p>
+                      <p className="text-2xl font-black mt-1">{offers.length}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Active offers</p>
+                    </div>
+                    <Award className="h-8 w-8 text-primary" />
                   </div>
                 </CardContent>
               </Card>
