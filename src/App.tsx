@@ -16,6 +16,9 @@ import CollegePreferences from "./pages/CollegePreferences";
 import MediaGallery from "./pages/MediaGallery";
 import Rankings from "./pages/Rankings";
 import Notifications from "./pages/Notifications";
+import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
+import Lesson from "./pages/Lesson";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +43,9 @@ const App = () => (
           <Route path="/media" element={<MediaGallery />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:courseId" element={<CourseDetail />} />
+          <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

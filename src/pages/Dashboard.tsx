@@ -490,6 +490,18 @@ const Dashboard = () => {
                       </div>
                     </div>
 
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/courses")}>
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                          <GraduationCap className="h-4 w-4 text-secondary" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-semibold text-sm mb-1">Educational Courses</h5>
+                        <p className="text-xs text-muted-foreground">Learn recruitment strategies and skills</p>
+                      </div>
+                    </div>
+
                     <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary/50 transition-colors cursor-pointer">
                       <div className="flex-shrink-0 mt-1">
                         <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
@@ -516,6 +528,14 @@ const Dashboard = () => {
               </div>
               <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Athletes</h3>
               <p className="text-sm text-muted-foreground">Browse athlete profiles and talent</p>
+            </Card>
+
+            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary hover:shadow-xl hover:shadow-secondary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/courses")}>
+              <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-4 group-hover:bg-secondary/20 transition-colors">
+                <GraduationCap className="h-8 w-8 text-secondary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Courses</h3>
+              <p className="text-sm text-muted-foreground">Educational content and training</p>
             </Card>
 
             {role === "admin" && (
