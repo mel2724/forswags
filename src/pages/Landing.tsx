@@ -53,7 +53,7 @@ const Landing = () => {
             The ultimate platform for student-athletes to showcase talent, get recruited, and reach the next level
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             <Button 
               size="lg" 
               className="btn-accent text-lg px-10 py-7 text-base font-bold uppercase tracking-wide"
@@ -71,22 +71,6 @@ const Landing = () => {
               <Users className="mr-2 h-5 w-5" />
               Scout Athletes
             </Button>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto animate-in fade-in duration-700 delay-500">
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-black text-gradient-primary mb-2">1000+</div>
-              <div className="text-sm md:text-base text-muted-foreground uppercase tracking-wide">Athletes</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-black text-gradient-accent mb-2">500+</div>
-              <div className="text-sm md:text-base text-muted-foreground uppercase tracking-wide">Colleges</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-black text-gradient-primary mb-2">$2M+</div>
-              <div className="text-sm md:text-base text-muted-foreground uppercase tracking-wide">Scholarships</div>
-            </div>
           </div>
         </div>
       </section>
@@ -119,9 +103,9 @@ const Landing = () => {
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
                 <Target className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Smart Matching</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">College Matches</h3>
               <p className="text-muted-foreground leading-relaxed">
-                AI-powered college matching finds perfect programs for your athletic and academic goals
+                Our expert team personally matches you with colleges that fit your athletic and academic profile
               </p>
             </Card>
 
