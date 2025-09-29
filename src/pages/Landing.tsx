@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import logoFull from "@/assets/logo-full.jpeg";
+import logoFull from "@/assets/logo-full-dark.png";
 import { Trophy, GraduationCap, Target, TrendingUp, Users, Star, Zap, Award, BarChart3, Dumbbell, Medal, Flame } from "lucide-react";
 
 const Landing = () => {

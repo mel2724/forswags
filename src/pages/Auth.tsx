@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import logoFull from "@/assets/logo-full.jpeg";
+import logoFull from "@/assets/logo-full-dark.png";
 
 const Auth = () => {
   const navigate = useNavigate();

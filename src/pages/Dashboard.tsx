@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import logoIcon from "@/assets/logo-icon.png";
+import logoIcon from "@/assets/logo-icon-dark.png";
 import { Trophy, GraduationCap, FileText, Star, LogOut } from "lucide-react";
 
 const Dashboard = () => {
