@@ -447,10 +447,34 @@ const Dashboard = () => {
                       </div>
                     )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer">
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/preferences")}>
                       <div className="flex-shrink-0 mt-1">
                         <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                          <TrendingUp className="h-4 w-4 text-secondary" />
+                          <Target className="h-4 w-4 text-secondary" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-semibold text-sm mb-1">Set College Preferences</h5>
+                        <p className="text-xs text-muted-foreground">Define your ideal college criteria</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/prime-dime")}>
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Star className="h-4 w-4 text-primary" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-semibold text-sm mb-1">View Prime Dime</h5>
+                        <p className="text-xs text-muted-foreground">Check your top 10 college matches</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary/50 transition-colors cursor-pointer">
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </div>
                       <div className="flex-1">
