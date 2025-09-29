@@ -78,23 +78,23 @@ const Dashboard = () => {
           </div>
           
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Button variant="ghost" onClick={() => navigate("/players")} className="text-secondary hover:text-secondary/80 font-bold">
+            <Button variant="ghost" onClick={() => navigate("/players")} className="text-primary hover:text-primary/80 font-bold">
               Athletes
             </Button>
-            <Button variant="ghost" onClick={() => navigate("/courses")} className="text-secondary hover:text-secondary/80 font-bold">
+            <Button variant="ghost" onClick={() => navigate("/courses")} className="text-primary hover:text-primary/80 font-bold">
               Courses
             </Button>
-            <Button variant="ghost" onClick={() => navigate("/evaluations")} className="text-secondary hover:text-secondary/80 font-bold">
+            <Button variant="ghost" onClick={() => navigate("/evaluations")} className="text-primary hover:text-primary/80 font-bold">
               Evaluations
             </Button>
             {role === "admin" && (
-              <Button variant="ghost" onClick={() => navigate("/admin")} className="text-secondary hover:text-secondary/80 font-bold">
+              <Button variant="ghost" onClick={() => navigate("/admin")} className="text-primary hover:text-primary/80 font-bold">
                 Admin
               </Button>
             )}
           </nav>
 
-          <Button variant="ghost" onClick={handleSignOut} className="text-secondary hover:text-secondary/80 font-bold">
+          <Button variant="ghost" onClick={handleSignOut} className="text-primary hover:text-primary/80 font-bold">
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
           </Button>
