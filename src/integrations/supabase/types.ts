@@ -388,8 +388,11 @@ export type Database = {
           created_at: string
           duration_minutes: number | null
           id: string
+          is_scorm_content: boolean | null
           module_id: string
           order_index: number
+          scorm_package_url: string | null
+          scorm_version: string | null
           title: string
           updated_at: string
           video_url: string | null
@@ -399,8 +402,11 @@ export type Database = {
           created_at?: string
           duration_minutes?: number | null
           id?: string
+          is_scorm_content?: boolean | null
           module_id: string
           order_index: number
+          scorm_package_url?: string | null
+          scorm_version?: string | null
           title: string
           updated_at?: string
           video_url?: string | null
@@ -410,8 +416,11 @@ export type Database = {
           created_at?: string
           duration_minutes?: number | null
           id?: string
+          is_scorm_content?: boolean | null
           module_id?: string
           order_index?: number
+          scorm_package_url?: string | null
+          scorm_version?: string | null
           title?: string
           updated_at?: string
           video_url?: string | null
@@ -877,6 +886,68 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      scorm_progress: {
+        Row: {
+          completion_status: string | null
+          created_at: string
+          id: string
+          lesson_id: string
+          lesson_location: string | null
+          lesson_status: string | null
+          score_max: number | null
+          score_min: number | null
+          score_raw: number | null
+          session_time: string | null
+          success_status: string | null
+          suspend_data: string | null
+          total_time: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completion_status?: string | null
+          created_at?: string
+          id?: string
+          lesson_id: string
+          lesson_location?: string | null
+          lesson_status?: string | null
+          score_max?: number | null
+          score_min?: number | null
+          score_raw?: number | null
+          session_time?: string | null
+          success_status?: string | null
+          suspend_data?: string | null
+          total_time?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completion_status?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          lesson_location?: string | null
+          lesson_status?: string | null
+          score_max?: number | null
+          score_min?: number | null
+          score_raw?: number | null
+          session_time?: string | null
+          success_status?: string | null
+          suspend_data?: string | null
+          total_time?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorm_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_posts: {
         Row: {

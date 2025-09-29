@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ScormPlayer } from "@/components/ScormPlayer";
+import { ScormUpload } from "@/components/ScormUpload";
 
 interface Lesson {
   id: string;
@@ -16,6 +18,9 @@ interface Lesson {
   video_url: string | null;
   duration_minutes: number | null;
   order_index: number;
+  is_scorm_content: boolean;
+  scorm_package_url: string | null;
+  scorm_version: "1.2" | "2004" | null;
 }
 
 interface Module {
@@ -31,6 +36,29 @@ const LessonViewer = () => {
   const [module, setModule] = useState<Module | null>(null);
   const [allLessons, setAllLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      setIsAdmin(!!roleData);
+    } catch (error) {
+      console.error("Failed to check admin status:", error);
+    }
+  };
 
   useEffect(() => {
     if (lessonId) {
@@ -48,7 +76,7 @@ const LessonViewer = () => {
         .single();
 
       if (lessonError) throw lessonError;
-      setLesson(lessonData);
+      setLesson(lessonData as Lesson);
 
       // Load module
       const { data: moduleData, error: moduleError } = await supabase
@@ -68,7 +96,7 @@ const LessonViewer = () => {
         .order("order_index", { ascending: true });
 
       if (lessonsError) throw lessonsError;
-      setAllLessons(lessonsData || []);
+      setAllLessons((lessonsData || []) as Lesson[]);
     } catch (error: any) {
       toast.error("Failed to load lesson");
       console.error(error);
@@ -142,8 +170,27 @@ const LessonViewer = () => {
           )}
         </div>
 
+        {/* Admin SCORM Upload */}
+        {isAdmin && !lesson.is_scorm_content && (
+          <div className="mb-6">
+            <ScormUpload lessonId={lesson.id} onUploadComplete={loadLesson} />
+          </div>
+        )}
+
+        {/* SCORM Player */}
+        {lesson.is_scorm_content && lesson.scorm_package_url && lesson.scorm_version && (
+          <div className="mb-6">
+            <ScormPlayer
+              lessonId={lesson.id}
+              scormPackageUrl={lesson.scorm_package_url}
+              scormVersion={lesson.scorm_version}
+              onComplete={markAsComplete}
+            />
+          </div>
+        )}
+
         {/* Video Player */}
-        {lesson.video_url && (
+        {!lesson.is_scorm_content && lesson.video_url && (
           <Card className="mb-6 overflow-hidden bg-card/80 backdrop-blur border-2 border-primary/20">
             <div className="aspect-video bg-muted">
               <iframe
@@ -157,7 +204,7 @@ const LessonViewer = () => {
         )}
 
         {/* Lesson Content */}
-        {lesson.content && (
+        {!lesson.is_scorm_content && lesson.content && (
           <Card className="mb-6 bg-card/80 backdrop-blur border-2 border-primary/20">
             <CardHeader>
               <CardTitle>Lesson Content</CardTitle>
