@@ -497,8 +497,8 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Educational Courses</h5>
-                        <p className="text-xs text-muted-foreground">Learn recruitment strategies and skills</p>
+                        <h5 className="font-semibold text-sm mb-1">Playbook for Life</h5>
+                        <p className="text-xs text-muted-foreground">Master skills on and off the field</p>
                       </div>
                     </div>
 
@@ -534,8 +534,8 @@ const Dashboard = () => {
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-4 group-hover:bg-secondary/20 transition-colors">
                 <GraduationCap className="h-8 w-8 text-secondary" />
               </div>
-              <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Courses</h3>
-              <p className="text-sm text-muted-foreground">Educational content and training</p>
+              <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Playbook for Life</h3>
+              <p className="text-sm text-muted-foreground">Master the game on and off the field</p>
             </Card>
 
             {role === "admin" && (

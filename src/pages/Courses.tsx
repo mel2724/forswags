@@ -79,10 +79,10 @@ const Courses = () => {
         <div className="mb-8">
           <h1 className="text-5xl font-black mb-3 uppercase tracking-tight flex items-center gap-3">
             <GraduationCap className="h-12 w-12 text-primary" />
-            Educational Courses
+            Playbook for Life
           </h1>
           <p className="text-muted-foreground uppercase text-sm tracking-wider">
-            Level up your recruitment game • {filteredCourses.length} Courses Available
+            Master the game on and off the field • {filteredCourses.length} Courses Available
           </p>
         </div>
 
@@ -105,7 +105,7 @@ const Courses = () => {
         {filteredCourses.length === 0 ? (
           <Card className="p-16 text-center bg-card/50 backdrop-blur border-2 border-primary/20">
             <BookOpen className="h-20 w-20 text-primary mx-auto mb-6" />
-            <h2 className="text-3xl font-black uppercase mb-4">No Courses Found</h2>
+            <h2 className="text-3xl font-black uppercase mb-4">No Playbook Courses Found</h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               {searchTerm 
                 ? "Try adjusting your search to find courses"

@@ -132,7 +132,7 @@ const CourseDetail = () => {
           
           <Button variant="ghost" onClick={() => navigate("/courses")} className="text-primary hover:text-primary/80 font-bold">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Courses
+            Back to Playbook
           </Button>
         </div>
       </header>
