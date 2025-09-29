@@ -65,6 +65,19 @@ const LessonViewer = () => {
 
   const loadLesson = async () => {
     try {
+      // Check if user is admin
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        
+        setIsAdmin(!!roleData);
+      }
+
       // Load lesson
       const { data: lessonData, error: lessonError } = await supabase
         .from("lessons")
@@ -174,7 +187,6 @@ const LessonViewer = () => {
               lessonId={lesson.id}
               scormPackageUrl={lesson.scorm_package_url}
               scormVersion={lesson.scorm_version as "1.2" | "2004"}
-              onComplete={markAsComplete}
             />
           </div>
         )}
@@ -206,7 +218,7 @@ const LessonViewer = () => {
                 Upload SCORM Package
               </Button>
             ) : (
-              <ScormUploader
+              <ScormUpload
                 lessonId={lessonId!}
                 onUploadComplete={() => {
                   setShowUploader(false);
