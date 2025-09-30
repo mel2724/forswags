@@ -17,8 +17,21 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
+    // Check for password recovery tokens in URL
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+
+    if (accessToken && type === 'recovery') {
+      setIsResettingPassword(true);
+      return;
+    }
+
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -102,6 +115,42 @@ const Auth = () => {
     }
   };
 
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password updated successfully!");
+      setIsResettingPassword(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      // Clear the hash from URL
+      window.history.replaceState(null, "", window.location.pathname);
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Error updating password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {/* Navigation Header */}
@@ -120,11 +169,48 @@ const Auth = () => {
       <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
         <Card className="w-full max-w-md p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-black uppercase tracking-tight glow-text">Join the Team</h1>
-            <p className="text-muted-foreground uppercase text-sm tracking-wider">For Students With Athletic Goals</p>
+            <h1 className="text-3xl font-black uppercase tracking-tight glow-text">
+              {isResettingPassword ? "Reset Password" : "Join the Team"}
+            </h1>
+            <p className="text-muted-foreground uppercase text-sm tracking-wider">
+              {isResettingPassword ? "Enter your new password" : "For Students With Athletic Goals"}
+            </p>
           </div>
 
-        <Tabs defaultValue="signin" className="w-full">
+        {isResettingPassword ? (
+          <form onSubmit={handleUpdatePassword} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+
+            <Button type="submit" className="w-full btn-hero" disabled={loading}>
+              {loading ? "Updating password..." : "Update Password"}
+            </Button>
+          </form>
+        ) : (
+          <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -250,6 +336,7 @@ const Auth = () => {
             </form>
           </TabsContent>
         </Tabs>
+        )}
       </Card>
     </div>
     </>
