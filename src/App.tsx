@@ -11,6 +11,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Players from "./pages/Players";
 import Profile from "./pages/Profile";
+import ProfileComprehensive from "./pages/ProfileComprehensive";
 import PrimeDime from "./pages/PrimeDime";
 import OfferTracker from "./pages/OfferTracker";
 import StatsManager from "./pages/StatsManager";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/players" element={<Players />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/complete" element={<ProfileComprehensive />} />
             <Route path="/prime-dime" element={<PrimeDime />} />
             <Route path="/offers" element={<OfferTracker />} />
             <Route path="/stats" element={<StatsManager />} />

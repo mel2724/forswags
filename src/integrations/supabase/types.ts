@@ -63,68 +63,182 @@ export type Database = {
       }
       athletes: {
         Row: {
+          academic_achievements: string | null
           act_score: number | null
+          athletic_awards: string[] | null
+          being_recruited: boolean | null
+          bench_press_max: number | null
           bio: string | null
+          camps_attended: string[] | null
+          challenges_overcome: string | null
+          club_team_name: string | null
+          committed: boolean | null
+          committed_school: string | null
+          community_involvement: string | null
           created_at: string
           dominant_hand: string | null
+          favorite_subject: string | null
+          filled_out_by: string | null
+          five_year_goals: string | null
+          forty_yard_dash: number | null
           gpa: number | null
           graduation_year: number | null
+          has_honors_ap_ib: boolean | null
           height_in: number | null
           high_school: string | null
           highlights_url: string | null
+          honors_courses: string | null
           id: string
+          instagram_handle: string | null
+          jersey_number: string | null
+          key_stats: Json | null
+          leadership_roles: string | null
+          legal_situations: boolean | null
+          legal_situations_explanation: string | null
+          message_to_coaches: string | null
+          motivation: string | null
+          ncaa_eligibility_number: string | null
+          nickname: string | null
+          notable_performances: string | null
+          offer_schools: string[] | null
           parent_id: string | null
+          personal_description: string | null
           position: string | null
           profile_completion_pct: number | null
           profile_photo_url: string | null
+          received_offers: boolean | null
+          recruiting_schools: string[] | null
+          role_model: string | null
           sat_score: number | null
+          secondary_sports: string[] | null
           sport: string
+          squat_max: number | null
+          tiktok_handle: string | null
+          twitter_handle: string | null
+          upcoming_camps: string[] | null
           updated_at: string
           user_id: string
+          vertical_jump: number | null
           visibility: string | null
           weight_lb: number | null
         }
         Insert: {
+          academic_achievements?: string | null
           act_score?: number | null
+          athletic_awards?: string[] | null
+          being_recruited?: boolean | null
+          bench_press_max?: number | null
           bio?: string | null
+          camps_attended?: string[] | null
+          challenges_overcome?: string | null
+          club_team_name?: string | null
+          committed?: boolean | null
+          committed_school?: string | null
+          community_involvement?: string | null
           created_at?: string
           dominant_hand?: string | null
+          favorite_subject?: string | null
+          filled_out_by?: string | null
+          five_year_goals?: string | null
+          forty_yard_dash?: number | null
           gpa?: number | null
           graduation_year?: number | null
+          has_honors_ap_ib?: boolean | null
           height_in?: number | null
           high_school?: string | null
           highlights_url?: string | null
+          honors_courses?: string | null
           id?: string
+          instagram_handle?: string | null
+          jersey_number?: string | null
+          key_stats?: Json | null
+          leadership_roles?: string | null
+          legal_situations?: boolean | null
+          legal_situations_explanation?: string | null
+          message_to_coaches?: string | null
+          motivation?: string | null
+          ncaa_eligibility_number?: string | null
+          nickname?: string | null
+          notable_performances?: string | null
+          offer_schools?: string[] | null
           parent_id?: string | null
+          personal_description?: string | null
           position?: string | null
           profile_completion_pct?: number | null
           profile_photo_url?: string | null
+          received_offers?: boolean | null
+          recruiting_schools?: string[] | null
+          role_model?: string | null
           sat_score?: number | null
+          secondary_sports?: string[] | null
           sport: string
+          squat_max?: number | null
+          tiktok_handle?: string | null
+          twitter_handle?: string | null
+          upcoming_camps?: string[] | null
           updated_at?: string
           user_id: string
+          vertical_jump?: number | null
           visibility?: string | null
           weight_lb?: number | null
         }
         Update: {
+          academic_achievements?: string | null
           act_score?: number | null
+          athletic_awards?: string[] | null
+          being_recruited?: boolean | null
+          bench_press_max?: number | null
           bio?: string | null
+          camps_attended?: string[] | null
+          challenges_overcome?: string | null
+          club_team_name?: string | null
+          committed?: boolean | null
+          committed_school?: string | null
+          community_involvement?: string | null
           created_at?: string
           dominant_hand?: string | null
+          favorite_subject?: string | null
+          filled_out_by?: string | null
+          five_year_goals?: string | null
+          forty_yard_dash?: number | null
           gpa?: number | null
           graduation_year?: number | null
+          has_honors_ap_ib?: boolean | null
           height_in?: number | null
           high_school?: string | null
           highlights_url?: string | null
+          honors_courses?: string | null
           id?: string
+          instagram_handle?: string | null
+          jersey_number?: string | null
+          key_stats?: Json | null
+          leadership_roles?: string | null
+          legal_situations?: boolean | null
+          legal_situations_explanation?: string | null
+          message_to_coaches?: string | null
+          motivation?: string | null
+          ncaa_eligibility_number?: string | null
+          nickname?: string | null
+          notable_performances?: string | null
+          offer_schools?: string[] | null
           parent_id?: string | null
+          personal_description?: string | null
           position?: string | null
           profile_completion_pct?: number | null
           profile_photo_url?: string | null
+          received_offers?: boolean | null
+          recruiting_schools?: string[] | null
+          role_model?: string | null
           sat_score?: number | null
+          secondary_sports?: string[] | null
           sport?: string
+          squat_max?: number | null
+          tiktok_handle?: string | null
+          twitter_handle?: string | null
+          upcoming_camps?: string[] | null
           updated_at?: string
           user_id?: string
+          vertical_jump?: number | null
           visibility?: string | null
           weight_lb?: number | null
         }
@@ -156,6 +270,47 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      coach_contacts: {
+        Row: {
+          athlete_id: string
+          coach_email: string | null
+          coach_name: string
+          coach_phone: string | null
+          coach_type: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          coach_email?: string | null
+          coach_name: string
+          coach_phone?: string | null
+          coach_type: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          coach_email?: string | null
+          coach_name?: string
+          coach_phone?: string | null
+          coach_type?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_contacts_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       college_match_prefs: {
         Row: {
@@ -682,6 +837,47 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_guardians: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          id: string
+          parent_email: string | null
+          parent_name: string
+          parent_phone: string | null
+          relationship: string | null
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          id?: string
+          parent_email?: string | null
+          parent_name: string
+          parent_phone?: string | null
+          relationship?: string | null
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          parent_email?: string | null
+          parent_name?: string
+          parent_phone?: string | null
+          relationship?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_guardians_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -773,35 +969,50 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          city: string | null
+          country: string | null
           created_at: string
+          date_of_birth: string | null
           email: string
           first_name: string | null
           full_name: string | null
+          gender: string | null
           id: string
           last_name: string | null
           phone: string | null
+          state: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email: string
           first_name?: string | null
           full_name?: string | null
+          gender?: string | null
           id: string
           last_name?: string | null
           phone?: string | null
+          state?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string
           first_name?: string | null
           full_name?: string | null
+          gender?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+          state?: string | null
           updated_at?: string
         }
         Relationships: []
