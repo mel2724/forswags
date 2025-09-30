@@ -34,6 +34,7 @@ import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminMemberships from "./pages/admin/AdminMemberships";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminAthletes from "./pages/admin/AdminAthletes";
 import AdminSchools from "./pages/admin/AdminSchools";
@@ -80,6 +81,7 @@ const App = () => (
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="memberships" element={<AdminMemberships />} />
               <Route path="courses" element={<AdminCourses />} />
               <Route path="athletes" element={<AdminAthletes />} />
               <Route path="schools" element={<AdminSchools />} />
