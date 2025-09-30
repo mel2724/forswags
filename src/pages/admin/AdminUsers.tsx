@@ -200,38 +200,45 @@ export default function AdminUsers() {
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleImpersonate(user.id, user.email)}
-                          title="View as this user"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleResetPassword(user.email)}
-                          title="Send password reset email"
-                        >
-                          <KeyRound className="h-4 w-4" />
-                        </Button>
-                        <Select
-                          value={user.role}
-                          onValueChange={(value) => handleRoleChange(user.id, value)}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="user">User</SelectItem>
-                            <SelectItem value="athlete">Athlete</SelectItem>
-                            <SelectItem value="coach">Coach</SelectItem>
-                            <SelectItem value="recruiter">Recruiter</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleImpersonate(user.id, user.email)}
+                            className="flex-1"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Impersonate
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleResetPassword(user.email)}
+                            className="flex-1"
+                          >
+                            <KeyRound className="h-4 w-4 mr-2" />
+                            Reset Password
+                          </Button>
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <span className="text-sm text-muted-foreground min-w-[60px]">Role:</span>
+                          <Select
+                            value={user.role}
+                            onValueChange={(value) => handleRoleChange(user.id, value)}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="athlete">Athlete</SelectItem>
+                              <SelectItem value="coach">Coach</SelectItem>
+                              <SelectItem value="recruiter">Recruiter</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>
