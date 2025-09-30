@@ -139,7 +139,6 @@ export default function AthleteSearch() {
                   <SelectValue placeholder="All Positions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Positions</SelectItem>
                   <SelectItem value="QB">QB</SelectItem>
                   <SelectItem value="RB">RB</SelectItem>
                   <SelectItem value="WR">WR</SelectItem>
