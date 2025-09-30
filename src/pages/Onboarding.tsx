@@ -101,17 +101,38 @@ const Onboarding = () => {
     setLoading(true);
 
     try {
-      const { error: roleError } = await supabase
+      // Check if this specific role already exists for the user
+      const { data: existingRole } = await supabase
         .from("user_roles")
-        .insert({ user_id: userId, role: selectedRole });
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", selectedRole)
+        .maybeSingle();
 
-      if (roleError) throw roleError;
+      if (!existingRole) {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert([{ user_id: userId, role: selectedRole as any }]);
 
-      const { error: membershipError } = await supabase
+        if (roleError) throw roleError;
+      } else {
+        toast.success("You already have this role assigned!");
+      }
+
+      // Check if membership already exists
+      const { data: existingMembership } = await supabase
         .from("memberships")
-        .insert({ user_id: userId, plan: "free", status: "active" });
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-      if (membershipError) throw membershipError;
+      if (!existingMembership) {
+        const { error: membershipError } = await supabase
+          .from("memberships")
+          .insert([{ user_id: userId, plan: "free", status: "active" }]);
+
+        if (membershipError) throw membershipError;
+      }
 
       toast.success("Welcome to ForSWAGs!");
       navigate("/dashboard");
@@ -184,39 +205,85 @@ const Onboarding = () => {
 
       if (profileError) throw profileError;
 
-      // Insert athlete profile
-      const { error: athleteError } = await supabase
+      // Insert or update athlete profile
+      const { data: existingAthlete } = await supabase
         .from("athletes")
-        .insert({
-          user_id: userId,
-          sport: athleteData.sport,
-          position: athleteData.position,
-          height_inches: athleteData.height_inches,
-          weight_lbs: athleteData.weight_lbs,
-          high_school: athleteData.high_school,
-          graduation_year: athleteData.graduation_year,
-          gpa: athleteData.gpa,
-          sat_score: athleteData.sat_score,
-          act_score: athleteData.act_score,
-          highlights_url: athleteData.highlights_url,
-          bio: athleteData.bio,
-        });
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-      if (athleteError) throw athleteError;
+      if (existingAthlete) {
+        // Update existing athlete
+        const { error: athleteError } = await supabase
+          .from("athletes")
+          .update({
+            sport: athleteData.sport,
+            position: athleteData.position,
+            height_inches: athleteData.height_inches,
+            weight_lbs: athleteData.weight_lbs,
+            high_school: athleteData.high_school,
+            graduation_year: athleteData.graduation_year,
+            gpa: athleteData.gpa,
+            sat_score: athleteData.sat_score,
+            act_score: athleteData.act_score,
+            highlights_url: athleteData.highlights_url,
+            bio: athleteData.bio,
+          })
+          .eq("user_id", userId);
 
-      // Insert user role
-      const { error: roleError } = await supabase
+        if (athleteError) throw athleteError;
+      } else {
+        // Insert new athlete
+        const { error: athleteError } = await supabase
+          .from("athletes")
+          .insert([{
+            user_id: userId,
+            sport: athleteData.sport,
+            position: athleteData.position,
+            height_inches: athleteData.height_inches,
+            weight_lbs: athleteData.weight_lbs,
+            high_school: athleteData.high_school,
+            graduation_year: athleteData.graduation_year,
+            gpa: athleteData.gpa,
+            sat_score: athleteData.sat_score,
+            act_score: athleteData.act_score,
+            highlights_url: athleteData.highlights_url,
+            bio: athleteData.bio,
+          }]);
+
+        if (athleteError) throw athleteError;
+      }
+
+      // Check if athlete role already exists for the user
+      const { data: existingRole } = await supabase
         .from("user_roles")
-        .insert({ user_id: userId, role: "athlete" });
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", "athlete")
+        .maybeSingle();
 
-      if (roleError) throw roleError;
+      if (!existingRole) {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert([{ user_id: userId, role: "athlete" as any }]);
 
-      // Create free membership
-      const { error: membershipError } = await supabase
+        if (roleError) throw roleError;
+      }
+
+      // Check if membership already exists
+      const { data: existingMembership } = await supabase
         .from("memberships")
-        .insert({ user_id: userId, plan: "free", status: "active" });
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-      if (membershipError) throw membershipError;
+      if (!existingMembership) {
+        const { error: membershipError } = await supabase
+          .from("memberships")
+          .insert([{ user_id: userId, plan: "free", status: "active" }]);
+
+        if (membershipError) throw membershipError;
+      }
 
       toast.success("Profile created! Welcome to ForSWAGs!");
       navigate("/dashboard");
