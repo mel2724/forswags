@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Star, Clock, CheckCircle, AlertCircle, DollarSign, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { STRIPE_PRODUCTS, formatPrice } from "@/lib/stripeConfig";
 
 interface Evaluation {
   id: string;
@@ -19,11 +22,29 @@ interface Evaluation {
 export default function Evaluations() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchEvaluations();
-  }, []);
+
+    const status = searchParams.get("payment");
+    if (status === "success") {
+      toast({
+        title: "Payment Successful!",
+        description: "Your evaluation has been purchased. A coach will review your materials soon.",
+      });
+      fetchEvaluations();
+    } else if (status === "canceled") {
+      toast({
+        title: "Payment Canceled",
+        description: "Evaluation purchase was canceled.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams]);
 
   const fetchEvaluations = async () => {
     try {
@@ -54,6 +75,30 @@ export default function Evaluations() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePurchaseEvaluation = async () => {
+    setPurchaseLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: { priceId: STRIPE_PRODUCTS.evaluation.price_id },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (error: any) {
+      console.error("Purchase error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start purchase process",
+        variant: "destructive",
+      });
+    } finally {
+      setPurchaseLoading(false);
     }
   };
 
@@ -140,11 +185,47 @@ export default function Evaluations() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <Button
+        variant="ghost"
+        onClick={() => navigate("/dashboard")}
+        className="mb-4"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Dashboard
+      </Button>
+
       <div>
         <h1 className="text-3xl font-bold mb-2">Coach Evaluations</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mb-6">
           Professional evaluations from expert coaches to help you improve
         </p>
+
+        <Card className="border-primary mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-6 w-6 text-primary" />
+              Purchase Evaluation
+            </CardTitle>
+            <CardDescription>
+              {STRIPE_PRODUCTS.evaluation.description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-3xl font-bold">{formatPrice(STRIPE_PRODUCTS.evaluation.price)}</p>
+                <p className="text-sm text-muted-foreground">One-time payment</p>
+              </div>
+              <Button
+                size="lg"
+                onClick={handlePurchaseEvaluation}
+                disabled={purchaseLoading}
+              >
+                {purchaseLoading ? "Processing..." : "Purchase Evaluation"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="all" className="w-full">
