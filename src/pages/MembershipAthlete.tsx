@@ -14,7 +14,7 @@ interface SubscriptionStatus {
   subscription_end: string | null;
 }
 
-export default function Membership() {
+export default function MembershipAthlete() {
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
@@ -31,7 +31,6 @@ export default function Membership() {
         title: "Success!",
         description: "Your subscription has been activated.",
       });
-      // Refresh subscription status
       setTimeout(() => checkSubscription(), 2000);
     } else if (status === "canceled") {
       toast({
@@ -101,6 +100,7 @@ export default function Membership() {
   };
 
   const currentTier = getMembershipTier(subscriptionStatus?.product_id || null);
+  const isAthlete = currentTier?.role === "athlete";
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,7 +115,7 @@ export default function Membership() {
         </Button>
 
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Choose Your Membership</h1>
+          <h1 className="text-4xl font-bold mb-4">Athlete Membership Plans</h1>
           <p className="text-muted-foreground text-lg">
             Unlock premium features and maximize your recruiting potential
           </p>
@@ -127,10 +127,10 @@ export default function Membership() {
           </div>
         ) : (
           <>
-            {subscriptionStatus?.subscribed && (
+            {subscriptionStatus?.subscribed && isAthlete && (
               <div className="mb-8 text-center">
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  Current Plan: {currentTier?.role === "athlete" && currentTier?.tier === "monthly" ? "Pro Monthly" : "Championship Yearly"}
+                  Current Plan: {currentTier?.tier === "monthly" ? "Pro Monthly" : "Championship Yearly"}
                 </Badge>
                 {subscriptionStatus.subscription_end && (
                   <p className="text-sm text-muted-foreground mt-2">
@@ -151,9 +151,9 @@ export default function Membership() {
 
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {/* Monthly Plan */}
-              <Card className={currentTier?.role === "athlete" && currentTier?.tier === "monthly" ? "border-primary" : ""}>
+              <Card className={currentTier?.tier === "monthly" ? "border-primary" : ""}>
                 <CardHeader>
-                  {currentTier?.role === "athlete" && currentTier?.tier === "monthly" && (
+                  {currentTier?.tier === "monthly" && (
                     <Badge className="w-fit mb-2">Current Plan</Badge>
                   )}
                   <CardTitle className="text-2xl">{STRIPE_PRODUCTS.membership.athlete.monthly.name}</CardTitle>
@@ -181,21 +181,25 @@ export default function Membership() {
                       <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span>Advanced analytics</span>
                     </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                      <span>Free parent account</span>
+                    </li>
                   </ul>
                   <Button
                     className="w-full"
                     onClick={() => handleSubscribe(STRIPE_PRODUCTS.membership.athlete.monthly.price_id)}
-                    disabled={loading || (currentTier?.role === "athlete" && currentTier?.tier === "monthly")}
+                    disabled={loading || currentTier?.tier === "monthly"}
                   >
-                    {currentTier?.role === "athlete" && currentTier?.tier === "monthly" ? "Current Plan" : "Subscribe Monthly"}
+                    {currentTier?.tier === "monthly" ? "Current Plan" : "Subscribe Monthly"}
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Yearly Plan */}
-              <Card className={currentTier?.role === "athlete" && currentTier?.tier === "yearly" ? "border-primary" : ""}>
+              <Card className={currentTier?.tier === "yearly" ? "border-primary" : ""}>
                 <CardHeader>
-                  {currentTier?.role === "athlete" && currentTier?.tier === "yearly" && (
+                  {currentTier?.tier === "yearly" && (
                     <Badge className="w-fit mb-2">Current Plan</Badge>
                   )}
                   <Badge variant="secondary" className="w-fit mb-2">Save 46%</Badge>
@@ -226,13 +230,17 @@ export default function Membership() {
                       <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span>Priority feature access</span>
                     </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                      <span>Free parent account</span>
+                    </li>
                   </ul>
                   <Button
                     className="w-full"
                     onClick={() => handleSubscribe(STRIPE_PRODUCTS.membership.athlete.yearly.price_id)}
-                    disabled={loading || (currentTier?.role === "athlete" && currentTier?.tier === "yearly")}
+                    disabled={loading || currentTier?.tier === "yearly"}
                   >
-                    {currentTier?.role === "athlete" && currentTier?.tier === "yearly" ? "Current Plan" : "Subscribe Yearly"}
+                    {currentTier?.tier === "yearly" ? "Current Plan" : "Subscribe Yearly"}
                   </Button>
                 </CardContent>
               </Card>

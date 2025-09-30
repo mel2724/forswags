@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
-import { Trophy, GraduationCap, Target, TrendingUp, Users, Star, Zap, Award, BarChart3, Medal } from "lucide-react";
+import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [selectedRole, setSelectedRole] = useState<"athlete" | "parent" | "recruiter">("athlete");
 
   return (
     <div className="min-h-screen bg-background">
@@ -38,7 +41,6 @@ const Landing = () => {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated background */}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/10 to-background sports-pattern"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)]"></div>
         
@@ -156,118 +158,273 @@ const Landing = () => {
       <section id="pricing" className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
               Start <span className="text-gradient-accent">Winning</span> Today
             </h2>
-            <p className="text-xl text-muted-foreground">Choose the plan that fits your goals</p>
+            <p className="text-xl text-muted-foreground mb-8">Choose the plan that fits your goals</p>
+            
+            {/* Role Selector */}
+            <div className="flex justify-center mb-8">
+              <Select value={selectedRole} onValueChange={(value: any) => setSelectedRole(value)}>
+                <SelectTrigger className="w-[280px] h-12 text-lg font-bold border-2 border-primary/30">
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="athlete" className="text-lg">Student Athlete</SelectItem>
+                  <SelectItem value="parent" className="text-lg">Parent/Guardian</SelectItem>
+                  <SelectItem value="recruiter" className="text-lg">College Recruiter</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-border hover:border-primary/50 transition-all duration-300">
-              <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Starter</h3>
-              <div className="mb-6">
-                <div className="text-5xl font-black mb-2">FREE</div>
-                <div className="text-sm text-muted-foreground uppercase">Forever</div>
-              </div>
-              <ul className="space-y-4 mb-8 text-sm">
-                <li className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <div className="h-2 w-2 rounded-full bg-primary"></div>
-                  </div>
-                  <span>Basic athlete profile</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <div className="h-2 w-2 rounded-full bg-primary"></div>
-                  </div>
-                  <span>Browse athlete directory</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <div className="h-2 w-2 rounded-full bg-primary"></div>
-                  </div>
-                  <span>Access to 3 training courses</span>
-                </li>
-              </ul>
-              <Button className="w-full" variant="outline" onClick={() => navigate("/auth")}>
-                Get Started
-              </Button>
-            </Card>
-
-            <Card className="p-8 bg-gradient-to-b from-primary/10 to-card/50 backdrop-blur border-4 border-primary relative transform scale-105 shadow-2xl">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-secondary to-secondary-glow text-black px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
-                ⚡ Most Popular
-              </div>
-              <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-primary">Pro Monthly</h3>
-              <div className="mb-6">
-                <div className="text-5xl font-black mb-2">
-                  $14<span className="text-3xl">.99</span>
+          {/* Athlete Plans */}
+          {selectedRole === "athlete" && (
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              <Card className="p-8 bg-card/50 backdrop-blur border-2 border-border hover:border-primary/50 transition-all duration-300">
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Starter</h3>
+                <div className="mb-6">
+                  <div className="text-5xl font-black mb-2">FREE</div>
+                  <div className="text-sm text-muted-foreground uppercase">Forever</div>
                 </div>
-                <div className="text-sm text-muted-foreground uppercase">Per Month</div>
-              </div>
-              <ul className="space-y-4 mb-8 text-sm">
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Full athlete profile & highlights</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Unlimited training courses</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Coach evaluations & feedback</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">AI college matching</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Performance analytics</span>
-                </li>
-              </ul>
-              <Button className="w-full btn-hero" onClick={() => navigate("/auth")}>
-                Start Training
-              </Button>
-            </Card>
+                <ul className="space-y-4 mb-8 text-sm">
+                  <li className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                    </div>
+                    <span>Basic athlete profile</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                    </div>
+                    <span>Browse athlete directory</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                    </div>
+                    <span>Access to 3 training courses</span>
+                  </li>
+                </ul>
+                <Button className="w-full" variant="outline" onClick={() => navigate("/auth")}>
+                  Get Started
+                </Button>
+              </Card>
 
-            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/30 hover:border-secondary/50 transition-all duration-300">
-              <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Championship</h3>
-              <div className="mb-6">
-                <div className="text-5xl font-black mb-2 text-gradient-accent">
-                  $97
+              <Card className="p-8 bg-gradient-to-b from-primary/10 to-card/50 backdrop-blur border-4 border-primary relative transform scale-105 shadow-2xl">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-secondary to-secondary-glow text-black px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
+                  ⚡ Most Popular
                 </div>
-                <div className="text-sm text-secondary uppercase font-bold">Per Year · Save $82!</div>
-              </div>
-              <ul className="space-y-4 mb-8 text-sm">
-                <li className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Everything in Pro</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Priority coach support</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Advanced analytics dashboard</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Exclusive training content</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Direct recruiter messaging</span>
-                </li>
-              </ul>
-              <Button className="w-full btn-accent" onClick={() => navigate("/auth")}>
-                Go Championship
-              </Button>
-            </Card>
-          </div>
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-primary">Pro Monthly</h3>
+                <div className="mb-6">
+                  <div className="text-5xl font-black mb-2">
+                    $14<span className="text-3xl">.99</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground uppercase">Per Month</div>
+                </div>
+                <ul className="space-y-4 mb-8 text-sm">
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Full athlete profile & highlights</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Unlimited training courses</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Coach evaluations & feedback</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">AI college matching</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Performance analytics</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Free parent account included</span>
+                  </li>
+                </ul>
+                <Button className="w-full btn-hero" onClick={() => navigate("/auth")}>
+                  Start Training
+                </Button>
+              </Card>
+
+              <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/30 hover:border-secondary/50 transition-all duration-300">
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Championship</h3>
+                <div className="mb-6">
+                  <div className="text-5xl font-black mb-2 text-gradient-accent">
+                    $97
+                  </div>
+                  <div className="text-sm text-secondary uppercase font-bold">Per Year · Save $82!</div>
+                </div>
+                <ul className="space-y-4 mb-8 text-sm">
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Everything in Pro</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Priority coach support</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Advanced analytics dashboard</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Exclusive training content</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Direct recruiter messaging</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Free parent account included</span>
+                  </li>
+                </ul>
+                <Button className="w-full btn-accent" onClick={() => navigate("/auth")}>
+                  Go Championship
+                </Button>
+              </Card>
+            </div>
+          )}
+
+          {/* Parent Plans */}
+          {selectedRole === "parent" && (
+            <div className="max-w-2xl mx-auto">
+              <Card className="p-12 bg-gradient-to-b from-primary/10 to-card/50 backdrop-blur border-4 border-primary shadow-2xl">
+                <div className="text-center mb-8">
+                  <Users className="h-16 w-16 text-primary mx-auto mb-4" />
+                  <h3 className="text-3xl font-bold mb-4 uppercase tracking-wide text-primary">Parent Access</h3>
+                  <div className="mb-6">
+                    <div className="text-6xl font-black mb-2">FREE</div>
+                    <div className="text-lg text-muted-foreground">With Paid Student Athlete Account</div>
+                  </div>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-6 w-6 text-primary flex-shrink-0" />
+                    <span className="font-semibold text-lg">Full access to Playbook for Life</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-6 w-6 text-primary flex-shrink-0" />
+                    <span className="font-semibold text-lg">View your athlete's profile & progress</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-6 w-6 text-primary flex-shrink-0" />
+                    <span className="font-semibold text-lg">Track recruiting activities</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-6 w-6 text-primary flex-shrink-0" />
+                    <span className="font-semibold text-lg">Access training resources</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-6 w-6 text-primary flex-shrink-0" />
+                    <span className="font-semibold text-lg">Receive notifications & updates</span>
+                  </li>
+                </ul>
+                <div className="bg-secondary/10 p-4 rounded-lg border border-secondary/30 mb-6">
+                  <p className="text-sm text-center">
+                    Parent accounts are automatically included with any paid athlete membership (Pro Monthly or Championship Yearly)
+                  </p>
+                </div>
+                <Button className="w-full btn-hero text-lg py-6" onClick={() => navigate("/auth")}>
+                  Create Parent Account
+                </Button>
+              </Card>
+            </div>
+          )}
+
+          {/* Recruiter Plans */}
+          {selectedRole === "recruiter" && (
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/30 hover:border-primary/50 transition-all duration-300">
+                <div className="text-center mb-6">
+                  <Target className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Recruiter Monthly</h3>
+                  <div className="mb-6">
+                    <div className="text-5xl font-black mb-2">
+                      $97
+                    </div>
+                    <div className="text-sm text-muted-foreground uppercase">Per Month</div>
+                  </div>
+                </div>
+                <ul className="space-y-4 mb-8 text-sm">
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Full athlete database access</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Advanced search & filters</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Direct messaging to athletes</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Save & organize prospects</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Analytics & insights</span>
+                  </li>
+                </ul>
+                <Button className="w-full btn-hero" onClick={() => navigate("/auth")}>
+                  Start Recruiting
+                </Button>
+              </Card>
+
+              <Card className="p-8 bg-gradient-to-b from-secondary/10 to-card/50 backdrop-blur border-4 border-secondary relative shadow-2xl">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary-glow text-white px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
+                  💎 Best Value
+                </div>
+                <div className="text-center mb-6">
+                  <Star className="h-12 w-12 text-secondary mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-secondary">Recruiter Yearly</h3>
+                  <div className="mb-6">
+                    <div className="text-5xl font-black mb-2 text-gradient-accent">
+                      $997
+                    </div>
+                    <div className="text-sm text-secondary uppercase font-bold">Per Year · Save $167!</div>
+                  </div>
+                </div>
+                <ul className="space-y-4 mb-8 text-sm">
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Everything in Monthly</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Priority customer support</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Exclusive recruiting events</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Early access to new athletes</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Custom reporting tools</span>
+                  </li>
+                </ul>
+                <Button className="w-full btn-accent" onClick={() => navigate("/auth")}>
+                  Go Yearly
+                </Button>
+              </Card>
+            </div>
+          )}
         </div>
       </section>
 
