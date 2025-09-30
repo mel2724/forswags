@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; color:#333;">
+    <h2 style="color:#FFD623; margin-bottom:10px;">ForSWAGs Weekly Recruiter Digest</h2>
+    <p>Your saved search <strong>"{{search_name}}"</strong> had {{athlete_count}} updates this week.</p>
+    <h3 style="color:#9B51E0; margin-top:15px;">Top Matches:</h3>
+    <ol>
+      {{#athletes}}
+      <li style="margin-bottom:15px;">
+        <strong>{{athlete_name}}</strong> – {{position}}, Class of {{grad_year}}<br/>
+        GPA: {{gpa}} | State: {{state}}<br/>
+        <a href="{{profile_url}}">View Profile</a> | <a href="{{highlight_url}}">Watch Highlights</a>
+      </li>
+      {{/athletes}}
+    </ol>
+    <p style="margin-top:20px;">
+      View all {{athlete_count}} athletes here: <a href="{{search_results_url}}">{{search_results_url}}</a>
+    </p>
+    <hr style="margin:20px 0;"/>
+    <small style="color:#777;">ForSWAGs.com | Building well-rounded student-athletes. Not a recruiting service—an education & exposure system.</small>
+  </body>
+</html>

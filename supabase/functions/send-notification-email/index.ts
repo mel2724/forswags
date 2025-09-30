@@ -26,6 +26,9 @@ const templateSubjects: Record<string, string> = {
   profile_viewed: "Your Profile Was Viewed 👀",
   quiz_passed: "Quiz Passed! ✅",
   ranking_updated: "Your Ranking Has Been Updated 📊",
+  recruiter_daily_digest: "ForSWAGs Daily Recruiter Digest",
+  recruiter_weekly_digest: "ForSWAGs Weekly Recruiter Digest",
+  social_post_ready: "Your Social Post is Ready 🚀",
 };
 
 async function loadTemplate(templateName: string): Promise<string> {

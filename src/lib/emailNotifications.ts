@@ -10,7 +10,10 @@ export type EmailTemplate =
   | "profile_nudge"
   | "profile_viewed"
   | "quiz_passed"
-  | "ranking_updated";
+  | "ranking_updated"
+  | "recruiter_daily_digest"
+  | "recruiter_weekly_digest"
+  | "social_post_ready";
 
 interface SendEmailParams {
   to: string;
@@ -198,6 +201,57 @@ export async function sendRankingUpdatedEmail(
       score_total: scoreTotal,
       change_direction: changeDirection,
       delta_points: deltaPoints,
+      dashboard_url: dashboardUrl,
+    },
+  });
+}
+
+export async function sendRecruiterDailyDigestEmail(
+  recruiterEmail: string,
+  searchName: string,
+  athletesHtml: string,
+  searchResultsUrl: string
+) {
+  return sendNotificationEmail({
+    to: recruiterEmail,
+    template: "recruiter_daily_digest",
+    variables: {
+      search_name: searchName,
+      athletes: athletesHtml,
+      search_results_url: searchResultsUrl,
+    },
+  });
+}
+
+export async function sendRecruiterWeeklyDigestEmail(
+  recruiterEmail: string,
+  searchName: string,
+  athleteCount: string,
+  athletesHtml: string,
+  searchResultsUrl: string
+) {
+  return sendNotificationEmail({
+    to: recruiterEmail,
+    template: "recruiter_weekly_digest",
+    variables: {
+      search_name: searchName,
+      athlete_count: athleteCount,
+      athletes: athletesHtml,
+      search_results_url: searchResultsUrl,
+    },
+  });
+}
+
+export async function sendSocialPostReadyEmail(
+  userEmail: string,
+  postPreviewUrl: string,
+  dashboardUrl: string
+) {
+  return sendNotificationEmail({
+    to: userEmail,
+    template: "social_post_ready",
+    variables: {
+      post_preview_url: postPreviewUrl,
       dashboard_url: dashboardUrl,
     },
   });
