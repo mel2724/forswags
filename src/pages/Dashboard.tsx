@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState<any[]>([]);
   const [membership, setMembership] = useState<any>(null);
   const [offers, setOffers] = useState<any[]>([]);
+  const { isImpersonating, getEffectiveUserId } = useImpersonation();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -36,13 +38,15 @@ const Dashboard = () => {
         return;
       }
 
+      // Use impersonated user if available, otherwise use actual session user
+      const effectiveUserId = getEffectiveUserId() || session.user.id;
       setUser(session.user);
 
       // Get profile
       const { data: profileData } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", session.user.id)
+        .eq("id", effectiveUserId)
         .maybeSingle();
 
       setProfile(profileData);
@@ -51,7 +55,7 @@ const Dashboard = () => {
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
+        .eq("user_id", effectiveUserId)
         .maybeSingle();
 
       if (roleData) {
@@ -62,7 +66,7 @@ const Dashboard = () => {
           const { data: athleteData } = await supabase
             .from("athletes")
             .select("*")
-            .eq("user_id", session.user.id)
+            .eq("user_id", effectiveUserId)
             .maybeSingle();
           
           setAthlete(athleteData);
@@ -112,7 +116,7 @@ const Dashboard = () => {
       const { data: membershipData } = await supabase
         .from("memberships")
         .select("*")
-        .eq("user_id", session.user.id)
+        .eq("user_id", effectiveUserId)
         .maybeSingle();
       
       setMembership(membershipData);
@@ -121,7 +125,7 @@ const Dashboard = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, getEffectiveUserId]);
 
   const profileCompleteness = () => {
     if (!athlete) return 0;
@@ -161,7 +165,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background sports-pattern">
-      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      {isImpersonating && <div className="h-14" />}
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80" style={{ marginTop: isImpersonating ? '52px' : '0' }}>
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
             <img src={logoIcon} alt="ForSWAGs" className="h-12" />

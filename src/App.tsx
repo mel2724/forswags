@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -35,40 +37,43 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/players" element={<Players />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/prime-dime" element={<PrimeDime />} />
-          <Route path="/offers" element={<OfferTracker />} />
-          <Route path="/stats" element={<StatsManager />} />
-          <Route path="/preferences" element={<CollegePreferences />} />
-          <Route path="/media" element={<MediaGallery />} />
-          <Route path="/rankings" element={<Rankings />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/courses/:courseId" element={<CourseDetail />} />
-          <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
-          <Route path="/badges" element={<Badges />} />
-          <Route path="/evaluations" element={<Evaluations />} />
-          <Route path="/social" element={<SocialMedia />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="courses" element={<AdminCourses />} />
-            <Route path="athletes" element={<AdminAthletes />} />
-            <Route path="schools" element={<AdminSchools />} />
-          </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ImpersonationProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ImpersonationBanner />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/players" element={<Players />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/prime-dime" element={<PrimeDime />} />
+            <Route path="/offers" element={<OfferTracker />} />
+            <Route path="/stats" element={<StatsManager />} />
+            <Route path="/preferences" element={<CollegePreferences />} />
+            <Route path="/media" element={<MediaGallery />} />
+            <Route path="/rankings" element={<Rankings />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:courseId" element={<CourseDetail />} />
+            <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+            <Route path="/badges" element={<Badges />} />
+            <Route path="/evaluations" element={<Evaluations />} />
+            <Route path="/social" element={<SocialMedia />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="courses" element={<AdminCourses />} />
+              <Route path="athletes" element={<AdminAthletes />} />
+              <Route path="schools" element={<AdminSchools />} />
+            </Route>
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </ImpersonationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

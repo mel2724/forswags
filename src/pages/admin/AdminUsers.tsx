@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, UserCog } from "lucide-react";
+import { Search, UserCog, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 
 interface User {
   id: string;
@@ -22,6 +23,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
+  const { startImpersonation } = useImpersonation();
 
   useEffect(() => {
     fetchUsers();
@@ -104,6 +106,14 @@ export default function AdminUsers() {
     }
   };
 
+  const handleImpersonate = (userId: string, userEmail: string) => {
+    startImpersonation(userId, userEmail);
+    toast({
+      title: "Impersonation Started",
+      description: `Now viewing as ${userEmail}`,
+    });
+  };
+
   const filteredUsers = users.filter(
     (user) =>
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -168,21 +178,31 @@ export default function AdminUsers() {
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={user.role}
-                        onValueChange={(value) => handleRoleChange(user.id, value)}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user">User</SelectItem>
-                          <SelectItem value="athlete">Athlete</SelectItem>
-                          <SelectItem value="coach">Coach</SelectItem>
-                          <SelectItem value="recruiter">Recruiter</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleImpersonate(user.id, user.email)}
+                          title="View as this user"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Select
+                          value={user.role}
+                          onValueChange={(value) => handleRoleChange(user.id, value)}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="athlete">Athlete</SelectItem>
+                            <SelectItem value="coach">Coach</SelectItem>
+                            <SelectItem value="recruiter">Recruiter</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
