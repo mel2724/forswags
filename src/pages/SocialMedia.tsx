@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Plus, Image as ImageIcon, Send, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Image as ImageIcon, Send, Edit, Trash2, Eye, Share2, Facebook, Twitter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -21,6 +21,21 @@ interface SocialPost {
   watermark_applied: boolean;
   created_at: string;
 }
+
+const PLATFORM_LIMITS = {
+  twitter: 280,
+  facebook: 63206,
+  instagram: 2200,
+  tiktok: 2200,
+};
+
+const FORSWAGS_TAG = "#ForSWAGsNation";
+const FORSWAGS_HANDLES = {
+  twitter: "@ForSWAGs",
+  facebook: "@ForSWAGs",
+  instagram: "@ForSWAGs",
+  tiktok: "@ForSWAGs",
+};
 
 export default function SocialMedia() {
   const [posts, setPosts] = useState<SocialPost[]>([]);
@@ -170,6 +185,49 @@ export default function SocialMedia() {
     }
   };
 
+  const formatPostForPlatform = (content: string, platform: keyof typeof PLATFORM_LIMITS): string => {
+    const limit = PLATFORM_LIMITS[platform];
+    const handle = FORSWAGS_HANDLES[platform];
+    const suffix = ` ${handle} ${FORSWAGS_TAG}`;
+    
+    const maxContentLength = limit - suffix.length;
+    const truncatedContent = content.length > maxContentLength 
+      ? content.substring(0, maxContentLength - 3) + "..." 
+      : content;
+    
+    return `${truncatedContent}${suffix}`;
+  };
+
+  const shareToTwitter = (content: string) => {
+    const formattedContent = formatPostForPlatform(content, "twitter");
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(formattedContent)}`;
+    window.open(url, "_blank");
+  };
+
+  const shareToFacebook = (content: string) => {
+    const formattedContent = formatPostForPlatform(content, "facebook");
+    const url = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(formattedContent)}`;
+    window.open(url, "_blank");
+  };
+
+  const shareToInstagram = (content: string) => {
+    const formattedContent = formatPostForPlatform(content, "instagram");
+    navigator.clipboard.writeText(formattedContent);
+    toast({
+      title: "Copied to clipboard",
+      description: "Open Instagram and paste your post",
+    });
+  };
+
+  const shareToTikTok = (content: string) => {
+    const formattedContent = formatPostForPlatform(content, "tiktok");
+    navigator.clipboard.writeText(formattedContent);
+    toast({
+      title: "Copied to clipboard",
+      description: "Open TikTok and paste your post",
+    });
+  };
+
   const PostCard = ({ post }: { post: SocialPost }) => (
     <Card className="animate-fade-in">
       <CardHeader>
@@ -195,6 +253,47 @@ export default function SocialMedia() {
           </div>
         )}
         <p className="text-sm whitespace-pre-wrap">{post.content}</p>
+        
+        {!post.is_draft && (
+          <div className="border-t pt-4">
+            <p className="text-xs font-medium mb-2 text-muted-foreground">Share to platforms:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => shareToTwitter(post.content)}
+              >
+                <Twitter className="h-3 w-3 mr-1" />
+                Twitter/X
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => shareToFacebook(post.content)}
+              >
+                <Facebook className="h-3 w-3 mr-1" />
+                Facebook
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => shareToInstagram(post.content)}
+              >
+                <Share2 className="h-3 w-3 mr-1" />
+                Instagram
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => shareToTikTok(post.content)}
+              >
+                <Share2 className="h-3 w-3 mr-1" />
+                TikTok
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-2 pt-2">
           <Button
             size="sm"
