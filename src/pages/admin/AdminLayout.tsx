@@ -22,13 +22,14 @@ export default function AdminLayout() {
         return;
       }
 
-      const { data: roleData } = await supabase
+      const { data: rolesData } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
+        .eq("user_id", session.user.id);
 
-      if (roleData?.role !== "admin") {
+      const hasAdminRole = rolesData?.some(r => r.role === "admin");
+
+      if (!hasAdminRole) {
         navigate("/dashboard");
         return;
       }
