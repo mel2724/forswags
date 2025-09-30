@@ -38,8 +38,11 @@ const Dashboard = () => {
         return;
       }
 
-      // Use impersonated user if available, otherwise use actual session user
-      const effectiveUserId = getEffectiveUserId() || session.user.id;
+      // Check if parent is viewing athlete's dashboard
+      const parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
+      
+      // Use impersonated user if available, parent viewing if available, otherwise use actual session user
+      const effectiveUserId = getEffectiveUserId() || parentViewingAthlete || session.user.id;
       setUser(session.user);
 
       // Get profile
@@ -60,6 +63,12 @@ const Dashboard = () => {
 
       if (roleData) {
         setRole(roleData.role);
+        
+        // If parent role, redirect to parent dashboard unless viewing athlete
+        if (roleData.role === "parent" && !parentViewingAthlete) {
+          navigate("/parent/dashboard");
+          return;
+        }
         
         // If athlete, get athlete data
         if (roleData.role === "athlete") {
@@ -163,9 +172,26 @@ const Dashboard = () => {
     );
   }
 
+  const parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
+
+  const handleBackToParentDashboard = () => {
+    sessionStorage.removeItem("parent_viewing_athlete");
+    navigate("/parent/dashboard");
+  };
+
   return (
     <div className="min-h-screen bg-background sports-pattern">
       {isImpersonating && <div className="h-14" />}
+      {parentViewingAthlete && (
+        <div className="bg-secondary/20 border-b border-secondary">
+          <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+            <p className="text-sm font-medium">Viewing athlete's dashboard as parent</p>
+            <Button size="sm" variant="outline" onClick={handleBackToParentDashboard}>
+              Back to Parent Dashboard
+            </Button>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80" style={{ marginTop: isImpersonating ? '52px' : '0' }}>
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>

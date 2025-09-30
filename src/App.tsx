@@ -31,6 +31,7 @@ import MembershipRecruiter from "./pages/MembershipRecruiter";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import AthleteSearch from "./pages/recruiter/AthleteSearch";
 import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
+import ParentDashboard from "./pages/ParentDashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
             <Route path="/recruiter/search" element={<AthleteSearch />} />
             <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+            <Route path="/parent/dashboard" element={<ParentDashboard />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />
