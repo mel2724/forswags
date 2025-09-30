@@ -37,10 +37,10 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <ImpersonationProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <ImpersonationProvider>
           <ImpersonationBanner />
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -72,8 +72,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </ImpersonationProvider>
+        </ImpersonationProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
