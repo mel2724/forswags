@@ -547,6 +547,39 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          available_variables: Json | null
+          content: string
+          created_at: string
+          description: string | null
+          id: string
+          subject: string
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          available_variables?: Json | null
+          content: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          subject: string
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          available_variables?: Json | null
+          content?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          subject?: string
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       evaluations: {
         Row: {
           athlete_id: string

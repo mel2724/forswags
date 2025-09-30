@@ -34,6 +34,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminAthletes from "./pages/admin/AdminAthletes";
 import AdminSchools from "./pages/admin/AdminSchools";
+import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const App = () => (
               <Route path="courses" element={<AdminCourses />} />
               <Route path="athletes" element={<AdminAthletes />} />
               <Route path="schools" element={<AdminSchools />} />
+              <Route path="email-templates" element={<AdminEmailTemplates />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -1,4 +1,4 @@
-import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut } from "lucide-react";
+import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -23,6 +23,7 @@ const items = [
   { title: "Athletes", url: "/admin/athletes", icon: Trophy },
   { title: "Courses", url: "/admin/courses", icon: GraduationCap },
   { title: "Schools", url: "/admin/schools", icon: School },
+  { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
 ];
 
 export function AdminSidebar() {

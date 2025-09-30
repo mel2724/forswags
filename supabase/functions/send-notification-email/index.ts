@@ -1,7 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,31 +20,19 @@ interface EmailRequest {
   subject?: string;
 }
 
-const templateSubjects: Record<string, string> = {
-  badge_earned: "New Badge Unlocked! 🎖️",
-  college_match_ready: "Your Top College Matches Are Ready 🎯",
-  eval_complete: "Your Evaluation is Complete 🔍",
-  eval_started: "Your Evaluation Has Started",
-  membership_renewal: "Membership Renewal Reminder",
-  payment_receipt: "Payment Receipt - ForSWAGs",
-  profile_nudge: "Complete Your Profile",
-  profile_viewed: "Your Profile Was Viewed 👀",
-  quiz_passed: "Quiz Passed! ✅",
-  ranking_updated: "Your Ranking Has Been Updated 📊",
-  recruiter_daily_digest: "ForSWAGs Daily Recruiter Digest",
-  recruiter_weekly_digest: "ForSWAGs Weekly Recruiter Digest",
-  social_post_ready: "Your Social Post is Ready 🚀",
-};
+async function getTemplate(templateKey: string): Promise<{ subject: string; content: string }> {
+  const { data, error } = await supabase
+    .from("email_templates")
+    .select("subject, content")
+    .eq("template_key", templateKey)
+    .single();
 
-async function loadTemplate(templateName: string): Promise<string> {
-  try {
-    const path = new URL(`../_templates/${templateName}.html`, import.meta.url);
-    const response = await fetch(path);
-    return await response.text();
-  } catch (error) {
-    console.error(`Failed to load template ${templateName}:`, error);
-    throw new Error(`Template ${templateName} not found`);
+  if (error || !data) {
+    console.error(`Failed to load template ${templateKey}:`, error);
+    throw new Error(`Template ${templateKey} not found`);
   }
+
+  return data;
 }
 
 function substituteVariables(template: string, variables: Record<string, string>): string {
@@ -135,16 +128,16 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending ${template} email to ${to}`);
 
-    // Load and process template
-    const templateContent = await loadTemplate(template);
-    const processedContent = substituteVariables(templateContent, variables);
+    // Load template from database
+    const templateData = await getTemplate(template);
+    const processedContent = substituteVariables(templateData.content, variables);
     const htmlContent = wrapInLayout(processedContent);
 
     // Send email
     const emailResponse = await resend.emails.send({
       from: "ForSWAGs <notifications@forswags.com>",
       to: [to],
-      subject: subject || templateSubjects[template] || "ForSWAGs Notification",
+      subject: subject || templateData.subject,
       html: htmlContent,
     });
 
