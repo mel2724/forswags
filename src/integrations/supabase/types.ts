@@ -19,28 +19,37 @@ export type Database = {
           athlete_id: string
           created_at: string
           id: string
+          metrics: Json | null
           season: string
+          source: string | null
           stat_name: string
           stat_value: number
           updated_at: string
+          verified: boolean | null
         }
         Insert: {
           athlete_id: string
           created_at?: string
           id?: string
+          metrics?: Json | null
           season: string
+          source?: string | null
           stat_name: string
           stat_value: number
           updated_at?: string
+          verified?: boolean | null
         }
         Update: {
           athlete_id?: string
           created_at?: string
           id?: string
+          metrics?: Json | null
           season?: string
+          source?: string | null
           stat_name?: string
           stat_value?: number
           updated_at?: string
+          verified?: boolean | null
         }
         Relationships: [
           {
@@ -57,55 +66,67 @@ export type Database = {
           act_score: number | null
           bio: string | null
           created_at: string
+          dominant_hand: string | null
           gpa: number | null
           graduation_year: number | null
-          height_inches: number | null
+          height_in: number | null
           high_school: string | null
           highlights_url: string | null
           id: string
           parent_id: string | null
           position: string | null
+          profile_completion_pct: number | null
+          profile_photo_url: string | null
           sat_score: number | null
           sport: string
           updated_at: string
           user_id: string
-          weight_lbs: number | null
+          visibility: string | null
+          weight_lb: number | null
         }
         Insert: {
           act_score?: number | null
           bio?: string | null
           created_at?: string
+          dominant_hand?: string | null
           gpa?: number | null
           graduation_year?: number | null
-          height_inches?: number | null
+          height_in?: number | null
           high_school?: string | null
           highlights_url?: string | null
           id?: string
           parent_id?: string | null
           position?: string | null
+          profile_completion_pct?: number | null
+          profile_photo_url?: string | null
           sat_score?: number | null
           sport: string
           updated_at?: string
           user_id: string
-          weight_lbs?: number | null
+          visibility?: string | null
+          weight_lb?: number | null
         }
         Update: {
           act_score?: number | null
           bio?: string | null
           created_at?: string
+          dominant_hand?: string | null
           gpa?: number | null
           graduation_year?: number | null
-          height_inches?: number | null
+          height_in?: number | null
           high_school?: string | null
           highlights_url?: string | null
           id?: string
           parent_id?: string | null
           position?: string | null
+          profile_completion_pct?: number | null
+          profile_photo_url?: string | null
           sat_score?: number | null
           sport?: string
           updated_at?: string
           user_id?: string
-          weight_lbs?: number | null
+          visibility?: string | null
+          weight_lb?: number | null
         }
         Relationships: []
       }
@@ -595,6 +616,39 @@ export type Database = {
           },
         ]
       }
+      notification_prefs: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          payload: Json | null
+          status: string | null
+          template_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          status?: string | null
+          template_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          status?: string | null
+          template_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -721,8 +775,10 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
+          first_name: string | null
           full_name: string | null
           id: string
+          last_name: string | null
           phone: string | null
           updated_at: string
         }
@@ -730,8 +786,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email: string
+          first_name?: string | null
           full_name?: string | null
           id: string
+          last_name?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -739,8 +797,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
+          first_name?: string | null
           full_name?: string | null
           id?: string
+          last_name?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -910,13 +970,84 @@ export type Database = {
           },
         ]
       }
+      recruiter_profiles: {
+        Row: {
+          created_at: string
+          division: string | null
+          id: string
+          notes: string | null
+          primary_positions: string[] | null
+          school_name: string
+          states_focus: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          division?: string | null
+          id?: string
+          notes?: string | null
+          primary_positions?: string[] | null
+          school_name: string
+          states_focus?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          division?: string | null
+          id?: string
+          notes?: string | null
+          primary_positions?: string[] | null
+          school_name?: string
+          states_focus?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_searches: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: string
+          name: string
+          sort: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters: Json
+          id?: string
+          name: string
+          sort?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          name?: string
+          sort?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       schools: {
         Row: {
           acceptance_rate: number | null
           athletic_website_url: string | null
           avg_act: number | null
+          avg_gpa: number | null
           avg_sat: number | null
           conference: string | null
+          contact_email: string | null
           created_at: string
           division: string | null
           enrollment: number | null
@@ -924,7 +1055,9 @@ export type Database = {
           location_city: string | null
           location_state: string | null
           name: string
+          roster_needs: Json | null
           tuition: number | null
+          tuition_estimate: number | null
           updated_at: string
           website_url: string | null
         }
@@ -932,8 +1065,10 @@ export type Database = {
           acceptance_rate?: number | null
           athletic_website_url?: string | null
           avg_act?: number | null
+          avg_gpa?: number | null
           avg_sat?: number | null
           conference?: string | null
+          contact_email?: string | null
           created_at?: string
           division?: string | null
           enrollment?: number | null
@@ -941,7 +1076,9 @@ export type Database = {
           location_city?: string | null
           location_state?: string | null
           name: string
+          roster_needs?: Json | null
           tuition?: number | null
+          tuition_estimate?: number | null
           updated_at?: string
           website_url?: string | null
         }
@@ -949,8 +1086,10 @@ export type Database = {
           acceptance_rate?: number | null
           athletic_website_url?: string | null
           avg_act?: number | null
+          avg_gpa?: number | null
           avg_sat?: number | null
           conference?: string | null
+          contact_email?: string | null
           created_at?: string
           division?: string | null
           enrollment?: number | null
@@ -958,7 +1097,9 @@ export type Database = {
           location_city?: string | null
           location_state?: string | null
           name?: string
+          roster_needs?: Json | null
           tuition?: number | null
+          tuition_estimate?: number | null
           updated_at?: string
           website_url?: string | null
         }
