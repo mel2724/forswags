@@ -132,8 +132,8 @@ const Dashboard = () => {
     const fields = [
       athlete.sport,
       athlete.position,
-      athlete.height_inches,
-      athlete.weight_lbs,
+      athlete.height_in,
+      athlete.weight_lb,
       athlete.high_school,
       athlete.graduation_year,
       athlete.gpa,

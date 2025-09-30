@@ -20,8 +20,8 @@ interface Athlete {
   position: string | null;
   high_school: string | null;
   graduation_year: number | null;
-  height_inches: number | null;
-  weight_lbs: number | null;
+  height_in: number | null;
+  weight_lb: number | null;
   gpa: number | null;
   sat_score: number | null;
   act_score: number | null;
@@ -263,16 +263,16 @@ const Players = () => {
                         <span className="text-xs truncate">{athlete.high_school}</span>
                       </div>
                     )}
-                    {athlete.height_inches && (
+                    {athlete.height_in && (
                       <div className="flex items-center gap-2">
                         <Ruler className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs">{formatHeight(athlete.height_inches)}</span>
+                        <span className="text-xs">{formatHeight(athlete.height_in)}</span>
                       </div>
                     )}
-                    {athlete.weight_lbs && (
+                    {athlete.weight_lb && (
                       <div className="flex items-center gap-2">
                         <Weight className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs">{athlete.weight_lbs} lbs</span>
+                        <span className="text-xs">{athlete.weight_lb} lbs</span>
                       </div>
                     )}
                     {athlete.gpa && (

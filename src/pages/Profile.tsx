@@ -30,8 +30,8 @@ const profileSchema = z.object({
 const athleteSchema = z.object({
   sport: z.string().min(1, "Sport is required"),
   position: z.string().optional(),
-  height_inches: z.number().min(36).max(96).optional(),
-  weight_lbs: z.number().min(50).max(500).optional(),
+  height_in: z.number().min(36).max(96).optional(),
+  weight_lb: z.number().min(50).max(500).optional(),
   high_school: z.string().optional(),
   graduation_year: z.number().min(2024).max(2035).optional(),
   gpa: z.number().min(0).max(5).optional(),
@@ -102,7 +102,7 @@ const Profile = () => {
         setAthleteId(athleteData.id);
         setSport(athleteData.sport || "");
         setPosition(athleteData.position || "");
-        setWeight(athleteData.weight_lbs?.toString() || "");
+        setWeight(athleteData.weight_lb?.toString() || "");
         setHighSchool(athleteData.high_school || "");
         setGradYear(athleteData.graduation_year?.toString() || "");
         setGpa(athleteData.gpa?.toString() || "");
@@ -112,9 +112,9 @@ const Profile = () => {
         setBio(athleteData.bio || "");
 
         // Convert height from total inches to feet and inches
-        if (athleteData.height_inches) {
-          const feet = Math.floor(athleteData.height_inches / 12);
-          const inches = athleteData.height_inches % 12;
+        if (athleteData.height_in) {
+          const feet = Math.floor(athleteData.height_in / 12);
+          const inches = athleteData.height_in % 12;
           setHeightFeet(feet.toString());
           setHeightInches(inches.toString());
         }
@@ -156,8 +156,8 @@ const Profile = () => {
       const athleteData = athleteSchema.parse({
         sport,
         position: position || undefined,
-        height_inches: totalHeightInches,
-        weight_lbs: weight ? parseFloat(weight) : undefined,
+        height_in: totalHeightInches,
+        weight_lb: weight ? parseFloat(weight) : undefined,
         high_school: highSchool || undefined,
         graduation_year: gradYear ? parseInt(gradYear) : undefined,
         gpa: gpa ? parseFloat(gpa) : undefined,
@@ -184,8 +184,8 @@ const Profile = () => {
         .update({
           sport: athleteData.sport,
           position: athleteData.position,
-          height_inches: athleteData.height_inches,
-          weight_lbs: athleteData.weight_lbs,
+          height_in: athleteData.height_in,
+          weight_lb: athleteData.weight_lb,
           high_school: athleteData.high_school,
           graduation_year: athleteData.graduation_year,
           gpa: athleteData.gpa,

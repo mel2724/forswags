@@ -24,6 +24,9 @@ import Lesson from "./pages/Lesson";
 import Badges from "./pages/Badges";
 import Evaluations from "./pages/Evaluations";
 import SocialMedia from "./pages/SocialMedia";
+import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+import AthleteSearch from "./pages/recruiter/AthleteSearch";
+import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -62,6 +65,9 @@ const App = () => (
             <Route path="/badges" element={<Badges />} />
             <Route path="/evaluations" element={<Evaluations />} />
             <Route path="/social" element={<SocialMedia />} />
+            <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+            <Route path="/recruiter/search" element={<AthleteSearch />} />
+            <Route path="/recruiter/profile" element={<RecruiterProfile />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />
