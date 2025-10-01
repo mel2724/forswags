@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, X, Plus, ArrowLeft } from "lucide-react";
 
@@ -35,7 +36,8 @@ export default function CoachProfile() {
     bio: "",
     specializations: [] as string[],
     certifications: "",
-    experience_years: 0
+    experience_years: 0,
+    avatar_url: null as string | null
   });
   const [newSpecialization, setNewSpecialization] = useState("");
 
@@ -65,7 +67,8 @@ export default function CoachProfile() {
           bio: data.bio || "",
           specializations: data.specializations || [],
           certifications: data.certifications || "",
-          experience_years: data.experience_years || 0
+          experience_years: data.experience_years || 0,
+          avatar_url: data.avatar_url || null
         });
       }
     } catch (error: any) {
@@ -93,7 +96,8 @@ export default function CoachProfile() {
           bio: profile.bio,
           specializations: profile.specializations,
           certifications: profile.certifications,
-          experience_years: profile.experience_years
+          experience_years: profile.experience_years,
+          avatar_url: profile.avatar_url
         })
         .eq("user_id", user.id);
 
@@ -169,6 +173,13 @@ export default function CoachProfile() {
                 placeholder="John Doe"
               />
             </div>
+
+            <ProfilePictureUpload
+              currentImageUrl={profile.avatar_url}
+              onImageUpdate={(url) => setProfile({ ...profile, avatar_url: url })}
+              userInitials={profile.full_name.split(" ").map(n => n[0]).join("").toUpperCase() || "C"}
+              size="md"
+            />
 
             <div className="space-y-2">
               <Label htmlFor="bio">Bio</Label>

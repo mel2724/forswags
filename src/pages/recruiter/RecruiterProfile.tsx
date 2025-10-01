@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +16,8 @@ export default function RecruiterProfile() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [fullName, setFullName] = useState("");
   const [formData, setFormData] = useState({
     school_name: "",
     division: "",
@@ -62,6 +65,18 @@ export default function RecruiterProfile() {
         .eq("user_id", user.id)
         .single();
 
+      // Also get user profile for avatar
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("avatar_url, full_name")
+        .eq("id", user.id)
+        .single();
+
+      if (userProfile) {
+        setAvatarUrl(userProfile.avatar_url);
+        setFullName(userProfile.full_name || "");
+      }
+
       if (profileData) {
         setProfile(profileData);
         setFormData({
@@ -85,6 +100,14 @@ export default function RecruiterProfile() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Update user profile avatar
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
 
       if (profile) {
         const { error } = await supabase
@@ -177,6 +200,13 @@ export default function RecruiterProfile() {
           <CardDescription>Tell athletes about your program</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <ProfilePictureUpload
+            currentImageUrl={avatarUrl}
+            onImageUpdate={setAvatarUrl}
+            userInitials={fullName.split(" ").map(n => n[0]).join("").toUpperCase() || "R"}
+            size="md"
+          />
+
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>School Name *</Label>

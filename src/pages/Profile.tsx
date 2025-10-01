@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { toast } from "sonner";
 import { z } from "zod";
 import logoIcon from "@/assets/forswags-logo.png";
@@ -94,6 +95,7 @@ const Profile = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Athlete fields
   const [sport, setSport] = useState("");
@@ -131,6 +133,7 @@ const Profile = () => {
       if (profileData) {
         setFullName(profileData.full_name || "");
         setPhone(profileData.phone || "");
+        setAvatarUrl(profileData.avatar_url || null);
       }
 
       // Load athlete data
@@ -214,7 +217,8 @@ const Profile = () => {
         .from("profiles")
         .update({ 
           full_name: profileData.full_name,
-          phone: profileData.phone 
+          phone: profileData.phone,
+          avatar_url: avatarUrl
         })
         .eq("id", userId);
 
@@ -335,6 +339,13 @@ const Profile = () => {
                   placeholder="(555) 123-4567"
                 />
               </div>
+
+              <ProfilePictureUpload
+                currentImageUrl={avatarUrl}
+                onImageUpdate={setAvatarUrl}
+                userInitials={fullName.split(" ").map(n => n[0]).join("").toUpperCase() || "U"}
+                size="md"
+              />
             </CardContent>
           </Card>
 
