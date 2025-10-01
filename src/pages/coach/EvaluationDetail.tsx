@@ -239,8 +239,6 @@ export default function EvaluationDetail() {
               <VideoAnnotation
                 videoUrl={evaluation.video_url}
                 evaluationId={evaluation.id}
-                onAnnotationSave={handleSaveAnnotation}
-                existingAnnotations={annotations}
               />
               <Button
                 variant="outline"

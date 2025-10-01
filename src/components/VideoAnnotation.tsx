@@ -1,19 +1,20 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Canvas, PencilBrush, Circle } from "fabric";
+import { useEffect, useRef, useState } from "react";
+import { Canvas as FabricCanvas, Circle } from "fabric";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Card } from "@/components/ui/card";
 import { 
   Pencil, 
   Circle as CircleIcon, 
-  Eraser, 
-  Trash2, 
-  Mic, 
+  Undo, 
+  Trash2,
+  Mic,
   Square,
   Play,
   Pause
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Annotation {
   id: string;
@@ -25,142 +26,191 @@ interface Annotation {
 interface VideoAnnotationProps {
   videoUrl: string;
   evaluationId: string;
-  onAnnotationSave: (annotation: Omit<Annotation, 'id'>) => Promise<void>;
-  existingAnnotations?: Annotation[];
+  isReadOnly?: boolean;
 }
 
-export default function VideoAnnotation({
-  videoUrl,
-  evaluationId,
-  onAnnotationSave,
-  existingAnnotations = []
-}: VideoAnnotationProps) {
+export default function VideoAnnotation({ videoUrl, evaluationId, isReadOnly = false }: VideoAnnotationProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricCanvasRef = useRef<Canvas | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  
-  const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'circle' | 'eraser'>('select');
-  const [drawColor, setDrawColor] = useState('#FF0000');
-  const [brushSize, setBrushSize] = useState(3);
+  const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
+  const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'circle' | 'erase'>('select');
+  const [drawColor, setDrawColor] = useState("#FF0000");
+  const [lineWidth, setLineWidth] = useState(3);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [annotations, setAnnotations] = useState<Annotation[]>(existingAnnotations);
-  
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
-  // Initialize fabric canvas
+  // Initialize canvas
   useEffect(() => {
     if (!canvasRef.current || !videoRef.current) return;
 
-    const canvas = new Canvas(canvasRef.current, {
-      width: videoRef.current.offsetWidth,
-      height: videoRef.current.offsetHeight,
-      isDrawingMode: false,
-      selection: true,
+    const video = videoRef.current;
+    const canvas = new FabricCanvas(canvasRef.current, {
+      width: video.offsetWidth,
+      height: video.offsetHeight,
+      selection: activeTool === 'select',
+      backgroundColor: 'transparent',
     });
 
-    fabricCanvasRef.current = canvas;
+    canvas.freeDrawingBrush.color = drawColor;
+    canvas.freeDrawingBrush.width = lineWidth;
+    canvas.isDrawingMode = activeTool === 'draw';
+
+    setFabricCanvas(canvas);
 
     return () => {
       canvas.dispose();
     };
   }, []);
 
-  // Handle video resize
+  // Update canvas when video size changes
   useEffect(() => {
+    if (!fabricCanvas || !videoRef.current) return;
+
     const handleResize = () => {
-      if (fabricCanvasRef.current && videoRef.current) {
-        fabricCanvasRef.current.setWidth(videoRef.current.offsetWidth);
-        fabricCanvasRef.current.setHeight(videoRef.current.offsetHeight);
-      }
+      const video = videoRef.current!;
+      fabricCanvas.setDimensions({
+        width: video.offsetWidth,
+        height: video.offsetHeight,
+      });
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, [fabricCanvas]);
+
+  // Update drawing settings
+  useEffect(() => {
+    if (!fabricCanvas) return;
+
+    fabricCanvas.isDrawingMode = activeTool === 'draw';
+    fabricCanvas.selection = activeTool === 'select';
+    
+    if (fabricCanvas.freeDrawingBrush) {
+      fabricCanvas.freeDrawingBrush.color = drawColor;
+      fabricCanvas.freeDrawingBrush.width = lineWidth;
+    }
+  }, [fabricCanvas, activeTool, drawColor, lineWidth]);
+
+  // Video time update
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime * 1000);
+    };
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+    };
   }, []);
 
-  // Update drawing tool
+  // Load annotations
   useEffect(() => {
-    if (!fabricCanvasRef.current) return;
+    loadAnnotations();
+  }, [evaluationId]);
 
-    const canvas = fabricCanvasRef.current;
-    canvas.isDrawingMode = activeTool === 'draw';
-    
-    if (activeTool === 'draw') {
-      const brush = new PencilBrush(canvas);
-      brush.color = drawColor;
-      brush.width = brushSize;
-      canvas.freeDrawingBrush = brush;
-    } else if (activeTool === 'circle') {
-      canvas.isDrawingMode = false;
-    } else if (activeTool === 'eraser') {
-      const brush = new PencilBrush(canvas);
-      brush.color = '#FFFFFF';
-      brush.width = brushSize * 2;
-      canvas.freeDrawingBrush = brush;
-      canvas.isDrawingMode = true;
-    } else {
-      canvas.isDrawingMode = false;
+  const loadAnnotations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('evaluation_annotations')
+        .select('*')
+        .eq('evaluation_id', evaluationId)
+        .order('timestamp_ms');
+
+      if (error) throw error;
+      
+      const typedData = (data || []).map(item => ({
+        ...item,
+        annotation_type: item.annotation_type as 'drawing' | 'voice' | 'text'
+      }));
+      
+      setAnnotations(typedData);
+    } catch (error) {
+      console.error('Error loading annotations:', error);
     }
-  }, [activeTool, drawColor, brushSize]);
+  };
 
-  // Handle circle drawing
-  const handleAddCircle = useCallback(() => {
-    if (!fabricCanvasRef.current) return;
+  const handleToolClick = (tool: typeof activeTool) => {
+    setActiveTool(tool);
 
-    const circle = new Circle({
-      left: 100,
-      top: 100,
-      radius: 50,
-      fill: 'transparent',
-      stroke: drawColor,
-      strokeWidth: brushSize,
-    });
-    
-    fabricCanvasRef.current.add(circle);
-    fabricCanvasRef.current.setActiveObject(circle);
-  }, [drawColor, brushSize]);
+    if (tool === 'circle' && fabricCanvas) {
+      const circle = new Circle({
+        left: 100,
+        top: 100,
+        radius: 50,
+        fill: 'transparent',
+        stroke: drawColor,
+        strokeWidth: lineWidth,
+      });
+      fabricCanvas.add(circle);
+      fabricCanvas.setActiveObject(circle);
+    }
+  };
 
-  // Clear canvas
-  const handleClearCanvas = useCallback(() => {
-    if (!fabricCanvasRef.current) return;
-    fabricCanvasRef.current.clear();
-    toast({
-      title: "Canvas cleared",
-      description: "All drawings have been removed",
-    });
-  }, [toast]);
+  const handleClear = () => {
+    if (!fabricCanvas) return;
+    fabricCanvas.clear();
+  };
 
-  // Save current canvas as annotation
-  const handleSaveDrawing = useCallback(async () => {
-    if (!fabricCanvasRef.current || !videoRef.current) return;
+  const handleUndo = () => {
+    if (!fabricCanvas) return;
+    const objects = fabricCanvas.getObjects();
+    if (objects.length > 0) {
+      fabricCanvas.remove(objects[objects.length - 1]);
+    }
+  };
 
-    const canvas = fabricCanvasRef.current;
-    const currentTimeMs = Math.floor(videoRef.current.currentTime * 1000);
-    
-    const canvasData = canvas.toJSON();
-    
-    await onAnnotationSave({
-      timestamp_ms: currentTimeMs,
-      annotation_type: 'drawing',
-      data: {
-        canvas: canvasData,
-        color: drawColor,
-      }
-    });
+  const saveDrawing = async () => {
+    if (!fabricCanvas) return;
 
-    toast({
-      title: "Drawing saved",
-      description: `Saved at ${videoRef.current.currentTime.toFixed(1)}s`,
-    });
-  }, [drawColor, onAnnotationSave, toast]);
+    try {
+      const drawingData = fabricCanvas.toJSON();
+      
+      const { error } = await supabase
+        .from('evaluation_annotations')
+        .insert({
+          evaluation_id: evaluationId,
+          timestamp_ms: Math.floor(currentTime),
+          annotation_type: 'drawing',
+          data: drawingData,
+        });
 
-  // Audio recording
-  const startRecording = useCallback(async () => {
+      if (error) throw error;
+
+      toast({
+        title: "Drawing saved",
+        description: "Annotation saved at current timestamp",
+      });
+
+      handleClear();
+      loadAnnotations();
+    } catch (error) {
+      console.error('Error saving drawing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save drawing",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -173,222 +223,235 @@ export default function VideoAnnotation({
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const reader = new FileReader();
-        
-        reader.onloadend = async () => {
-          const base64Audio = reader.result as string;
-          const currentTimeMs = Math.floor((videoRef.current?.currentTime || 0) * 1000);
-          
-          await onAnnotationSave({
-            timestamp_ms: currentTimeMs,
-            annotation_type: 'voice',
-            data: {
-              audio: base64Audio,
-              duration: audioChunksRef.current.length,
-            }
-          });
-
-          toast({
-            title: "Voice comment saved",
-            description: "Audio recording has been saved",
-          });
-        };
-        
-        reader.readAsDataURL(audioBlob);
+        await saveVoiceAnnotation(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorder.start();
       setIsRecording(true);
+      
+      toast({
+        title: "Recording started",
+        description: "Speak your comments now",
+      });
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
-        title: "Recording failed",
-        description: "Could not access microphone",
+        title: "Error",
+        description: "Failed to access microphone",
         variant: "destructive",
       });
     }
-  }, [onAnnotationSave, toast]);
+  };
 
-  const stopRecording = useCallback(() => {
+  const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
-  }, [isRecording]);
+  };
 
-  // Video controls
-  const togglePlay = useCallback(() => {
+  const saveVoiceAnnotation = async (audioBlob: Blob) => {
+    try {
+      // Upload audio to storage
+      const fileName = `${evaluationId}/${Date.now()}.webm`;
+      const { error: uploadError } = await supabase.storage
+        .from('media-assets')
+        .upload(fileName, audioBlob);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('media-assets')
+        .getPublicUrl(fileName);
+
+      // Save annotation
+      const { error } = await supabase
+        .from('evaluation_annotations')
+        .insert({
+          evaluation_id: evaluationId,
+          timestamp_ms: Math.floor(currentTime),
+          annotation_type: 'voice',
+          data: { audioUrl: publicUrl },
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Voice comment saved",
+        description: "Audio annotation saved successfully",
+      });
+
+      loadAnnotations();
+    } catch (error) {
+      console.error('Error saving voice annotation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save voice annotation",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const togglePlayPause = () => {
     if (!videoRef.current) return;
     
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    } else {
+    if (isPlaying) {
       videoRef.current.pause();
-      setIsPlaying(false);
+    } else {
+      videoRef.current.play();
     }
-  }, []);
-
-  // Update current time
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
-    };
-
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
-  }, []);
+  };
 
   return (
     <div className="space-y-4">
       {/* Video and Canvas Container */}
-      <Card className="overflow-hidden">
-        <div ref={containerRef} className="relative bg-black">
-          <video
-            ref={videoRef}
-            src={videoUrl}
-            className="w-full"
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-          />
-          <canvas
-            ref={canvasRef}
-            className="absolute top-0 left-0 pointer-events-auto"
-            style={{ touchAction: 'none' }}
-          />
-        </div>
+      <div ref={containerRef} className="relative bg-black rounded-lg overflow-hidden">
+        <video
+          ref={videoRef}
+          controls={false}
+          className="w-full"
+          src={videoUrl}
+        >
+          Your browser does not support the video tag.
+        </video>
+        <canvas
+          ref={canvasRef}
+          className="absolute top-0 left-0 w-full h-full pointer-events-auto"
+          style={{ zIndex: 10 }}
+        />
+      </div>
 
-        {/* Video Controls */}
-        <div className="p-4 space-y-4">
-          <div className="flex items-center gap-2">
-            <Button size="icon" variant="outline" onClick={togglePlay}>
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {currentTime.toFixed(1)}s
-            </span>
-          </div>
-        </div>
-      </Card>
-
-      {/* Annotation Tools */}
+      {/* Custom Controls */}
       <Card className="p-4">
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={activeTool === 'select' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveTool('select')}
-            >
-              <Square className="h-4 w-4 mr-2" />
-              Select
-            </Button>
-            <Button
-              variant={activeTool === 'draw' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveTool('draw')}
-            >
-              <Pencil className="h-4 w-4 mr-2" />
-              Draw
-            </Button>
-            <Button
-              variant={activeTool === 'circle' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setActiveTool('circle');
-                handleAddCircle();
-              }}
-            >
-              <CircleIcon className="h-4 w-4 mr-2" />
-              Circle
-            </Button>
-            <Button
-              variant={activeTool === 'eraser' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setActiveTool('eraser')}
-            >
-              <Eraser className="h-4 w-4 mr-2" />
-              Eraser
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearCanvas}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clear
-            </Button>
-          </div>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <Button 
+            size="icon" 
+            variant="outline"
+            onClick={togglePlayPause}
+          >
+            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {Math.floor(currentTime / 1000)}s
+          </span>
+        </div>
 
-          {/* Drawing Settings */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Color</label>
-            <div className="flex gap-2">
-              {['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#FFFFFF'].map((color) => (
-                <button
-                  key={color}
-                  className="w-8 h-8 rounded border-2"
-                  style={{
-                    backgroundColor: color,
-                    borderColor: drawColor === color ? '#000' : '#ccc'
-                  }}
-                  onClick={() => setDrawColor(color)}
+        {!isReadOnly && (
+          <>
+            {/* Drawing Tools */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <Button
+                size="sm"
+                variant={activeTool === 'select' ? 'default' : 'outline'}
+                onClick={() => handleToolClick('select')}
+              >
+                <Square className="h-4 w-4 mr-2" />
+                Select
+              </Button>
+              <Button
+                size="sm"
+                variant={activeTool === 'draw' ? 'default' : 'outline'}
+                onClick={() => handleToolClick('draw')}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Draw
+              </Button>
+              <Button
+                size="sm"
+                variant={activeTool === 'circle' ? 'default' : 'outline'}
+                onClick={() => handleToolClick('circle')}
+              >
+                <CircleIcon className="h-4 w-4 mr-2" />
+                Circle
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleUndo}
+              >
+                <Undo className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleClear}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                onClick={saveDrawing}
+              >
+                Save Drawing
+              </Button>
+            </div>
+
+            {/* Drawing Settings */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Color</label>
+                <input
+                  type="color"
+                  value={drawColor}
+                  onChange={(e) => setDrawColor(e.target.value)}
+                  className="w-full h-10 rounded cursor-pointer"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Line Width: {lineWidth}px</label>
+                <Slider
+                  value={[lineWidth]}
+                  onValueChange={([value]) => setLineWidth(value)}
+                  min={1}
+                  max={10}
+                  step={1}
+                />
+              </div>
+            </div>
+
+            {/* Voice Recording */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={isRecording ? 'destructive' : 'default'}
+                onClick={isRecording ? stopRecording : startRecording}
+              >
+                <Mic className="h-4 w-4 mr-2" />
+                {isRecording ? 'Stop Recording' : 'Record Voice Comment'}
+              </Button>
+              {isRecording && (
+                <span className="text-sm text-destructive animate-pulse">
+                  Recording...
+                </span>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Annotations Timeline */}
+        {annotations.length > 0 && (
+          <div className="mt-4 pt-4 border-t">
+            <h3 className="text-sm font-medium mb-2">Annotations</h3>
+            <div className="space-y-2">
+              {annotations.map((annotation) => (
+                <div key={annotation.id} className="text-xs flex items-center gap-2 p-2 bg-muted rounded">
+                  <span className="font-medium">
+                    {Math.floor(annotation.timestamp_ms / 1000)}s
+                  </span>
+                  <span className="text-muted-foreground">
+                    {annotation.annotation_type === 'drawing' ? '✏️ Drawing' : '🎤 Voice'}
+                  </span>
+                  {annotation.annotation_type === 'voice' && annotation.data.audioUrl && (
+                    <audio controls className="h-6 ml-auto">
+                      <source src={annotation.data.audioUrl} type="audio/webm" />
+                    </audio>
+                  )}
+                </div>
               ))}
             </div>
           </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Brush Size: {brushSize}px</label>
-            <Slider
-              value={[brushSize]}
-              onValueChange={([value]) => setBrushSize(value)}
-              min={1}
-              max={20}
-              step={1}
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-4 border-t">
-            <Button onClick={handleSaveDrawing} className="flex-1">
-              Save Drawing
-            </Button>
-            <Button
-              variant={isRecording ? 'destructive' : 'outline'}
-              onClick={isRecording ? stopRecording : startRecording}
-              className="flex-1"
-            >
-              <Mic className="h-4 w-4 mr-2" />
-              {isRecording ? 'Stop Recording' : 'Record Voice'}
-            </Button>
-          </div>
-        </div>
+        )}
       </Card>
-
-      {/* Annotations Timeline */}
-      {annotations.length > 0 && (
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3">Saved Annotations</h3>
-          <div className="space-y-2">
-            {annotations.map((annotation) => (
-              <div
-                key={annotation.id}
-                className="flex items-center justify-between p-2 bg-muted rounded"
-              >
-                <span className="text-sm">
-                  {annotation.annotation_type === 'drawing' ? '🎨' : '🎤'} {' '}
-                  {(annotation.timestamp_ms / 1000).toFixed(1)}s
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
     </div>
   );
 }
