@@ -45,6 +45,7 @@ import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
 import AdminRankings from "./pages/admin/AdminRankings";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import CoachApplication from "./pages/CoachApplication";
+import PurchaseEvaluation from "./pages/PurchaseEvaluation";
 import CoachDashboard from "./pages/coach/CoachDashboard";
 import CoachProfile from "./pages/coach/CoachProfile";
 import CoachProfileView from "./pages/coach/CoachProfileView";
@@ -83,6 +84,7 @@ const App = () => (
             <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
             <Route path="/badges" element={<Badges />} />
             <Route path="/evaluations" element={<Evaluations />} />
+            <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/membership/athlete" element={<MembershipAthlete />} />
           <Route path="/membership/recruiter" element={<MembershipRecruiter />} />

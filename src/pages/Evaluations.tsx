@@ -5,9 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Star, Clock, CheckCircle, AlertCircle, Upload, ArrowLeft, Video } from "lucide-react";
+import { Star, Clock, CheckCircle, AlertCircle, ArrowLeft, Video, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Evaluation {
@@ -25,16 +23,30 @@ interface Evaluation {
 export default function Evaluations() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploadLoading, setUploadLoading] = useState(false);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [showUploadForm, setShowUploadForm] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchEvaluations();
-  }, []);
+
+    // Check for success/canceled payment redirects
+    const success = searchParams.get("success");
+    const canceled = searchParams.get("canceled");
+
+    if (success === "true") {
+      toast({
+        title: "Payment Successful!",
+        description: "Your evaluation will be assigned to a coach shortly.",
+      });
+    } else if (canceled === "true") {
+      toast({
+        title: "Payment Canceled",
+        description: "You can purchase an evaluation anytime.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams]);
 
   const fetchEvaluations = async () => {
     try {
@@ -72,88 +84,6 @@ export default function Evaluations() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleVideoUpload = async () => {
-    if (!videoFile) {
-      toast({ title: "Error", description: "Please select a video file", variant: "destructive" });
-      return;
-    }
-
-    setUploadLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data: athleteData } = await supabase
-        .from("athletes")
-        .select("id, sport, position")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!athleteData) throw new Error("Athlete profile not found");
-
-      // Upload video to storage
-      const fileExt = videoFile.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const { error: uploadError, data: uploadData } = await supabase.storage
-        .from('media-assets')
-        .upload(`evaluations/${fileName}`, videoFile);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('media-assets')
-        .getPublicUrl(`evaluations/${fileName}`);
-
-      // Create evaluation record
-      const { data: newEval, error: insertError } = await supabase
-        .from("evaluations")
-        .insert({
-          athlete_id: athleteData.id,
-          video_url: publicUrl,
-          status: "pending"
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      // Notify coaches about new evaluation
-      if (newEval) {
-        supabase.functions.invoke(
-          "notify-coaches-new-evaluation",
-          {
-            body: {
-              evaluationId: newEval.id,
-              sport: athleteData.sport || "",
-              position: athleteData.position || "",
-            },
-          }
-        ).catch((error) => {
-          console.error("Coach notification error:", error);
-        });
-      }
-
-      toast({
-        title: "Success!",
-        description: "Your video has been uploaded. Coaches will review it soon.",
-      });
-
-      setVideoFile(null);
-      setShowUploadForm(false);
-      fetchEvaluations();
-    } catch (error: any) {
-      console.error("Upload error:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to upload video",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadLoading(false);
     }
   };
 
@@ -252,59 +182,39 @@ export default function Evaluations() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Coach Evaluations</h1>
         <p className="text-muted-foreground mb-6">
-          Upload your highlight video for professional coach evaluation
+          Get professional feedback from certified coaches
         </p>
 
         <Card className="border-primary mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Video className="h-6 w-6 text-primary" />
-              Upload Highlight Video
+              Get Professional Evaluation
             </CardTitle>
             <CardDescription>
-              Submit your game highlights for detailed coach evaluation and feedback
+              Purchase a video evaluation from certified coaches for just $49.99
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!showUploadForm ? (
-              <Button onClick={() => setShowUploadForm(true)} size="lg">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Video for Evaluation
-              </Button>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="video">Select Video File</Label>
-                  <Input
-                    id="video"
-                    type="file"
-                    accept="video/*"
-                    onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-                    className="mt-2"
-                  />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Upload MP4, MOV, or other video formats (max 500MB)
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleVideoUpload}
-                    disabled={!videoFile || uploadLoading}
-                  >
-                    {uploadLoading ? "Uploading..." : "Submit for Evaluation"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowUploadForm(false);
-                      setVideoFile(null);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="space-y-2">
+                <h3 className="font-semibold">What You'll Get:</h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>✓ Professional video analysis</li>
+                  <li>✓ Detailed written feedback</li>
+                  <li>✓ Performance ratings</li>
+                  <li>✓ Expert recommendations</li>
+                </ul>
               </div>
-            )}
+              <Button 
+                onClick={() => navigate("/evaluations/purchase")} 
+                size="lg"
+                className="whitespace-nowrap"
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                Purchase Evaluation
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
