@@ -62,14 +62,25 @@ export default function AvailableEvaluations() {
 
       if (error) throw error;
 
+      // Filter by specializations if coach has any
+      let filteredData = data || [];
+      if (coachProfile?.specializations && coachProfile.specializations.length > 0) {
+        filteredData = data?.filter(evaluation => {
+          const sport = evaluation.athletes.sport;
+          return coachProfile.specializations.some((spec: string) =>
+            sport.toLowerCase().includes(spec.toLowerCase())
+          );
+        }) || [];
+      }
+
       // Get athlete profiles
-      const athleteUserIds = data?.map(e => e.athletes.user_id) || [];
+      const athleteUserIds = filteredData?.map(e => e.athletes.user_id) || [];
       const { data: profilesData } = await supabase
         .from("profiles")
         .select("id, full_name")
         .in("id", athleteUserIds);
 
-      const evaluationsWithProfiles = data?.map(evaluation => ({
+      const evaluationsWithProfiles = filteredData?.map(evaluation => ({
         ...evaluation,
         athletes: {
           ...evaluation.athletes,

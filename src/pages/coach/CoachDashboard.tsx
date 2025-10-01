@@ -145,6 +145,9 @@ const CoachDashboard = () => {
             {coachProfile && <p className="text-sm text-muted-foreground">{coachProfile.full_name}</p>}
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/coach/profile")}>
+              My Profile
+            </Button>
             <Button variant="outline" onClick={() => navigate("/coach/available")}>
               Available Evaluations
             </Button>

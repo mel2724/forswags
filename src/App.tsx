@@ -44,6 +44,7 @@ import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
 import CoachApplication from "./pages/CoachApplication";
 import CoachDashboard from "./pages/coach/CoachDashboard";
+import CoachProfile from "./pages/coach/CoachProfile";
 import AvailableEvaluations from "./pages/coach/AvailableEvaluations";
 import EvaluationDetail from "./pages/coach/EvaluationDetail";
 import NotFound from "./pages/NotFound";
@@ -88,6 +89,7 @@ const App = () => (
             <Route path="/parent/dashboard" element={<ParentDashboard />} />
             <Route path="/coach/apply" element={<CoachApplication />} />
           <Route path="/coach/dashboard" element={<CoachDashboard />} />
+          <Route path="/coach/profile" element={<CoachProfile />} />
           <Route path="/coach/available" element={<AvailableEvaluations />} />
           <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
             <Route path="/admin" element={<AdminLayout />}>
