@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Canvas as FabricCanvas, Rect, Text, FabricImage, Textbox, Shadow } from "fabric";
+import { Canvas as FabricCanvas, Rect, Text, FabricImage, Textbox, Shadow, Gradient } from "fabric";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -60,20 +60,47 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
 
     try {
       fabricCanvas.clear();
-      fabricCanvas.backgroundColor = "#1a1a1a";
+      fabricCanvas.backgroundColor = "#0a0a0a";
 
       // Add gradient background
-      const gradient = new Rect({
+      const gradientColors = {
+        offer: ["#4C1D95", "#7C3AED", "#A855F7"],
+        commitment: ["#92400E", "#CA8A04", "#EAB308"],
+        achievement: ["#065F46", "#059669", "#10B981"],
+        match: ["#9F1239", "#DC2626", "#F87171"],
+        custom: ["#581C87", "#7C3AED", "#C084FC"],
+      };
+
+      const colors = gradientColors[selectedTemplate.type] || gradientColors.custom;
+      
+      const gradient = new Gradient({
+        type: 'linear',
+        gradientUnits: 'pixels',
+        coords: { x1: 0, y1: 0, x2: 0, y2: 1080 },
+        colorStops: [
+          { offset: 0, color: colors[0] },
+          { offset: 0.5, color: colors[1] },
+          { offset: 1, color: colors[2] }
+        ]
+      });
+
+      const bgRect = new Rect({
         left: 0,
         top: 0,
         width: 1080,
         height: 1080,
-        fill: createGradient(),
+        fill: gradient,
         selectable: false,
       });
-      fabricCanvas.add(gradient);
+      fabricCanvas.add(bgRect);
 
-      // Add decorative elements based on template
+      // Add ForSWAGs logo as watermark
+      await addLogoWatermark();
+
+      // Add decorative overlay pattern
+      await addDecorativeOverlay();
+
+      // Add template-specific content
       if (selectedTemplate.type === "offer") {
         await addOfferGraphic();
       } else if (selectedTemplate.type === "commitment") {
@@ -86,7 +113,7 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
         await addCustomGraphic();
       }
 
-      // Add ForSWAGs branding
+      // Add ForSWAGs branding footer
       await addBranding();
 
       fabricCanvas.renderAll();
@@ -99,55 +126,142 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
     }
   };
 
-  const createGradient = () => {
-    if (!fabricCanvas) return "#1a1a1a";
-    
-    const gradientColors = {
-      offer: ["#9B51E0", "#6366F1"],
-      commitment: "#FFD623",
-      achievement: ["#10b981", "#3b82f6"],
-      match: ["#f59e0b", "#ef4444"],
-      custom: ["#8b5cf6", "#ec4899"],
-    };
+  const addLogoWatermark = async () => {
+    if (!fabricCanvas) return;
 
-    const colors = selectedTemplate.type === "commitment" 
-      ? [gradientColors.commitment, gradientColors.commitment]
-      : gradientColors[selectedTemplate.type] || gradientColors.custom;
+    return new Promise<void>((resolve) => {
+      FabricImage.fromURL(logoFull).then((img) => {
+        img.set({
+          left: 540,
+          top: 540,
+          originX: 'center',
+          originY: 'center',
+          opacity: 0.08,
+          selectable: false,
+        });
+        
+        // Scale to fit nicely
+        const scale = Math.min(800 / (img.width || 1), 800 / (img.height || 1));
+        img.scale(scale);
+        
+        fabricCanvas.add(img);
+        fabricCanvas.sendObjectToBack(img);
+        resolve();
+      }).catch(() => resolve());
+    });
+  };
 
-    return `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+  const addDecorativeOverlay = async () => {
+    if (!fabricCanvas) return;
+
+    // Add subtle diagonal stripes for texture
+    for (let i = 0; i < 15; i++) {
+      const stripe = new Rect({
+        left: -200 + (i * 150),
+        top: -100,
+        width: 80,
+        height: 1300,
+        fill: "#ffffff",
+        opacity: 0.02,
+        angle: 25,
+        selectable: false,
+      });
+      fabricCanvas.add(stripe);
+    }
+
+    // Add corner accent elements
+    const cornerAccent1 = new Rect({
+      left: 0,
+      top: 0,
+      width: 200,
+      height: 200,
+      fill: "#ffffff",
+      opacity: 0.05,
+      selectable: false,
+    });
+    fabricCanvas.add(cornerAccent1);
+
+    const cornerAccent2 = new Rect({
+      left: 880,
+      top: 880,
+      width: 200,
+      height: 200,
+      fill: "#ffffff",
+      opacity: 0.05,
+      selectable: false,
+    });
+    fabricCanvas.add(cornerAccent2);
   };
 
   const addOfferGraphic = async () => {
     if (!fabricCanvas) return;
 
-    // Main headline
+    // Add dark banner for main text
+    const topBanner = new Rect({
+      left: 0,
+      top: 180,
+      width: 1080,
+      height: 180,
+      fill: "#000000",
+      opacity: 0.75,
+      selectable: false,
+    });
+    fabricCanvas.add(topBanner);
+
+    // Main headline with glow effect
     const headline = new Textbox(mainText || "BLESSED TO RECEIVE AN OFFER", {
       left: 540,
-      top: 200,
-      width: 900,
-      fontSize: 72,
+      top: 220,
+      width: 950,
+      fontSize: 70,
       fontWeight: "900",
       fill: "#ffffff",
       textAlign: "center",
       originX: "center",
-      fontFamily: "Arial Black, sans-serif",
-      shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 20, offsetX: 0, offsetY: 4 }),
+      fontFamily: "Impact, Arial Black, sans-serif",
+      shadow: new Shadow({ 
+        color: "rgba(255,214,35,0.8)", 
+        blur: 30, 
+        offsetX: 0, 
+        offsetY: 0 
+      }),
+      stroke: "#FFD623",
+      strokeWidth: 2,
     });
     fabricCanvas.add(headline);
 
-    // School name
+    // School name with dramatic styling
     if (subText) {
-      const schoolName = new Textbox(subText, {
-        left: 540,
+      // Background for school name
+      const schoolBanner = new Rect({
+        left: 0,
         top: 420,
-        width: 900,
-        fontSize: 96,
+        width: 1080,
+        height: 240,
+        fill: "#000000",
+        opacity: 0.85,
+        selectable: false,
+      });
+      fabricCanvas.add(schoolBanner);
+
+      const schoolName = new Textbox(subText.toUpperCase(), {
+        left: 540,
+        top: 480,
+        width: 950,
+        fontSize: 110,
         fontWeight: "900",
         fill: "#FFD623",
         textAlign: "center",
         originX: "center",
-        fontFamily: "Arial Black, sans-serif",
-        shadow: new Shadow({ color: "rgba(0,0,0,0.8)", blur: 20, offsetX: 0, offsetY: 4 }),
+        fontFamily: "Impact, Arial Black, sans-serif",
+        shadow: new Shadow({ 
+          color: "rgba(0,0,0,0.9)", 
+          blur: 25, 
+          offsetX: 0, 
+          offsetY: 8 
+        }),
+        stroke: "#ffffff",
+        strokeWidth: 3,
       });
       fabricCanvas.add(schoolName);
     }
@@ -185,44 +299,70 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
   const addCommitmentGraphic = async () => {
     if (!fabricCanvas) return;
 
-    // COMMITTED banner
+    // Large COMMITTED banner with dramatic styling
     const banner = new Rect({
       left: 0,
-      top: 350,
+      top: 320,
       width: 1080,
-      height: 150,
-      fill: "#1a1a1a",
+      height: 200,
+      fill: "#000000",
       opacity: 0.9,
+      selectable: false,
     });
     fabricCanvas.add(banner);
 
     const committed = new Textbox("COMMITTED", {
       left: 540,
-      top: 390,
-      width: 900,
-      fontSize: 84,
+      top: 370,
+      width: 950,
+      fontSize: 100,
       fontWeight: "900",
       fill: "#FFD623",
       textAlign: "center",
       originX: "center",
-      fontFamily: "Arial Black, sans-serif",
-      shadow: new Shadow({ color: "rgba(0,0,0,0.8)", blur: 20, offsetX: 0, offsetY: 4 }),
+      fontFamily: "Impact, Arial Black, sans-serif",
+      shadow: new Shadow({ 
+        color: "rgba(255,214,35,0.8)", 
+        blur: 35, 
+        offsetX: 0, 
+        offsetY: 0 
+      }),
+      stroke: "#ffffff",
+      strokeWidth: 4,
     });
     fabricCanvas.add(committed);
 
-    // School name
+    // School name with massive emphasis
     if (subText) {
-      const schoolName = new Textbox(subText, {
-        left: 540,
+      const schoolBanner = new Rect({
+        left: 0,
         top: 550,
-        width: 900,
-        fontSize: 96,
+        width: 1080,
+        height: 220,
+        fill: "#000000",
+        opacity: 0.85,
+        selectable: false,
+      });
+      fabricCanvas.add(schoolBanner);
+
+      const schoolName = new Textbox(subText.toUpperCase(), {
+        left: 540,
+        top: 600,
+        width: 950,
+        fontSize: 120,
         fontWeight: "900",
         fill: "#ffffff",
         textAlign: "center",
         originX: "center",
-        fontFamily: "Arial Black, sans-serif",
-        shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 20, offsetX: 0, offsetY: 4 }),
+        fontFamily: "Impact, Arial Black, sans-serif",
+        shadow: new Shadow({ 
+          color: "rgba(255,214,35,0.6)", 
+          blur: 30, 
+          offsetX: 0, 
+          offsetY: 6 
+        }),
+        stroke: "#FFD623",
+        strokeWidth: 3,
       });
       fabricCanvas.add(schoolName);
     }
@@ -260,18 +400,37 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
   const addAchievementGraphic = async () => {
     if (!fabricCanvas) return;
 
+    // Achievement banner
+    const titleBanner = new Rect({
+      left: 0,
+      top: 220,
+      width: 1080,
+      height: 170,
+      fill: "#000000",
+      opacity: 0.8,
+      selectable: false,
+    });
+    fabricCanvas.add(titleBanner);
+
     // Achievement title
     const title = new Textbox(mainText || "NEW ACHIEVEMENT", {
       left: 540,
-      top: 250,
-      width: 900,
-      fontSize: 68,
+      top: 260,
+      width: 950,
+      fontSize: 75,
       fontWeight: "900",
       fill: "#ffffff",
       textAlign: "center",
       originX: "center",
-      fontFamily: "Arial Black, sans-serif",
-      shadow: new Shadow({ color: "rgba(0,0,0,0.5)", blur: 20, offsetX: 0, offsetY: 4 }),
+      fontFamily: "Impact, Arial Black, sans-serif",
+      shadow: new Shadow({ 
+        color: "rgba(16,185,129,0.7)", 
+        blur: 30, 
+        offsetX: 0, 
+        offsetY: 0 
+      }),
+      stroke: "#10B981",
+      strokeWidth: 2,
     });
     fabricCanvas.add(title);
 
@@ -420,31 +579,50 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
   const addBranding = async () => {
     if (!fabricCanvas) return;
 
-    // ForSWAGs watermark
+    // Bottom branding bar
+    const brandBar = new Rect({
+      left: 0,
+      top: 920,
+      width: 1080,
+      height: 160,
+      fill: "#000000",
+      opacity: 0.85,
+      selectable: false,
+    });
+    fabricCanvas.add(brandBar);
+
+    // ForSWAGs branding with gold accent
     const watermark = new Textbox("ForSWAGs.com", {
       left: 540,
-      top: 950,
-      width: 400,
-      fontSize: 32,
+      top: 945,
+      width: 500,
+      fontSize: 42,
+      fontWeight: "900",
+      fill: "#FFD623",
+      textAlign: "center",
+      originX: "center",
+      fontFamily: "Impact, Arial Black, sans-serif",
+      shadow: new Shadow({ 
+        color: "rgba(0,0,0,0.8)", 
+        blur: 15, 
+        offsetX: 0, 
+        offsetY: 3 
+      }),
+    });
+    fabricCanvas.add(watermark);
+
+    // Tagline
+    const tagline = new Text("BUILDING CHAMPIONS ON & OFF THE FIELD", {
+      left: 540,
+      top: 1010,
+      fontSize: 18,
       fontWeight: "700",
       fill: "#ffffff",
       textAlign: "center",
       originX: "center",
       fontFamily: "Arial, sans-serif",
       opacity: 0.9,
-    });
-    fabricCanvas.add(watermark);
-
-    // Tagline
-    const tagline = new Text("Building Champions On & Off The Field", {
-      left: 540,
-      top: 1000,
-      fontSize: 20,
-      fill: "#ffffff",
-      textAlign: "center",
-      originX: "center",
-      fontFamily: "Arial, sans-serif",
-      opacity: 0.7,
+      letterSpacing: 100,
     });
     fabricCanvas.add(tagline);
   };
