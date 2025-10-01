@@ -1,0 +1,458 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Plus, RefreshCw, Trash2, Trophy, Upload } from "lucide-react";
+
+interface RankingEntry {
+  id: string;
+  athlete_id: string;
+  overall_rank: number | null;
+  position_rank: number | null;
+  state_rank: number | null;
+  national_rank: number | null;
+  composite_score: number | null;
+  last_calculated: string;
+  athletes: {
+    sport: string;
+    position: string | null;
+    user_id: string;
+  };
+  profiles: {
+    full_name: string;
+  } | null;
+}
+
+export default function AdminRankings() {
+  const { toast } = useToast();
+  const [rankings, setRankings] = useState<RankingEntry[]>([]);
+  const [athletes, setAthletes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [calculating, setCalculating] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  
+  const [newRanking, setNewRanking] = useState({
+    athlete_id: "",
+    overall_rank: "",
+    position_rank: "",
+    state_rank: "",
+    national_rank: "",
+    composite_score: ""
+  });
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      // Load rankings
+      const { data: rankingsData, error: rankingsError } = await supabase
+        .from("rankings")
+        .select("*, athletes(sport, position, user_id)")
+        .order("overall_rank", { ascending: true, nullsFirst: false });
+
+      if (rankingsError) throw rankingsError;
+
+      // Get profiles
+      const userIds = rankingsData?.map(r => r.athletes.user_id).filter(Boolean) || [];
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", userIds);
+
+      const rankingsWithProfiles = rankingsData?.map(ranking => ({
+        ...ranking,
+        profiles: profilesData?.find(p => p.id === ranking.athletes.user_id) || null
+      })) || [];
+
+      setRankings(rankingsWithProfiles);
+
+      // Load all athletes for dropdown
+      const { data: athletesData, error: athletesError } = await supabase
+        .from("athletes")
+        .select("id, sport, position, user_id");
+
+      if (athletesError) throw athletesError;
+
+      // Get athlete profiles
+      const athleteUserIds = athletesData?.map(a => a.user_id) || [];
+      const { data: athleteProfiles } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", athleteUserIds);
+
+      const athletesWithProfiles = athletesData?.map(athlete => ({
+        ...athlete,
+        full_name: athleteProfiles?.find(p => p.id === athlete.user_id)?.full_name || "Unknown"
+      })) || [];
+
+      setAthletes(athletesWithProfiles);
+    } catch (error: any) {
+      console.error("Error loading rankings:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load rankings data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddRanking = async () => {
+    try {
+      if (!newRanking.athlete_id) {
+        toast({
+          title: "Error",
+          description: "Please select an athlete",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("rankings")
+        .insert({
+          athlete_id: newRanking.athlete_id,
+          overall_rank: newRanking.overall_rank ? parseInt(newRanking.overall_rank) : null,
+          position_rank: newRanking.position_rank ? parseInt(newRanking.position_rank) : null,
+          state_rank: newRanking.state_rank ? parseInt(newRanking.state_rank) : null,
+          national_rank: newRanking.national_rank ? parseInt(newRanking.national_rank) : null,
+          composite_score: newRanking.composite_score ? parseFloat(newRanking.composite_score) : null,
+          last_calculated: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Ranking added successfully",
+      });
+
+      setAddDialogOpen(false);
+      setNewRanking({
+        athlete_id: "",
+        overall_rank: "",
+        position_rank: "",
+        state_rank: "",
+        national_rank: "",
+        composite_score: ""
+      });
+      loadData();
+    } catch (error: any) {
+      console.error("Error adding ranking:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add ranking",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteRanking = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this ranking?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("rankings")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Ranking deleted successfully",
+      });
+      loadData();
+    } catch (error: any) {
+      console.error("Error deleting ranking:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete ranking",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRecalculateRankings = async () => {
+    setCalculating(true);
+    try {
+      const { error } = await supabase.functions.invoke("recalculate-rankings");
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Rankings recalculated successfully",
+      });
+      loadData();
+    } catch (error: any) {
+      console.error("Error recalculating rankings:", error);
+      toast({
+        title: "Error",
+        description: "Failed to recalculate rankings",
+        variant: "destructive",
+      });
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Trophy className="h-8 w-8" />
+            Rankings Management
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Manage athlete rankings and recalculate scores from evaluations
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleRecalculateRankings} disabled={calculating} variant="outline">
+            {calculating ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            Recalculate All
+          </Button>
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Ranking
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Add New Ranking</DialogTitle>
+                <DialogDescription>
+                  Manually add a ranking entry for an athlete (placeholder rankings)
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Athlete</Label>
+                  <Select
+                    value={newRanking.athlete_id}
+                    onValueChange={(value) => setNewRanking({ ...newRanking, athlete_id: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select athlete" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {athletes.map((athlete) => (
+                        <SelectItem key={athlete.id} value={athlete.id}>
+                          {athlete.full_name} - {athlete.sport} ({athlete.position || "N/A"})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Overall Rank</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 1"
+                      value={newRanking.overall_rank}
+                      onChange={(e) => setNewRanking({ ...newRanking, overall_rank: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Position Rank</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 1"
+                      value={newRanking.position_rank}
+                      onChange={(e) => setNewRanking({ ...newRanking, position_rank: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>State Rank</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 1"
+                      value={newRanking.state_rank}
+                      onChange={(e) => setNewRanking({ ...newRanking, state_rank: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>National Rank</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 1"
+                      value={newRanking.national_rank}
+                      onChange={(e) => setNewRanking({ ...newRanking, national_rank: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Composite Score</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="e.g., 95.5"
+                    value={newRanking.composite_score}
+                    onChange={(e) => setNewRanking({ ...newRanking, composite_score: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Score range: 0-100 (will be replaced by evaluation scores)
+                  </p>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={handleAddRanking} className="flex-1">
+                    Add Ranking
+                  </Button>
+                  <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Current Rankings ({rankings.length})</CardTitle>
+          <CardDescription>
+            Placeholder rankings will be replaced as athletes complete evaluations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Athlete</TableHead>
+                <TableHead>Sport / Position</TableHead>
+                <TableHead className="text-center">Overall</TableHead>
+                <TableHead className="text-center">Position</TableHead>
+                <TableHead className="text-center">State</TableHead>
+                <TableHead className="text-center">National</TableHead>
+                <TableHead className="text-center">Score</TableHead>
+                <TableHead className="text-center">Updated</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rankings.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                    No rankings yet. Add placeholder rankings to get started.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rankings.map((ranking) => (
+                  <TableRow key={ranking.id}>
+                    <TableCell className="font-medium">
+                      {ranking.profiles?.full_name || "Unknown"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div>{ranking.athletes.sport}</div>
+                        <div className="text-muted-foreground text-xs">
+                          {ranking.athletes.position || "N/A"}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {ranking.overall_rank ? (
+                        <Badge variant="outline">#{ranking.overall_rank}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {ranking.position_rank ? (
+                        <Badge variant="outline">#{ranking.position_rank}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {ranking.state_rank ? (
+                        <Badge variant="outline">#{ranking.state_rank}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {ranking.national_rank ? (
+                        <Badge variant="outline">#{ranking.national_rank}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center font-bold">
+                      {ranking.composite_score ? ranking.composite_score.toFixed(1) : "-"}
+                    </TableCell>
+                    <TableCell className="text-center text-xs text-muted-foreground">
+                      {new Date(ranking.last_calculated).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteRanking(ranking.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>How Rankings Work</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            <strong>Placeholder Rankings:</strong> Add initial rankings manually for top 100 athletes to populate the rankings page.
+          </p>
+          <p>
+            <strong>Automatic Updates:</strong> When ForSWAGs athletes complete evaluations, their scores automatically calculate and update rankings.
+          </p>
+          <p>
+            <strong>Composite Score:</strong> Calculated from evaluation scores (technical skills, game knowledge, athleticism, mental game) and course completions.
+          </p>
+          <p>
+            <strong>Recalculation:</strong> Click "Recalculate All" to update all rankings based on latest evaluation data.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -42,6 +42,7 @@ import AdminAthletes from "./pages/admin/AdminAthletes";
 import AdminSchools from "./pages/admin/AdminSchools";
 import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
+import AdminRankings from "./pages/admin/AdminRankings";
 import CoachApplication from "./pages/CoachApplication";
 import CoachDashboard from "./pages/coach/CoachDashboard";
 import CoachProfile from "./pages/coach/CoachProfile";
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="memberships" element={<AdminMemberships />} />
               <Route path="courses" element={<AdminCourses />} />
               <Route path="athletes" element={<AdminAthletes />} />
+              <Route path="rankings" element={<AdminRankings />} />
               <Route path="schools" element={<AdminSchools />} />
               <Route path="coach-applications" element={<AdminCoachApplications />} />
               <Route path="email-templates" element={<AdminEmailTemplates />} />

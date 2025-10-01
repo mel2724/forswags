@@ -179,6 +179,7 @@ export default function EvaluationDetail() {
       // Send notification if completing evaluation
       if (markComplete) {
         try {
+          // Send notification to athlete
           const { error: notifError } = await supabase.functions.invoke(
             "notify-evaluation-complete",
             {
@@ -189,6 +190,11 @@ export default function EvaluationDetail() {
           if (notifError) {
             console.error("Failed to send notification:", notifError);
           }
+
+          // Trigger rankings recalculation
+          supabase.functions.invoke("recalculate-rankings").catch((error) => {
+            console.error("Failed to recalculate rankings:", error);
+          });
         } catch (notifError) {
           console.error("Notification error:", notifError);
         }
