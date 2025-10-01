@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, TrendingUp, Users, BookOpen, DollarSign, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import logoFull from "@/assets/forswags-logo.png";
 
 const Sponsors = () => {
   const navigate = useNavigate();
@@ -9,16 +10,31 @@ const Sponsors = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/src/assets/logo-icon.png" alt="ForSwags" className="h-8 w-8" />
-            <span className="text-xl font-bold text-gradient-primary">ForSwags</span>
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logoFull} alt="ForSWAGs" className="h-12" />
           </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <Button variant="ghost" onClick={() => navigate("/")}>Home</Button>
-            <Button variant="ghost" onClick={() => navigate("/auth")}>Sign In</Button>
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+            <Button variant="ghost" onClick={() => navigate("/")} className="text-primary hover:text-primary/80 font-bold">
+              Home
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/players")} className="text-primary hover:text-primary/80 font-bold">
+              Athletes
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/sponsor-showcase")} className="text-primary hover:text-primary/80 font-bold">
+              Our Sponsors
+            </Button>
+            <Button onClick={() => navigate("/auth")} className="btn-hero">
+              Sign Up
+            </Button>
           </nav>
+          <Button 
+            className="md:hidden btn-hero" 
+            onClick={() => navigate("/auth")}
+          >
+            Sign Up
+          </Button>
         </div>
       </header>
 
@@ -320,17 +336,30 @@ const Sponsors = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 px-4 bg-muted/50">
-        <div className="container max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2">
-              <img src="/src/assets/logo-icon.png" alt="ForSwags" className="h-8 w-8" />
-              <span className="text-xl font-bold text-gradient-primary">ForSwags</span>
+      <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-6">
+            <img src={logoFull} alt="ForSWAGs" className="h-20 mx-auto" />
+            
+            <div className="max-w-3xl mx-auto">
+              <p className="text-xs text-muted-foreground leading-relaxed border-l-4 border-secondary pl-4 text-left">
+                ForSWAGs is an athletic development and college matching platform. 
+                We are not recruiters and do not guarantee college placement or scholarships. 
+                Results depend on individual effort, performance, and external factors beyond our control.
+              </p>
             </div>
-            <div className="text-center md:text-right text-sm text-muted-foreground">
-              <p>© 2025 ForSwags. All rights reserved.</p>
-              <p className="mt-2">Building futures beyond the game.</p>
+            
+            <div className="flex justify-center gap-8 text-sm text-muted-foreground">
+              <a href="/sponsors" className="hover:text-primary transition-colors">Sponsors</a>
+              <a href="/sponsor-showcase" className="hover:text-primary transition-colors">Our Sponsors</a>
+              <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+              <a href="#" className="hover:text-primary transition-colors">Terms</a>
+              <a href="#" className="hover:text-primary transition-colors">Contact</a>
             </div>
+            
+            <p className="text-xs text-muted-foreground/60 uppercase tracking-wider">
+              © 2025 ForSWAGs · For Students With Athletic Goals
+            </p>
           </div>
         </div>
       </footer>
