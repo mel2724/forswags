@@ -8,9 +8,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Plus, Image as ImageIcon, Send, Edit, Trash2, Eye, Share2, Facebook, Twitter } from "lucide-react";
+import { Plus, Image as ImageIcon, Send, Edit, Trash2, Eye, Share2, Facebook, Twitter, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { SocialMediaGraphicGenerator } from "@/components/SocialMediaGraphicGenerator";
 
 interface SocialPost {
   id: string;
@@ -42,6 +43,7 @@ export default function SocialMedia() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<SocialPost | null>(null);
+  const [athleteInfo, setAthleteInfo] = useState({ name: "", sport: "" });
   const [formData, setFormData] = useState({
     content: "",
     media_url: "",
@@ -59,6 +61,26 @@ export default function SocialMedia() {
       if (!user) {
         navigate("/auth");
         return;
+      }
+
+      // Get athlete info for graphic generator
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const { data: athlete } = await supabase
+        .from("athletes")
+        .select("sport")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (profile || athlete) {
+        setAthleteInfo({
+          name: profile?.full_name || "",
+          sport: athlete?.sport || "",
+        });
       }
 
       const { data, error } = await supabase
@@ -408,12 +430,23 @@ export default function SocialMedia() {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs defaultValue="generator" className="w-full">
         <TabsList>
+          <TabsTrigger value="generator">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Graphic Generator
+          </TabsTrigger>
           <TabsTrigger value="all">All ({posts.length})</TabsTrigger>
           <TabsTrigger value="published">Published ({published.length})</TabsTrigger>
           <TabsTrigger value="drafts">Drafts ({drafts.length})</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="generator" className="space-y-4 mt-6">
+          <SocialMediaGraphicGenerator 
+            athleteName={athleteInfo.name}
+            athleteSport={athleteInfo.sport}
+          />
+        </TabsContent>
 
         <TabsContent value="all" className="space-y-4 mt-6">
           {posts.length === 0 ? (
