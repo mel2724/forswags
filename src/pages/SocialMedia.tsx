@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target, Hash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SocialMediaGraphicGenerator } from "@/components/SocialMediaGraphicGenerator";
 import { toast } from "sonner";
@@ -17,6 +18,36 @@ const FORSWAGS_HANDLES = {
   instagram: "@ForSWAGs",
   tiktok: "@ForSWAGs",
 };
+
+const SUGGESTED_HASHTAGS = [
+  // ForSWAGs branded
+  { tag: "#ForSWAGsNation", category: "ForSWAGs", description: "Official ForSWAGs hashtag" },
+  { tag: "#ForSWAGsAthlete", category: "ForSWAGs", description: "ForSWAGs athlete community" },
+  { tag: "#BuildingChampions", category: "ForSWAGs", description: "ForSWAGs mission" },
+  
+  // Recruiting
+  { tag: "#Committed", category: "Recruiting", description: "College commitment" },
+  { tag: "#Recruited", category: "Recruiting", description: "Recruitment process" },
+  { tag: "#D1Bound", category: "Recruiting", description: "Division 1 prospect" },
+  { tag: "#NextLevel", category: "Recruiting", description: "College athletics" },
+  { tag: "#RecruitMe", category: "Recruiting", description: "Open to recruitment" },
+  
+  // Training & Performance
+  { tag: "#TrainHard", category: "Training", description: "Training dedication" },
+  { tag: "#Grind", category: "Training", description: "Work ethic" },
+  { tag: "#NoOffSeason", category: "Training", description: "Year-round training" },
+  { tag: "#AthleteLife", category: "Training", description: "Athletic lifestyle" },
+  
+  // Achievement
+  { tag: "#Blessed", category: "Achievement", description: "Grateful for opportunity" },
+  { tag: "#DreamsComeTrue", category: "Achievement", description: "Milestone reached" },
+  { tag: "#HardWorkPaysOff", category: "Achievement", description: "Success through effort" },
+  
+  // General Sports
+  { tag: "#StudentAthlete", category: "General", description: "Balancing academics and athletics" },
+  { tag: "#Athletics", category: "General", description: "General athletics" },
+  { tag: "#SportsLife", category: "General", description: "Athletic lifestyle" },
+];
 
 const SOCIAL_TIPS = [
   {
@@ -136,6 +167,26 @@ export default function SocialMedia() {
     });
   };
 
+  const addHashtag = (hashtag: string) => {
+    // Trim and validate
+    const trimmedHashtag = hashtag.trim();
+    if (!trimmedHashtag) return;
+    
+    // Check if hashtag already exists in content
+    if (postContent.includes(trimmedHashtag)) {
+      toast.info("This hashtag is already in your post");
+      return;
+    }
+    
+    // Add hashtag to content
+    const newContent = postContent.trim() 
+      ? `${postContent.trim()} ${trimmedHashtag}`
+      : trimmedHashtag;
+    
+    setPostContent(newContent);
+    toast.success("Hashtag added!");
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -199,10 +250,87 @@ export default function SocialMedia() {
                   onChange={(e) => setPostContent(e.target.value)}
                   rows={6}
                   className="resize-none"
+                  maxLength={2000}
                 />
                 <p className="text-xs text-muted-foreground">
                   ForSWAGs branding (@ForSWAGs #ForSWAGsNation) will be automatically added
                 </p>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <Hash className="h-4 w-4" />
+                  Suggested Hashtags
+                </Label>
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">ForSWAGs Official</p>
+                    <div className="flex flex-wrap gap-2">
+                      {SUGGESTED_HASHTAGS.filter(h => h.category === "ForSWAGs").map((hashtag) => (
+                        <Badge
+                          key={hashtag.tag}
+                          variant="secondary"
+                          className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => addHashtag(hashtag.tag)}
+                        >
+                          {hashtag.tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Recruiting</p>
+                    <div className="flex flex-wrap gap-2">
+                      {SUGGESTED_HASHTAGS.filter(h => h.category === "Recruiting").map((hashtag) => (
+                        <Badge
+                          key={hashtag.tag}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                          onClick={() => addHashtag(hashtag.tag)}
+                        >
+                          {hashtag.tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Training & Achievement</p>
+                    <div className="flex flex-wrap gap-2">
+                      {SUGGESTED_HASHTAGS.filter(h => h.category === "Training" || h.category === "Achievement").map((hashtag) => (
+                        <Badge
+                          key={hashtag.tag}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                          onClick={() => addHashtag(hashtag.tag)}
+                        >
+                          {hashtag.tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">General Sports</p>
+                    <div className="flex flex-wrap gap-2">
+                      {SUGGESTED_HASHTAGS.filter(h => h.category === "General").map((hashtag) => (
+                        <Badge
+                          key={hashtag.tag}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                          onClick={() => addHashtag(hashtag.tag)}
+                        >
+                          {hashtag.tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    💡 Click any hashtag to add it to your post. Mix ForSWAGs hashtags with relevant sports tags for maximum reach!
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3">
