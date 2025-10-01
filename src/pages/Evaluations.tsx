@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, Clock, CheckCircle, AlertCircle, DollarSign, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Star, Clock, CheckCircle, AlertCircle, Upload, ArrowLeft, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { STRIPE_PRODUCTS, formatPrice } from "@/lib/stripeConfig";
 
 interface Evaluation {
   id: string;
@@ -17,34 +18,23 @@ interface Evaluation {
   purchased_at: string;
   completed_at: string | null;
   coach_id: string | null;
+  video_url: string | null;
+  scores: Record<string, number>;
 }
 
 export default function Evaluations() {
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [showUploadForm, setShowUploadForm] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchEvaluations();
-
-    const status = searchParams.get("payment");
-    if (status === "success") {
-      toast({
-        title: "Payment Successful!",
-        description: "Your evaluation has been purchased. A coach will review your materials soon.",
-      });
-      fetchEvaluations();
-    } else if (status === "canceled") {
-      toast({
-        title: "Payment Canceled",
-        description: "Evaluation purchase was canceled.",
-        variant: "destructive",
-      });
-    }
-  }, [searchParams]);
+  }, []);
 
   const fetchEvaluations = async () => {
     try {
@@ -66,7 +56,14 @@ export default function Evaluations() {
         .order("purchased_at", { ascending: false });
 
       if (error) throw error;
-      setEvaluations(data || []);
+      
+      // Type assertion for scores field
+      const typedData = (data || []).map(item => ({
+        ...item,
+        scores: (item.scores || {}) as Record<string, number>
+      }));
+      
+      setEvaluations(typedData);
     } catch (error) {
       toast({
         title: "Error",
@@ -78,27 +75,67 @@ export default function Evaluations() {
     }
   };
 
-  const handlePurchaseEvaluation = async () => {
-    setPurchaseLoading(true);
+  const handleVideoUpload = async () => {
+    if (!videoFile) {
+      toast({ title: "Error", description: "Please select a video file", variant: "destructive" });
+      return;
+    }
+
+    setUploadLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { priceId: STRIPE_PRODUCTS.evaluation.price_id },
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data: athleteData } = await supabase
+        .from("athletes")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!athleteData) throw new Error("Athlete profile not found");
+
+      // Upload video to storage
+      const fileExt = videoFile.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from('media-assets')
+        .upload(`evaluations/${fileName}`, videoFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('media-assets')
+        .getPublicUrl(`evaluations/${fileName}`);
+
+      // Create evaluation record
+      const { error: insertError } = await supabase
+        .from("evaluations")
+        .insert({
+          athlete_id: athleteData.id,
+          video_url: publicUrl,
+          status: "pending"
+        });
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Success!",
+        description: "Your video has been uploaded. Coaches will review it soon.",
       });
 
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
+      setVideoFile(null);
+      setShowUploadForm(false);
+      fetchEvaluations();
     } catch (error: any) {
-      console.error("Purchase error:", error);
+      console.error("Upload error:", error);
       toast({
         title: "Error",
-        description: "Failed to start purchase process",
+        description: error.message || "Failed to upload video",
         variant: "destructive",
       });
     } finally {
-      setPurchaseLoading(false);
+      setUploadLoading(false);
     }
   };
 
@@ -197,33 +234,59 @@ export default function Evaluations() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Coach Evaluations</h1>
         <p className="text-muted-foreground mb-6">
-          Professional evaluations from expert coaches to help you improve
+          Upload your highlight video for professional coach evaluation
         </p>
 
         <Card className="border-primary mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-6 w-6 text-primary" />
-              Purchase Evaluation
+              <Video className="h-6 w-6 text-primary" />
+              Upload Highlight Video
             </CardTitle>
             <CardDescription>
-              {STRIPE_PRODUCTS.evaluation.description}
+              Submit your game highlights for detailed coach evaluation and feedback
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold">{formatPrice(STRIPE_PRODUCTS.evaluation.price)}</p>
-                <p className="text-sm text-muted-foreground">One-time payment</p>
-              </div>
-              <Button
-                size="lg"
-                onClick={handlePurchaseEvaluation}
-                disabled={purchaseLoading}
-              >
-                {purchaseLoading ? "Processing..." : "Purchase Evaluation"}
+            {!showUploadForm ? (
+              <Button onClick={() => setShowUploadForm(true)} size="lg">
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Video for Evaluation
               </Button>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="video">Select Video File</Label>
+                  <Input
+                    id="video"
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                    className="mt-2"
+                  />
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Upload MP4, MOV, or other video formats (max 500MB)
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleVideoUpload}
+                    disabled={!videoFile || uploadLoading}
+                  >
+                    {uploadLoading ? "Uploading..." : "Submit for Evaluation"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowUploadForm(false);
+                      setVideoFile(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -43,6 +43,8 @@ import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
 import CoachApplication from "./pages/CoachApplication";
 import CoachDashboard from "./pages/coach/CoachDashboard";
+import AvailableEvaluations from "./pages/coach/AvailableEvaluations";
+import EvaluationDetail from "./pages/coach/EvaluationDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -84,7 +86,9 @@ const App = () => (
             <Route path="/recruiter/profile" element={<RecruiterProfile />} />
             <Route path="/parent/dashboard" element={<ParentDashboard />} />
             <Route path="/coach/apply" element={<CoachApplication />} />
-            <Route path="/coach/dashboard" element={<CoachDashboard />} />
+          <Route path="/coach/dashboard" element={<CoachDashboard />} />
+          <Route path="/coach/available" element={<AvailableEvaluations />} />
+          <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />

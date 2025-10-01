@@ -144,10 +144,15 @@ const CoachDashboard = () => {
             <h1 className="text-2xl font-bold">Coach Dashboard</h1>
             {coachProfile && <p className="text-sm text-muted-foreground">{coachProfile.full_name}</p>}
           </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/coach/available")}>
+              Available Evaluations
+            </Button>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -216,9 +221,9 @@ const CoachDashboard = () => {
                     <div className="flex items-center gap-4">
                       {getStatusBadge(evaluation.status)}
                       <Button 
-                        onClick={() => navigate(`/evaluations/${evaluation.id}`)}
+                        onClick={() => navigate(`/coach/evaluation/${evaluation.id}`)}
                       >
-                        View Details
+                        {evaluation.status === "completed" ? "View" : "Continue"} Evaluation
                       </Button>
                     </div>
                   </div>

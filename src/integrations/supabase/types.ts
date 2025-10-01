@@ -679,9 +679,40 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluation_criteria: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          max_score: number
+          name: string
+          order_index: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_score?: number
+          name: string
+          order_index?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_score?: number
+          name?: string
+          order_index?: number
+        }
+        Relationships: []
+      }
       evaluations: {
         Row: {
           athlete_id: string
+          claimed_at: string | null
           coach_id: string | null
           completed_at: string | null
           created_at: string
@@ -689,11 +720,14 @@ export type Database = {
           id: string
           purchased_at: string
           rating: number | null
+          scores: Json | null
           status: Database["public"]["Enums"]["evaluation_status"]
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           athlete_id: string
+          claimed_at?: string | null
           coach_id?: string | null
           completed_at?: string | null
           created_at?: string
@@ -701,11 +735,14 @@ export type Database = {
           id?: string
           purchased_at?: string
           rating?: number | null
+          scores?: Json | null
           status?: Database["public"]["Enums"]["evaluation_status"]
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           athlete_id?: string
+          claimed_at?: string | null
           coach_id?: string | null
           completed_at?: string | null
           created_at?: string
@@ -713,8 +750,10 @@ export type Database = {
           id?: string
           purchased_at?: string
           rating?: number | null
+          scores?: Json | null
           status?: Database["public"]["Enums"]["evaluation_status"]
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: [
           {
