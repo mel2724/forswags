@@ -8,6 +8,7 @@ import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import Landing from "./pages/Landing";
 import Sponsors from "./pages/Sponsors";
+import SponsorShowcase from "./pages/SponsorShowcase";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -46,6 +47,7 @@ import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
 import AdminRankings from "./pages/admin/AdminRankings";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminEvaluations from "./pages/admin/AdminEvaluations";
+import AdminSponsors from "./pages/admin/AdminSponsors";
 import CoachApplication from "./pages/CoachApplication";
 import PurchaseEvaluation from "./pages/PurchaseEvaluation";
 import CoachDashboard from "./pages/coach/CoachDashboard";
@@ -69,6 +71,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/sponsors" element={<Sponsors />} />
+            <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -115,6 +118,7 @@ const App = () => (
               <Route path="email-templates" element={<AdminEmailTemplates />} />
               <Route path="notifications" element={<AdminNotifications />} />
               <Route path="evaluations" element={<AdminEvaluations />} />
+              <Route path="sponsors" element={<AdminSponsors />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

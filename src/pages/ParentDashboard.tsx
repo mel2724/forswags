@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import NotificationCard from "@/components/NotificationCard";
+import SponsorCard from "@/components/SponsorCard";
 import {
   LogOut, Users, Trophy, GraduationCap, Calendar, 
   School, Award, Plus, Eye, MapPin
@@ -198,6 +199,9 @@ const ParentDashboard = () => {
         {/* Notifications */}
         <div className="mb-8">
           <NotificationCard />
+          
+          {/* Sponsor Card */}
+          <SponsorCard />
         </div>
 
         {/* Athletes Grid */}

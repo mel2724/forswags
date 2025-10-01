@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import NotificationCard from "@/components/NotificationCard";
+import SponsorCard from "@/components/SponsorCard";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -578,6 +579,9 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Sponsor Card */}
+              <SponsorCard />
             </div>
           </div>
         ) : (

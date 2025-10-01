@@ -1675,6 +1675,45 @@ export type Database = {
           },
         ]
       }
+      sponsors: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          logo_url: string
+          name: string
+          order_index: number
+          tier: string
+          updated_at: string
+          website_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url: string
+          name: string
+          order_index?: number
+          tier?: string
+          updated_at?: string
+          website_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string
+          name?: string
+          order_index?: number
+          tier?: string
+          updated_at?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
