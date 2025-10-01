@@ -271,6 +271,63 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_applications: {
+        Row: {
+          admin_notes: string | null
+          certifications: string | null
+          coaching_background: string
+          created_at: string
+          email: string
+          experience_years: number | null
+          full_name: string
+          id: string
+          phone: string | null
+          resume_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          specializations: string[] | null
+          status: string
+          updated_at: string
+          why_mentor: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          certifications?: string | null
+          coaching_background: string
+          created_at?: string
+          email: string
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          phone?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          specializations?: string[] | null
+          status?: string
+          updated_at?: string
+          why_mentor: string
+        }
+        Update: {
+          admin_notes?: string | null
+          certifications?: string | null
+          coaching_background?: string
+          created_at?: string
+          email?: string
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          specializations?: string[] | null
+          status?: string
+          updated_at?: string
+          why_mentor?: string
+        }
+        Relationships: []
+      }
       coach_contacts: {
         Row: {
           athlete_id: string
@@ -311,6 +368,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      coach_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          certifications: string | null
+          created_at: string
+          experience_years: number | null
+          full_name: string
+          id: string
+          is_active: boolean | null
+          specializations: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          certifications?: string | null
+          created_at?: string
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          specializations?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          certifications?: string | null
+          created_at?: string
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          specializations?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       college_match_prefs: {
         Row: {

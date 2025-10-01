@@ -40,6 +40,9 @@ import AdminCourses from "./pages/admin/AdminCourses";
 import AdminAthletes from "./pages/admin/AdminAthletes";
 import AdminSchools from "./pages/admin/AdminSchools";
 import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
+import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
+import CoachApplication from "./pages/CoachApplication";
+import CoachDashboard from "./pages/coach/CoachDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,6 +83,8 @@ const App = () => (
             <Route path="/recruiter/search" element={<AthleteSearch />} />
             <Route path="/recruiter/profile" element={<RecruiterProfile />} />
             <Route path="/parent/dashboard" element={<ParentDashboard />} />
+            <Route path="/coach/apply" element={<CoachApplication />} />
+            <Route path="/coach/dashboard" element={<CoachDashboard />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsers />} />
@@ -87,6 +92,7 @@ const App = () => (
               <Route path="courses" element={<AdminCourses />} />
               <Route path="athletes" element={<AdminAthletes />} />
               <Route path="schools" element={<AdminSchools />} />
+              <Route path="coach-applications" element={<AdminCoachApplications />} />
               <Route path="email-templates" element={<AdminEmailTemplates />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
