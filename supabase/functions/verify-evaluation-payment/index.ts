@@ -48,6 +48,28 @@ serve(async (req) => {
 
     if (session.payment_status === "paid") {
       const metadata = session.metadata;
+      const isReevaluation = metadata!.is_reevaluation === "true";
+      const requestedCoachId = metadata!.requested_coach_id || null;
+
+      // Check if requested coach is still active
+      let assignedCoachId = null;
+      let needsAdminAssignment = false;
+
+      if (requestedCoachId) {
+        const { data: coachProfile } = await supabaseClient
+          .from("coach_profiles")
+          .select("user_id, is_active")
+          .eq("user_id", requestedCoachId)
+          .single();
+
+        if (coachProfile && coachProfile.is_active) {
+          assignedCoachId = requestedCoachId;
+          console.log("[VERIFY-EVALUATION-PAYMENT] Assigning to previous coach:", assignedCoachId);
+        } else {
+          console.log("[VERIFY-EVALUATION-PAYMENT] Previous coach unavailable, needs admin assignment");
+          needsAdminAssignment = true;
+        }
+      }
 
       // Create evaluation record
       const { data: evaluation, error: evalError } = await supabaseClient
@@ -56,6 +78,11 @@ serve(async (req) => {
           athlete_id: metadata!.athlete_id,
           video_url: metadata!.video_url,
           status: "pending",
+          is_reevaluation: isReevaluation,
+          previous_evaluation_id: metadata!.previous_evaluation_id || null,
+          requested_coach_id: requestedCoachId,
+          coach_id: assignedCoachId,
+          admin_assigned: false,
         })
         .select()
         .single();
@@ -67,10 +94,34 @@ serve(async (req) => {
 
       console.log("[VERIFY-EVALUATION-PAYMENT] Evaluation created:", evaluation.id);
 
-      // Notify coaches about new evaluation
-      await supabaseClient.functions.invoke('notify-coaches-new-evaluation', {
-        body: { evaluation_id: evaluation.id }
-      });
+      // Send appropriate notifications
+      if (needsAdminAssignment) {
+        // Notify admin that coach is unavailable
+        await supabaseClient.functions.invoke('notify-admin-coach-unavailable', {
+          body: { 
+            evaluation_id: evaluation.id,
+            athlete_id: metadata!.athlete_id,
+            requested_coach_id: requestedCoachId
+          }
+        });
+      } else if (assignedCoachId) {
+        // Notify the assigned coach
+        await supabaseClient.functions.invoke('notify-coaches-new-evaluation', {
+          body: { 
+            evaluation_id: evaluation.id,
+            is_reevaluation: isReevaluation,
+            coach_id: assignedCoachId
+          }
+        });
+      } else {
+        // Notify all available coaches
+        await supabaseClient.functions.invoke('notify-coaches-new-evaluation', {
+          body: { 
+            evaluation_id: evaluation.id,
+            is_reevaluation: isReevaluation
+          }
+        });
+      }
 
       return new Response(
         JSON.stringify({ 

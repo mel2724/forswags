@@ -31,7 +31,7 @@ serve(async (req) => {
 
     console.log("[CREATE-EVALUATION-PAYMENT] User authenticated:", user.email);
 
-    const { video_url } = await req.json();
+    const { video_url, previous_evaluation_id } = await req.json();
 
     if (!video_url) {
       throw new Error("Video URL is required");
@@ -66,13 +66,58 @@ serve(async (req) => {
 
     console.log("[CREATE-EVALUATION-PAYMENT] Athlete found:", athleteData.id);
 
+    // Check if athlete can request re-evaluation (2 months since last)
+    const { data: canReevalData, error: reevalError } = await supabaseClient
+      .rpc("can_request_reevaluation", { p_athlete_id: athleteData.id });
+
+    if (reevalError) {
+      console.error("[CREATE-EVALUATION-PAYMENT] Error checking re-evaluation eligibility:", reevalError);
+      throw new Error("Cannot check re-evaluation eligibility");
+    }
+
+    if (!canReevalData) {
+      throw new Error("You must wait 2 months between evaluations");
+    }
+
+    // Determine pricing based on purchase history
+    const { data: priceType, error: priceError } = await supabaseClient
+      .rpc("get_evaluation_price", { p_athlete_id: athleteData.id });
+
+    if (priceError) {
+      console.error("[CREATE-EVALUATION-PAYMENT] Error getting price:", priceError);
+      throw new Error("Cannot determine pricing");
+    }
+
+    console.log("[CREATE-EVALUATION-PAYMENT] Price type:", priceType);
+
+    // Select appropriate price
+    const priceId = priceType === "initial" 
+      ? "price_1SDFN9HrmnLSQTHjsbprafBL"  // $97
+      : "price_1SDFO4HrmnLSQTHjLDKxkkMl";  // $49
+
+    const isReevaluation = priceType === "reevaluation";
+
+    // Get previous coach if this is a re-evaluation
+    let previousCoachId = null;
+    if (previous_evaluation_id) {
+      const { data: prevEval } = await supabaseClient
+        .from("evaluations")
+        .select("coach_id")
+        .eq("id", previous_evaluation_id)
+        .single();
+      
+      if (prevEval?.coach_id) {
+        previousCoachId = prevEval.coach_id;
+      }
+    }
+
     // Create a checkout session for evaluation payment
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SDF7xHrmnLSQTHjpkNJUp2v",
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -83,6 +128,9 @@ serve(async (req) => {
         athlete_id: athleteData.id,
         video_url: video_url,
         user_id: user.id,
+        is_reevaluation: isReevaluation.toString(),
+        previous_evaluation_id: previous_evaluation_id || "",
+        requested_coach_id: previousCoachId || "",
       },
     });
 

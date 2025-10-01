@@ -1,4 +1,4 @@
-import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell } from "lucide-react";
+import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell, FileVideo } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -26,6 +26,7 @@ const items = [
   { title: "Courses", url: "/admin/courses", icon: GraduationCap },
   { title: "Schools", url: "/admin/schools", icon: School },
   { title: "Coach Applications", url: "/admin/coach-applications", icon: Clipboard },
+  { title: "Evaluations", url: "/admin/evaluations", icon: FileVideo },
   { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
   { title: "Send Notifications", url: "/admin/notifications", icon: Bell },
 ];

@@ -17,9 +17,17 @@ export default function PurchaseEvaluation() {
   const [verifying, setVerifying] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [priceType, setPriceType] = useState<"initial" | "reevaluation">("initial");
+  const [canPurchase, setCanPurchase] = useState(true);
+  const previousEvaluationId = searchParams.get("reevaluation");
 
   useEffect(() => {
     checkAuth();
+    if (previousEvaluationId) {
+      checkEligibility();
+    } else {
+      checkPricing();
+    }
     
     // Check if returning from successful payment
     const success = searchParams.get("success");
@@ -34,6 +42,72 @@ export default function PurchaseEvaluation() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
+    }
+  };
+
+  const checkPricing = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: athleteData } = await supabase
+        .from("athletes")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!athleteData) return;
+
+      const { data, error } = await supabase
+        .rpc("get_evaluation_price", { p_athlete_id: athleteData.id });
+
+      if (error) {
+        console.error("Error checking pricing:", error);
+        return;
+      }
+
+      setPriceType(data === "reevaluation" ? "reevaluation" : "initial");
+    } catch (error) {
+      console.error("Error checking pricing:", error);
+    }
+  };
+
+  const checkEligibility = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: athleteData } = await supabase
+        .from("athletes")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!athleteData) return;
+
+      const { data, error } = await supabase
+        .rpc("can_request_reevaluation", { p_athlete_id: athleteData.id });
+
+      if (error) {
+        console.error("Error checking eligibility:", error);
+        setCanPurchase(false);
+        return;
+      }
+
+      if (!data) {
+        setCanPurchase(false);
+        toast({
+          title: "Not Eligible",
+          description: "You must wait 2 months between evaluations",
+          variant: "destructive",
+        });
+      } else {
+        setPriceType("reevaluation");
+        setCanPurchase(true);
+      }
+    } catch (error) {
+      console.error("Error checking eligibility:", error);
+      setCanPurchase(false);
     }
   };
 
@@ -83,6 +157,7 @@ export default function PurchaseEvaluation() {
       const { data, error } = await supabase.functions.invoke('create-evaluation-payment', {
         body: {
           video_url: videoUrl,
+          previous_evaluation_id: previousEvaluationId,
         }
       });
 
@@ -135,9 +210,14 @@ export default function PurchaseEvaluation() {
           {/* Purchase Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Purchase Video Evaluation</CardTitle>
+              <CardTitle>
+                {previousEvaluationId ? "Purchase Re-evaluation" : "Purchase Video Evaluation"}
+              </CardTitle>
               <CardDescription>
-                Get expert feedback from certified coaches
+                {previousEvaluationId 
+                  ? "Get another evaluation from your previous coach or a new one"
+                  : "Get expert feedback from certified coaches"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -168,7 +248,7 @@ export default function PurchaseEvaluation() {
                   />
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full" size="lg">
+                <Button type="submit" disabled={loading || !canPurchase} className="w-full" size="lg">
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -177,10 +257,15 @@ export default function PurchaseEvaluation() {
                   ) : (
                     <>
                       <DollarSign className="mr-2 h-4 w-4" />
-                      Purchase for $49.99
+                      Purchase for ${priceType === "reevaluation" ? "49.00" : "97.00"}
                     </>
                   )}
                 </Button>
+                {!canPurchase && (
+                  <p className="text-xs text-destructive text-center">
+                    You must wait 2 months between evaluations
+                  </p>
+                )}
               </form>
             </CardContent>
           </Card>

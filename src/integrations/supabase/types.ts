@@ -761,6 +761,7 @@ export type Database = {
       }
       evaluations: {
         Row: {
+          admin_assigned: boolean | null
           athlete_id: string
           claimed_at: string | null
           coach_id: string | null
@@ -768,14 +769,19 @@ export type Database = {
           created_at: string
           feedback: string | null
           id: string
+          is_reevaluation: boolean | null
+          last_evaluation_date: string | null
+          previous_evaluation_id: string | null
           purchased_at: string
           rating: number | null
+          requested_coach_id: string | null
           scores: Json | null
           status: Database["public"]["Enums"]["evaluation_status"]
           updated_at: string
           video_url: string | null
         }
         Insert: {
+          admin_assigned?: boolean | null
           athlete_id: string
           claimed_at?: string | null
           coach_id?: string | null
@@ -783,14 +789,19 @@ export type Database = {
           created_at?: string
           feedback?: string | null
           id?: string
+          is_reevaluation?: boolean | null
+          last_evaluation_date?: string | null
+          previous_evaluation_id?: string | null
           purchased_at?: string
           rating?: number | null
+          requested_coach_id?: string | null
           scores?: Json | null
           status?: Database["public"]["Enums"]["evaluation_status"]
           updated_at?: string
           video_url?: string | null
         }
         Update: {
+          admin_assigned?: boolean | null
           athlete_id?: string
           claimed_at?: string | null
           coach_id?: string | null
@@ -798,8 +809,12 @@ export type Database = {
           created_at?: string
           feedback?: string | null
           id?: string
+          is_reevaluation?: boolean | null
+          last_evaluation_date?: string | null
+          previous_evaluation_id?: string | null
           purchased_at?: string
           rating?: number | null
+          requested_coach_id?: string | null
           scores?: Json | null
           status?: Database["public"]["Enums"]["evaluation_status"]
           updated_at?: string
@@ -812,6 +827,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "athletes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_previous_evaluation_id_fkey"
+            columns: ["previous_evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "evaluations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_requested_coach_id_fkey"
+            columns: ["requested_coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1701,6 +1730,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_request_reevaluation: {
+        Args: { p_athlete_id: string }
+        Returns: boolean
+      }
+      get_evaluation_price: {
+        Args: { p_athlete_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

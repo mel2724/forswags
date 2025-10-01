@@ -1,11 +1,20 @@
 // Stripe product and price configuration
 export const STRIPE_PRODUCTS = {
   evaluation: {
-    product_id: "prod_T9V29POiUTqS3Y",
-    price_id: "price_1SDC24HrmnLSQTHjzkDq4BQs",
-    name: "Skills Evaluation",
-    price: 9900, // $99.00 in cents
-    description: "A review of your highlight reel and feedback from a seasoned coach"
+    initial: {
+      product_id: "prod_T9YUnaRtZFmxUv",
+      price_id: "price_1SDFN9HrmnLSQTHjsbprafBL",
+      name: "Skills Evaluation - Initial",
+      price: 9700, // $97.00 in cents
+      description: "First professional video evaluation from certified coaches"
+    },
+    reevaluation: {
+      product_id: "prod_T9YVEcHLFhJlBY",
+      price_id: "price_1SDFO4HrmnLSQTHjLDKxkkMl",
+      name: "Skills Evaluation - Re-evaluation",
+      price: 4900, // $49.00 in cents
+      description: "Re-evaluation for athletes who purchased within the last year"
+    }
   },
   membership: {
     athlete: {

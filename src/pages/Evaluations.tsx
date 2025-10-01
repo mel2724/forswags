@@ -18,6 +18,7 @@ interface Evaluation {
   coach_id: string | null;
   video_url: string | null;
   scores: Record<string, number>;
+  is_reevaluation: boolean;
 }
 
 export default function Evaluations() {
@@ -123,40 +124,68 @@ export default function Evaluations() {
     return evaluations.filter((e) => e.status === status);
   };
 
-  const EvaluationCard = ({ evaluation }: { evaluation: Evaluation }) => (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">Coach Evaluation</CardTitle>
-            <CardDescription>
-              Purchased {new Date(evaluation.purchased_at).toLocaleDateString()}
-            </CardDescription>
+  const EvaluationCard = ({ evaluation }: { evaluation: Evaluation }) => {
+    const canReevaluate = evaluation.status === "completed" && evaluation.completed_at;
+    const twoMonthsAgo = new Date();
+    twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+    const completedDate = evaluation.completed_at ? new Date(evaluation.completed_at) : null;
+    const isEligibleForReevaluation = completedDate && completedDate <= twoMonthsAgo;
+
+    const handleReevaluationRequest = () => {
+      navigate(`/evaluations/purchase?reevaluation=${evaluation.id}`);
+    };
+
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-lg">
+                Coach Evaluation {evaluation.is_reevaluation && <Badge variant="secondary" className="ml-2">Re-evaluation</Badge>}
+              </CardTitle>
+              <CardDescription>
+                Purchased {new Date(evaluation.purchased_at).toLocaleDateString()}
+              </CardDescription>
+            </div>
+            {getStatusBadge(evaluation.status)}
           </div>
-          {getStatusBadge(evaluation.status)}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {evaluation.status === "completed" && evaluation.rating && (
-          <div>
-            <p className="text-sm font-medium mb-2">Rating</p>
-            {renderStars(evaluation.rating)}
-          </div>
-        )}
-        {evaluation.feedback && (
-          <div>
-            <p className="text-sm font-medium mb-2">Coach Feedback</p>
-            <p className="text-sm text-muted-foreground">{evaluation.feedback}</p>
-          </div>
-        )}
-        {evaluation.completed_at && (
-          <p className="text-xs text-muted-foreground">
-            Completed {new Date(evaluation.completed_at).toLocaleDateString()}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {evaluation.status === "completed" && evaluation.rating && (
+            <div>
+              <p className="text-sm font-medium mb-2">Rating</p>
+              {renderStars(evaluation.rating)}
+            </div>
+          )}
+          {evaluation.feedback && (
+            <div>
+              <p className="text-sm font-medium mb-2">Coach Feedback</p>
+              <p className="text-sm text-muted-foreground">{evaluation.feedback}</p>
+            </div>
+          )}
+          {evaluation.completed_at && (
+            <p className="text-xs text-muted-foreground">
+              Completed {new Date(evaluation.completed_at).toLocaleDateString()}
+            </p>
+          )}
+          {canReevaluate && isEligibleForReevaluation && (
+            <Button 
+              onClick={handleReevaluationRequest}
+              variant="outline"
+              className="w-full"
+            >
+              Request Re-evaluation
+            </Button>
+          )}
+          {canReevaluate && !isEligibleForReevaluation && (
+            <p className="text-xs text-muted-foreground text-center">
+              Re-evaluation available {completedDate && new Date(completedDate.getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
@@ -192,7 +221,7 @@ export default function Evaluations() {
               Get Professional Evaluation
             </CardTitle>
             <CardDescription>
-              Purchase a video evaluation from certified coaches for just $49.99
+              Purchase a video evaluation from certified coaches. First evaluation $97, re-evaluations $49 (within 1 year).
             </CardDescription>
           </CardHeader>
           <CardContent>

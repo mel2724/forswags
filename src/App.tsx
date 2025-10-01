@@ -44,6 +44,7 @@ import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
 import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
 import AdminRankings from "./pages/admin/AdminRankings";
 import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminEvaluations from "./pages/admin/AdminEvaluations";
 import CoachApplication from "./pages/CoachApplication";
 import PurchaseEvaluation from "./pages/PurchaseEvaluation";
 import CoachDashboard from "./pages/coach/CoachDashboard";
@@ -111,6 +112,7 @@ const App = () => (
               <Route path="coach-applications" element={<AdminCoachApplications />} />
               <Route path="email-templates" element={<AdminEmailTemplates />} />
               <Route path="notifications" element={<AdminNotifications />} />
+              <Route path="evaluations" element={<AdminEvaluations />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

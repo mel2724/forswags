@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  evaluationId: string;
-  sport: string;
-  position: string;
+  evaluation_id: string;
+  is_reevaluation?: boolean;
+  coach_id?: string;
 }
 
 const supabaseAdmin = createClient(
@@ -23,22 +23,62 @@ serve(async (req) => {
   }
 
   try {
-    const { evaluationId, sport, position }: NotificationRequest = await req.json();
+    const { evaluation_id, is_reevaluation = false, coach_id }: NotificationRequest = await req.json();
 
-    if (!evaluationId) {
-      throw new Error("evaluationId is required");
+    if (!evaluation_id) {
+      throw new Error("evaluation_id is required");
     }
 
-    console.log(`Notifying coaches about new evaluation: ${evaluationId}`);
+    console.log(`Notifying coaches about ${is_reevaluation ? 're-evaluation' : 'new evaluation'}: ${evaluation_id}`);
 
-    // Get all active coaches with matching specializations
+    const evaluationType = is_reevaluation ? "re-evaluation" : "evaluation";
+    
+    // If specific coach is assigned, notify only that coach
+    if (coach_id) {
+      const { data: coach } = await supabaseAdmin
+        .from("coach_profiles")
+        .select("user_id, full_name")
+        .eq("user_id", coach_id)
+        .eq("is_active", true)
+        .single();
+
+      if (!coach) {
+        throw new Error("Assigned coach not found or inactive");
+      }
+
+      const notification = {
+        user_id: coach.user_id,
+        type: is_reevaluation ? "reevaluation_assigned" : "evaluation_assigned",
+        title: is_reevaluation ? "Re-evaluation Assigned" : "Evaluation Assigned",
+        message: `A ${evaluationType} has been assigned to you.`,
+        link: `/coach/evaluations/${evaluation_id}`,
+      };
+
+      const { error: notifError } = await supabaseAdmin
+        .from("notifications")
+        .insert(notification);
+
+      if (notifError) {
+        console.error("Failed to create notification:", notifError);
+        throw notifError;
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Notified coach about ${evaluationType}`,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Get all active coaches
     const { data: coaches, error: coachError } = await supabaseAdmin
       .from("coach_profiles")
-      .select(`
-        user_id,
-        full_name,
-        specializations
-      `)
+      .select("user_id, full_name")
       .eq("is_active", true);
 
     if (coachError) {
@@ -56,27 +96,14 @@ serve(async (req) => {
       );
     }
 
-    // Filter coaches by specialization if provided
-    const matchingCoaches = coaches.filter((coach) => {
-      if (!sport || !coach.specializations) return true;
-      
-      const specs = Array.isArray(coach.specializations) 
-        ? coach.specializations 
-        : [];
-      
-      return specs.some((spec: string) => 
-        spec.toLowerCase().includes(sport.toLowerCase())
-      );
-    });
+    console.log(`Found ${coaches.length} active coaches`);
 
-    console.log(`Found ${matchingCoaches.length} matching coaches`);
-
-    // Create in-app notifications for all matching coaches
-    const notifications = matchingCoaches.map((coach) => ({
+    // Create in-app notifications for all coaches
+    const notifications = coaches.map((coach) => ({
       user_id: coach.user_id,
-      type: "new_evaluation",
-      title: "New Evaluation Available",
-      message: `A new ${sport} ${position} evaluation is ready for review.`,
+      type: is_reevaluation ? "new_reevaluation" : "new_evaluation",
+      title: is_reevaluation ? "New Re-evaluation Available" : "New Evaluation Available",
+      message: `A ${evaluationType} is ready for review.`,
       link: `/coach/available`,
     }));
 
@@ -92,43 +119,11 @@ serve(async (req) => {
       }
     }
 
-    // Optionally send email notifications to coaches
-    // This can be enabled based on coach preferences
-    const availableUrl = `${Deno.env.get("SUPABASE_URL")?.replace(/\/.*/, "")}/coach/available`;
-    
-    for (const coach of matchingCoaches) {
-      // Get coach email
-      const { data: profile } = await supabaseAdmin
-        .from("profiles")
-        .select("email")
-        .eq("id", coach.user_id)
-        .single();
-
-      if (profile?.email) {
-        const emailPayload = {
-          to: profile.email,
-          template: "eval_started", // Reuse existing template
-          variables: {
-            coach_name: coach.full_name || "Coach",
-            sport: sport,
-            position: position,
-            evaluations_url: availableUrl,
-          },
-        };
-
-        supabaseAdmin.functions.invoke("send-notification-email", {
-          body: emailPayload,
-        }).catch((error) => {
-          console.error(`Failed to send email to ${profile.email}:`, error);
-        });
-      }
-    }
-
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Notified ${matchingCoaches.length} coaches`,
-        count: matchingCoaches.length 
+        message: `Notified ${coaches.length} coaches`,
+        count: coaches.length 
       }),
       {
         status: 200,
