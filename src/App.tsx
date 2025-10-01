@@ -46,6 +46,8 @@ import AdminRankings from "./pages/admin/AdminRankings";
 import CoachApplication from "./pages/CoachApplication";
 import CoachDashboard from "./pages/coach/CoachDashboard";
 import CoachProfile from "./pages/coach/CoachProfile";
+import CoachProfileView from "./pages/coach/CoachProfileView";
+import CoachDirectory from "./pages/coach/CoachDirectory";
 import AvailableEvaluations from "./pages/coach/AvailableEvaluations";
 import EvaluationDetail from "./pages/coach/EvaluationDetail";
 import NotFound from "./pages/NotFound";
@@ -91,6 +93,8 @@ const App = () => (
             <Route path="/coach/apply" element={<CoachApplication />} />
           <Route path="/coach/dashboard" element={<CoachDashboard />} />
           <Route path="/coach/profile" element={<CoachProfile />} />
+          <Route path="/coach/view/:id" element={<CoachProfileView />} />
+          <Route path="/coaches" element={<CoachDirectory />} />
           <Route path="/coach/available" element={<AvailableEvaluations />} />
           <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
             <Route path="/admin" element={<AdminLayout />}>
