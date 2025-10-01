@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 
 const CoachApplication = () => {
   const navigate = useNavigate();
@@ -22,10 +22,37 @@ const CoachApplication = () => {
     coaching_background: "",
     why_mentor: "",
     specializations: "",
+    twitter_handle: "",
+    instagram_handle: "",
+    facebook_handle: "",
+    tiktok_handle: "",
   });
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumePreview, setResumePreview] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Resume must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setResumeFile(file);
+      setResumePreview(file.name);
+    }
+  };
+
+  const removeResume = () => {
+    setResumeFile(null);
+    setResumePreview("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,6 +65,27 @@ const CoachApplication = () => {
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
+      let resumeUrl = null;
+
+      // Upload resume if provided
+      if (resumeFile) {
+        const fileExt = resumeFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `resumes/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('profile-pictures')
+          .upload(filePath, resumeFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(filePath);
+
+        resumeUrl = publicUrl;
+      }
+
       const { error } = await supabase.from("coach_applications").insert({
         full_name: formData.full_name,
         email: formData.email,
@@ -47,6 +95,11 @@ const CoachApplication = () => {
         coaching_background: formData.coaching_background,
         why_mentor: formData.why_mentor,
         specializations: specializationsArray,
+        resume_url: resumeUrl,
+        twitter_handle: formData.twitter_handle || null,
+        instagram_handle: formData.instagram_handle || null,
+        facebook_handle: formData.facebook_handle || null,
+        tiktok_handle: formData.tiktok_handle || null,
       });
 
       if (error) throw error;
@@ -173,6 +226,88 @@ const CoachApplication = () => {
                   required
                   rows={4}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="resume">Resume</Label>
+                <div className="space-y-2">
+                  <Input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleResumeChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById('resume')?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {resumePreview ? "Change Resume" : "Upload Resume"}
+                  </Button>
+                  {resumePreview && (
+                    <div className="flex items-center justify-between p-2 bg-muted rounded-md">
+                      <span className="text-sm truncate">{resumePreview}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeResume}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (max 5MB)</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Label>Social Media Handles (Optional)</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="twitter_handle">X (Twitter)</Label>
+                    <Input
+                      id="twitter_handle"
+                      name="twitter_handle"
+                      value={formData.twitter_handle}
+                      onChange={handleChange}
+                      placeholder="@username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram_handle">Instagram</Label>
+                    <Input
+                      id="instagram_handle"
+                      name="instagram_handle"
+                      value={formData.instagram_handle}
+                      onChange={handleChange}
+                      placeholder="@username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="facebook_handle">Facebook</Label>
+                    <Input
+                      id="facebook_handle"
+                      name="facebook_handle"
+                      value={formData.facebook_handle}
+                      onChange={handleChange}
+                      placeholder="username or profile URL"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tiktok_handle">TikTok</Label>
+                    <Input
+                      id="tiktok_handle"
+                      name="tiktok_handle"
+                      value={formData.tiktok_handle}
+                      onChange={handleChange}
+                      placeholder="@username"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-4">

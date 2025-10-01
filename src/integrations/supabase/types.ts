@@ -279,14 +279,18 @@ export type Database = {
           created_at: string
           email: string
           experience_years: number | null
+          facebook_handle: string | null
           full_name: string
           id: string
+          instagram_handle: string | null
           phone: string | null
           resume_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           specializations: string[] | null
           status: string
+          tiktok_handle: string | null
+          twitter_handle: string | null
           updated_at: string
           why_mentor: string
         }
@@ -297,14 +301,18 @@ export type Database = {
           created_at?: string
           email: string
           experience_years?: number | null
+          facebook_handle?: string | null
           full_name: string
           id?: string
+          instagram_handle?: string | null
           phone?: string | null
           resume_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           specializations?: string[] | null
           status?: string
+          tiktok_handle?: string | null
+          twitter_handle?: string | null
           updated_at?: string
           why_mentor: string
         }
@@ -315,14 +323,18 @@ export type Database = {
           created_at?: string
           email?: string
           experience_years?: number | null
+          facebook_handle?: string | null
           full_name?: string
           id?: string
+          instagram_handle?: string | null
           phone?: string | null
           resume_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           specializations?: string[] | null
           status?: string
+          tiktok_handle?: string | null
+          twitter_handle?: string | null
           updated_at?: string
           why_mentor?: string
         }
