@@ -176,6 +176,24 @@ export default function EvaluationDetail() {
 
       if (error) throw error;
 
+      // Send notification if completing evaluation
+      if (markComplete) {
+        try {
+          const { error: notifError } = await supabase.functions.invoke(
+            "notify-evaluation-complete",
+            {
+              body: { evaluationId: id },
+            }
+          );
+
+          if (notifError) {
+            console.error("Failed to send notification:", notifError);
+          }
+        } catch (notifError) {
+          console.error("Notification error:", notifError);
+        }
+      }
+
       toast({
         title: "Success!",
         description: markComplete

@@ -88,7 +88,7 @@ export default function Evaluations() {
 
       const { data: athleteData } = await supabase
         .from("athletes")
-        .select("id")
+        .select("id, sport, position")
         .eq("user_id", user.id)
         .single();
 
@@ -109,15 +109,33 @@ export default function Evaluations() {
         .getPublicUrl(`evaluations/${fileName}`);
 
       // Create evaluation record
-      const { error: insertError } = await supabase
+      const { data: newEval, error: insertError } = await supabase
         .from("evaluations")
         .insert({
           athlete_id: athleteData.id,
           video_url: publicUrl,
           status: "pending"
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
+
+      // Notify coaches about new evaluation
+      if (newEval) {
+        supabase.functions.invoke(
+          "notify-coaches-new-evaluation",
+          {
+            body: {
+              evaluationId: newEval.id,
+              sport: athleteData.sport || "",
+              position: athleteData.position || "",
+            },
+          }
+        ).catch((error) => {
+          console.error("Coach notification error:", error);
+        });
+      }
 
       toast({
         title: "Success!",
