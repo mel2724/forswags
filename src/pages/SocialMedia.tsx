@@ -2,33 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Plus, Image as ImageIcon, Send, Edit, Trash2, Eye, Share2, Facebook, Twitter, Sparkles } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SocialMediaGraphicGenerator } from "@/components/SocialMediaGraphicGenerator";
-
-interface SocialPost {
-  id: string;
-  content: string;
-  media_url: string | null;
-  is_draft: boolean;
-  published_at: string | null;
-  watermark_applied: boolean;
-  created_at: string;
-}
-
-const PLATFORM_LIMITS = {
-  twitter: 280,
-  facebook: 63206,
-  instagram: 2200,
-  tiktok: 2200,
-};
+import { toast } from "sonner";
 
 const FORSWAGS_TAG = "#ForSWAGsNation";
 const FORSWAGS_HANDLES = {
@@ -38,24 +18,40 @@ const FORSWAGS_HANDLES = {
   tiktok: "@ForSWAGs",
 };
 
+const SOCIAL_TIPS = [
+  {
+    icon: Target,
+    title: "Post Consistently",
+    description: "Share 3-5 times per week to stay visible to recruiters and build your brand."
+  },
+  {
+    icon: TrendingUp,
+    title: "Use Hashtags Strategically",
+    description: "Include sport-specific hashtags, your graduation year, and position for maximum visibility."
+  },
+  {
+    icon: Lightbulb,
+    title: "Show Personality",
+    description: "Balance athletic content with academics, community service, and personal interests."
+  },
+  {
+    icon: Sparkles,
+    title: "Tag Schools & Coaches",
+    description: "When appropriate, tag colleges and coaches you're interested in to increase visibility."
+  },
+];
+
 export default function SocialMedia() {
-  const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<SocialPost | null>(null);
   const [athleteInfo, setAthleteInfo] = useState({ name: "", sport: "" });
-  const [formData, setFormData] = useState({
-    content: "",
-    media_url: "",
-  });
-  const { toast } = useToast();
+  const [postContent, setPostContent] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchPosts();
+    fetchAthleteInfo();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchAthleteInfo = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -82,279 +78,69 @@ export default function SocialMedia() {
           sport: athlete?.sport || "",
         });
       }
-
-      const { data, error } = await supabase
-        .from("social_posts")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setPosts(data || []);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load posts",
-        variant: "destructive",
-      });
+      console.error("Error loading athlete info:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (isDraft: boolean) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  const formatPostContent = (content: string): string => {
+    const handle = FORSWAGS_HANDLES.twitter;
+    return `${content}\n\n${handle} ${FORSWAGS_TAG}`;
+  };
 
-      const postData = {
-        content: formData.content,
-        media_url: formData.media_url || null,
-        is_draft: isDraft,
-        published_at: isDraft ? null : new Date().toISOString(),
-        user_id: user.id,
-      };
-
-      if (editingPost) {
-        const { error } = await supabase
-          .from("social_posts")
-          .update(postData)
-          .eq("id", editingPost.id);
-
-        if (error) throw error;
-        toast({
-          title: "Success",
-          description: "Post updated successfully",
-        });
-      } else {
-        const { error } = await supabase
-          .from("social_posts")
-          .insert([postData]);
-
-        if (error) throw error;
-        toast({
-          title: "Success",
-          description: isDraft ? "Draft saved" : "Post published",
-        });
-      }
-
-      setIsDialogOpen(false);
-      setFormData({ content: "", media_url: "" });
-      setEditingPost(null);
-      fetchPosts();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save post",
-        variant: "destructive",
-      });
+  const shareToTwitter = () => {
+    if (!postContent.trim()) {
+      toast.error("Please enter some content to share");
+      return;
     }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("social_posts")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      toast({
-        title: "Success",
-        description: "Post deleted",
-      });
-      fetchPosts();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete post",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = (post: SocialPost) => {
-    setEditingPost(post);
-    setFormData({
-      content: post.content,
-      media_url: post.media_url || "",
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handlePublish = async (post: SocialPost) => {
-    try {
-      const { error } = await supabase
-        .from("social_posts")
-        .update({
-          is_draft: false,
-          published_at: new Date().toISOString(),
-        })
-        .eq("id", post.id);
-
-      if (error) throw error;
-      toast({
-        title: "Success",
-        description: "Post published",
-      });
-      fetchPosts();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to publish post",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const formatPostForPlatform = (content: string, platform: keyof typeof PLATFORM_LIMITS): string => {
-    const limit = PLATFORM_LIMITS[platform];
-    const handle = FORSWAGS_HANDLES[platform];
-    const suffix = ` ${handle} ${FORSWAGS_TAG}`;
-    
-    const maxContentLength = limit - suffix.length;
-    const truncatedContent = content.length > maxContentLength 
-      ? content.substring(0, maxContentLength - 3) + "..." 
-      : content;
-    
-    return `${truncatedContent}${suffix}`;
-  };
-
-  const shareToTwitter = (content: string) => {
-    const formattedContent = formatPostForPlatform(content, "twitter");
+    const formattedContent = formatPostContent(postContent);
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(formattedContent)}`;
     window.open(url, "_blank");
+    toast.success("Opening Twitter to share your post!");
   };
 
-  const shareToFacebook = (content: string) => {
-    const formattedContent = formatPostForPlatform(content, "facebook");
+  const shareToFacebook = () => {
+    if (!postContent.trim()) {
+      toast.error("Please enter some content to share");
+      return;
+    }
+    const formattedContent = formatPostContent(postContent);
     const url = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(formattedContent)}`;
     window.open(url, "_blank");
+    toast.success("Opening Facebook to share your post!");
   };
 
-  const shareToInstagram = (content: string) => {
-    const formattedContent = formatPostForPlatform(content, "instagram");
+  const shareToInstagram = () => {
+    if (!postContent.trim()) {
+      toast.error("Please enter some content to share");
+      return;
+    }
+    const formattedContent = formatPostContent(postContent);
     navigator.clipboard.writeText(formattedContent);
-    toast({
-      title: "Copied to clipboard",
-      description: "Open Instagram and paste your post",
+    toast.success("Content copied! Open Instagram and paste your post", {
+      description: "The caption has been copied to your clipboard with ForSWAGs branding"
     });
   };
 
-  const shareToTikTok = (content: string) => {
-    const formattedContent = formatPostForPlatform(content, "tiktok");
+  const shareToTikTok = () => {
+    if (!postContent.trim()) {
+      toast.error("Please enter some content to share");
+      return;
+    }
+    const formattedContent = formatPostContent(postContent);
     navigator.clipboard.writeText(formattedContent);
-    toast({
-      title: "Copied to clipboard",
-      description: "Open TikTok and paste your post",
+    toast.success("Content copied! Open TikTok and paste your post", {
+      description: "The caption has been copied to your clipboard with ForSWAGs branding"
     });
   };
-
-  const PostCard = ({ post }: { post: SocialPost }) => (
-    <Card className="animate-fade-in">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <CardDescription className="text-xs text-muted-foreground mb-2">
-              {post.is_draft ? "Draft" : "Published"} • {new Date(post.created_at).toLocaleDateString()}
-            </CardDescription>
-          </div>
-          <Badge variant={post.is_draft ? "secondary" : "default"}>
-            {post.is_draft ? "Draft" : "Published"}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {post.media_url && (
-          <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted">
-            <img
-              src={post.media_url}
-              alt="Post media"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-        <p className="text-sm whitespace-pre-wrap">{post.content}</p>
-        
-        {!post.is_draft && (
-          <div className="border-t pt-4">
-            <p className="text-xs font-medium mb-2 text-muted-foreground">Share to platforms:</p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => shareToTwitter(post.content)}
-              >
-                <Twitter className="h-3 w-3 mr-1" />
-                Twitter/X
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => shareToFacebook(post.content)}
-              >
-                <Facebook className="h-3 w-3 mr-1" />
-                Facebook
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => shareToInstagram(post.content)}
-              >
-                <Share2 className="h-3 w-3 mr-1" />
-                Instagram
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => shareToTikTok(post.content)}
-              >
-                <Share2 className="h-3 w-3 mr-1" />
-                TikTok
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2 pt-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleEdit(post)}
-          >
-            <Edit className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
-          {post.is_draft && (
-            <Button
-              size="sm"
-              onClick={() => handlePublish(post)}
-            >
-              <Send className="h-4 w-4 mr-1" />
-              Publish
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => handleDelete(post.id)}
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const drafts = posts.filter((p) => p.is_draft);
-  const published = posts.filter((p) => !p.is_draft);
 
   if (loading) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading posts...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -362,83 +148,27 @@ export default function SocialMedia() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Social Media</h1>
-          <p className="text-muted-foreground">
-            Create and manage your social media content
-          </p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingPost(null);
-              setFormData({ content: "", media_url: "" });
-            }}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Post
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle>{editingPost ? "Edit Post" : "Create New Post"}</DialogTitle>
-              <DialogDescription>
-                Share your journey with your followers
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="content">Content</Label>
-                <Textarea
-                  id="content"
-                  placeholder="What's on your mind?"
-                  value={formData.content}
-                  onChange={(e) =>
-                    setFormData({ ...formData, content: e.target.value })
-                  }
-                  rows={5}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="media">Media URL (optional)</Label>
-                <div className="flex gap-2">
-                  <ImageIcon className="h-5 w-5 text-muted-foreground mt-2" />
-                  <Input
-                    id="media"
-                    placeholder="https://example.com/image.jpg"
-                    value={formData.media_url}
-                    onChange={(e) =>
-                      setFormData({ ...formData, media_url: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => handleSubmit(true)}
-              >
-                Save Draft
-              </Button>
-              <Button onClick={() => handleSubmit(false)}>
-                <Send className="h-4 w-4 mr-2" />
-                Publish
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">Social Media Content Creator</h1>
+        <p className="text-muted-foreground">
+          Create professional graphics and content to share on Instagram, Facebook, Twitter, and TikTok
+        </p>
       </div>
 
       <Tabs defaultValue="generator" className="w-full">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="generator">
             <Sparkles className="mr-2 h-4 w-4" />
             Graphic Generator
           </TabsTrigger>
-          <TabsTrigger value="all">All ({posts.length})</TabsTrigger>
-          <TabsTrigger value="published">Published ({published.length})</TabsTrigger>
-          <TabsTrigger value="drafts">Drafts ({drafts.length})</TabsTrigger>
+          <TabsTrigger value="post">
+            <Share2 className="mr-2 h-4 w-4" />
+            Create Post
+          </TabsTrigger>
+          <TabsTrigger value="tips">
+            <Lightbulb className="mr-2 h-4 w-4" />
+            Tips & Best Practices
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="generator" className="space-y-4 mt-6">
@@ -448,40 +178,146 @@ export default function SocialMedia() {
           />
         </TabsContent>
 
-        <TabsContent value="all" className="space-y-4 mt-6">
-          {posts.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Eye className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium mb-2">No posts yet</p>
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  Start creating engaging content to share with your audience
+        <TabsContent value="post" className="space-y-4 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Share2 className="h-5 w-5" />
+                Quick Post Creator
+              </CardTitle>
+              <CardDescription>
+                Write your post content and share directly to your favorite platforms
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="postContent">Post Content</Label>
+                <Textarea
+                  id="postContent"
+                  placeholder="Share your achievements, training updates, game highlights, or milestones..."
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
+                  rows={6}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  ForSWAGs branding (@ForSWAGs #ForSWAGsNation) will be automatically added
                 </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
+              </div>
+
+              <div className="space-y-3">
+                <Label>Share To:</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={shareToTwitter}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Twitter className="mr-2 h-4 w-4" />
+                    Share to Twitter/X
+                  </Button>
+                  <Button
+                    onClick={shareToFacebook}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Facebook className="mr-2 h-4 w-4" />
+                    Share to Facebook
+                  </Button>
+                  <Button
+                    onClick={shareToInstagram}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Instagram className="mr-2 h-4 w-4" />
+                    Copy for Instagram
+                  </Button>
+                  <Button
+                    onClick={shareToTikTok}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Copy for TikTok
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Note: Instagram and TikTok don't support direct web posting. Content will be copied to your clipboard.
+                </p>
+              </div>
+
+              <div className="rounded-lg bg-muted p-4 space-y-2">
+                <p className="text-sm font-medium">Preview with ForSWAGs Branding:</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {postContent || "Your post content will appear here..."}
+                  {postContent && `\n\n@ForSWAGs #ForSWAGsNation`}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="published" className="space-y-4 mt-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {published.map((post) => (
-              <PostCard key={post.id} post={post} />
+        <TabsContent value="tips" className="space-y-4 mt-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            {SOCIAL_TIPS.map((tip, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <tip.icon className="h-5 w-5 text-primary" />
+                    {tip.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{tip.description}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </TabsContent>
 
-        <TabsContent value="drafts" className="space-y-4 mt-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {drafts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Best Posting Times
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p className="font-medium text-sm mb-1">Weekdays</p>
+                  <p className="text-sm text-muted-foreground">6-9 AM and 5-8 PM</p>
+                </div>
+                <div>
+                  <p className="font-medium text-sm mb-1">Weekends</p>
+                  <p className="text-sm text-muted-foreground">9 AM - 12 PM</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                These times typically see the highest engagement from coaches and recruiters
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-secondary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-secondary" />
+                Content Ideas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>• Game highlights and statistics</li>
+                <li>• Training videos and workout updates</li>
+                <li>• Academic achievements and awards</li>
+                <li>• Community service activities</li>
+                <li>• Team celebrations and milestones</li>
+                <li>• Behind-the-scenes training footage</li>
+                <li>• Recruitment updates and college visits</li>
+                <li>• Personal growth and goal-setting posts</li>
+              </ul>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
