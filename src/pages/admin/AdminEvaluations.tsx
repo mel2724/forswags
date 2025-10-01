@@ -13,6 +13,7 @@ interface Evaluation {
   status: string;
   video_url: string;
   purchased_at: string;
+  claimed_at: string | null;
   is_reevaluation: boolean;
   requested_coach_id: string | null;
   coach_id: string | null;
@@ -56,8 +57,10 @@ export default function AdminEvaluations() {
         .from("evaluations")
         .select(`
           *,
-          athlete:athletes!inner(user_id),
-          athlete_profile:athletes!inner(user_id(profiles(full_name))),
+          athletes!inner(
+            user_id,
+            profiles!athletes_user_id_fkey(full_name)
+          ),
           coach_profile:coach_profiles(full_name),
           requested_coach_profile:coach_profiles!evaluations_requested_coach_id_fkey(full_name, is_active)
         `)
@@ -67,8 +70,11 @@ export default function AdminEvaluations() {
 
       const formattedData = (data || []).map((item: any) => ({
         ...item,
+        athlete: {
+          user_id: item.athletes?.user_id,
+        },
         athlete_profile: {
-          full_name: item.athlete_profile?.[0]?.profiles?.full_name || "Unknown",
+          full_name: item.athletes?.profiles?.full_name || "Unknown",
         },
       }));
 
@@ -165,12 +171,26 @@ export default function AdminEvaluations() {
     );
   };
 
+  const isStaleUnpicked = (evaluation: Evaluation) => {
+    if (evaluation.status !== "pending" || evaluation.coach_id) return false;
+    const hoursSince = (Date.now() - new Date(evaluation.purchased_at).getTime()) / (1000 * 60 * 60);
+    return hoursSince >= 48;
+  };
+
+  const isStaleUncompleted = (evaluation: Evaluation) => {
+    if (evaluation.status !== "in_progress" || !evaluation.claimed_at) return false;
+    const hoursSince = (Date.now() - new Date(evaluation.claimed_at).getTime()) / (1000 * 60 * 60);
+    return hoursSince >= 48;
+  };
+
   const filterEvaluations = (status?: string) => {
     if (!status) return evaluations;
     return evaluations.filter((e) => e.status === status);
   };
 
   const needsAssignmentEvaluations = evaluations.filter(needsAssignment);
+  const staleUnpickedEvaluations = evaluations.filter(isStaleUnpicked);
+  const staleUncompletedEvaluations = evaluations.filter(isStaleUncompleted);
 
   const EvaluationCard = ({ evaluation }: { evaluation: Evaluation }) => (
     <Card>
@@ -283,6 +303,27 @@ export default function AdminEvaluations() {
             </Select>
           </div>
         )}
+
+        {evaluation.coach_id && evaluation.status === "in_progress" && (
+          <div className="pt-4 space-y-2">
+            <p className="text-sm font-medium">Reassign Coach</p>
+            <Select
+              onValueChange={(coachId) => handleAssignCoach(evaluation.id, coachId)}
+              disabled={assigningId === evaluation.id}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a different coach..." />
+              </SelectTrigger>
+              <SelectContent>
+                {coaches.map((coach) => (
+                  <SelectItem key={coach.user_id} value={coach.user_id}>
+                    {coach.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -317,6 +358,44 @@ export default function AdminEvaluations() {
           </CardHeader>
           <CardContent className="space-y-4">
             {needsAssignmentEvaluations.map((evaluation) => (
+              <EvaluationCard key={evaluation.id} evaluation={evaluation} />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {staleUnpickedEvaluations.length > 0 && (
+        <Card className="border-orange-500">
+          <CardHeader>
+            <CardTitle className="text-orange-500 flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Not Picked Up - 48+ Hours ({staleUnpickedEvaluations.length})
+            </CardTitle>
+            <CardDescription>
+              These evaluations have not been picked up by any coach for over 48 hours
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {staleUnpickedEvaluations.map((evaluation) => (
+              <EvaluationCard key={evaluation.id} evaluation={evaluation} />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {staleUncompletedEvaluations.length > 0 && (
+        <Card className="border-orange-500">
+          <CardHeader>
+            <CardTitle className="text-orange-500 flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Not Completed - 48+ Hours ({staleUncompletedEvaluations.length})
+            </CardTitle>
+            <CardDescription>
+              These evaluations have been assigned but not completed for over 48 hours
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {staleUncompletedEvaluations.map((evaluation) => (
               <EvaluationCard key={evaluation.id} evaluation={evaluation} />
             ))}
           </CardContent>
