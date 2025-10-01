@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, User, Award } from "lucide-react";
+import VideoAnnotation from "@/components/VideoAnnotation";
 
 interface EvaluationCriteria {
   id: string;
@@ -44,10 +45,12 @@ export default function EvaluationDetail() {
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [annotations, setAnnotations] = useState<any[]>([]);
 
   useEffect(() => {
     fetchEvaluation();
     fetchCriteria();
+    fetchAnnotations();
   }, [id]);
 
   const fetchEvaluation = async () => {
@@ -110,6 +113,42 @@ export default function EvaluationDetail() {
       setCriteria(data || []);
     } catch (error) {
       console.error("Error fetching criteria:", error);
+    }
+  };
+
+  const fetchAnnotations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("evaluation_annotations")
+        .select("*")
+        .eq("evaluation_id", id)
+        .order("timestamp_ms");
+
+      if (error) throw error;
+      setAnnotations(data || []);
+    } catch (error) {
+      console.error("Error fetching annotations:", error);
+    }
+  };
+
+  const handleSaveAnnotation = async (annotation: any) => {
+    try {
+      const { error } = await supabase
+        .from("evaluation_annotations")
+        .insert({
+          evaluation_id: id,
+          ...annotation
+        });
+
+      if (error) throw error;
+      await fetchAnnotations();
+    } catch (error) {
+      console.error("Error saving annotation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save annotation",
+        variant: "destructive",
+      });
     }
   };
 
@@ -184,7 +223,7 @@ export default function EvaluationDetail() {
       </Button>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Video Player */}
+        {/* Video Player and Annotations */}
         <div className="lg:col-span-2 space-y-4">
           <Card>
             <CardHeader>
@@ -196,22 +235,20 @@ export default function EvaluationDetail() {
                 {evaluation.athletes.position} • {evaluation.athletes.sport}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <video
-                controls
-                className="w-full rounded-lg bg-black"
-                src={evaluation.video_url}
+            <CardContent className="space-y-4">
+              <VideoAnnotation
+                videoUrl={evaluation.video_url}
+                evaluationId={evaluation.id}
+                onAnnotationSave={handleSaveAnnotation}
+                existingAnnotations={annotations}
+              />
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => window.open(`/profile?id=${evaluation.athletes.user_id}`, '_blank')}
               >
-                Your browser does not support the video tag.
-              </video>
-              <div className="mt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => window.open(`/profile?id=${evaluation.athletes.user_id}`, '_blank')}
-                >
-                  View Athlete Profile
-                </Button>
-              </div>
+                View Athlete Profile
+              </Button>
             </CardContent>
           </Card>
 

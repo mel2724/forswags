@@ -679,6 +679,44 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluation_annotations: {
+        Row: {
+          annotation_type: string
+          created_at: string
+          data: Json
+          evaluation_id: string
+          id: string
+          timestamp_ms: number
+          updated_at: string
+        }
+        Insert: {
+          annotation_type: string
+          created_at?: string
+          data: Json
+          evaluation_id: string
+          id?: string
+          timestamp_ms: number
+          updated_at?: string
+        }
+        Update: {
+          annotation_type?: string
+          created_at?: string
+          data?: Json
+          evaluation_id?: string
+          id?: string
+          timestamp_ms?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_annotations_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "evaluations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evaluation_criteria: {
         Row: {
           category: string
