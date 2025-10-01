@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Search, Save, Bell, Users, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import NotificationCard from "@/components/NotificationCard";
 
 export default function RecruiterDashboard() {
   const [profile, setProfile] = useState<any>(null);
@@ -83,6 +84,10 @@ export default function RecruiterDashboard() {
         <p className="text-muted-foreground">
           {profile ? `Welcome, ${profile.title} at ${profile.school_name}` : "Complete your profile to get started"}
         </p>
+      </div>
+
+      <div className="mb-8">
+        <NotificationCard />
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">

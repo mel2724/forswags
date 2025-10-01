@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
-import { 
+import NotificationCard from "@/components/NotificationCard";
+import {
   LogOut, Users, Trophy, GraduationCap, Calendar, 
   School, Award, Plus, Eye, MapPin
 } from "lucide-react";
@@ -192,6 +193,11 @@ const ParentDashboard = () => {
               Parent Account
             </Badge>
           </p>
+        </div>
+
+        {/* Notifications */}
+        <div className="mb-8">
+          <NotificationCard />
         </div>
 
         {/* Athletes Grid */}

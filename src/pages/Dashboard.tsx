@@ -10,7 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
-import { 
+import NotificationCard from "@/components/NotificationCard";
+import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
   Video, User, MapPin, Calendar, Award, Share2
@@ -279,6 +280,9 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Notifications Card */}
+            <NotificationCard />
 
             {/* Stats Overview */}
             <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">

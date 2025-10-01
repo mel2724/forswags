@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import NotificationCard from "@/components/NotificationCard";
 import { Loader2, LogOut, CheckCircle, Clock, AlertCircle } from "lucide-react";
 
 interface Evaluation {
@@ -160,6 +161,10 @@ const CoachDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <NotificationCard />
+        </div>
+
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
             <CardHeader className="pb-2">
