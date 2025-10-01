@@ -272,6 +272,29 @@ const Sponsors = () => {
                 </ul>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">Community Partner</CardTitle>
+                <CardDescription>Any amount welcome</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary">✓</span>
+                    Recognition on sponsors page
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary">✓</span>
+                    Supporting the next generation of student athletes
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary">✓</span>
+                    Making life skills education accessible to all
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
