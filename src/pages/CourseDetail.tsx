@@ -9,6 +9,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { ArrowLeft, BookOpen, Clock, PlayCircle, CheckCircle2, Lock } from "lucide-react";
+import CourseCertificate from "@/components/CourseCertificate";
 
 interface Course {
   id: string;
@@ -41,12 +42,32 @@ const CourseDetail = () => {
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
+  const [courseProgress, setCourseProgress] = useState<any>(null);
 
   useEffect(() => {
     if (courseId) {
       loadCourseData();
+      loadProgress();
     }
   }, [courseId]);
+
+  const loadProgress = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("course_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .maybeSingle();
+
+      setCourseProgress(data);
+    } catch (error) {
+      console.error("Error loading progress:", error);
+    }
+  };
 
   const loadCourseData = async () => {
     try {
@@ -100,6 +121,9 @@ const CourseDetail = () => {
       acc + module.lessons.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0),
     0
   );
+
+  const completedLessons = (courseProgress?.completed_lessons as any as string[]) || [];
+  const isLessonCompleted = (lessonId: string) => completedLessons.includes(lessonId);
 
   if (loading) {
     return (
@@ -161,18 +185,32 @@ const CourseDetail = () => {
                 <Clock className="h-5 w-5 text-primary" />
                 <span>{totalDuration} minutes</span>
               </div>
+              {courseProgress && (
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <span>{courseProgress.progress_percentage}% Complete</span>
+                </div>
+              )}
             </div>
+
+            {courseProgress && courseProgress.progress_percentage > 0 && (
+              <Progress value={courseProgress.progress_percentage} className="h-2" />
+            )}
           </div>
 
-          {course.thumbnail_url && (
-            <Card className="lg:col-span-1 overflow-hidden">
-              <img 
-                src={course.thumbnail_url} 
-                alt={course.title}
-                className="w-full h-48 object-cover"
-              />
-            </Card>
-          )}
+          <div className="lg:col-span-1 space-y-4">
+            {course.thumbnail_url && (
+              <Card className="overflow-hidden">
+                <img 
+                  src={course.thumbnail_url} 
+                  alt={course.title}
+                  className="w-full h-48 object-cover"
+                />
+              </Card>
+            )}
+            
+            <CourseCertificate courseId={courseId!} courseName={course.title} />
+          </div>
         </div>
 
         {/* Course Content */}
@@ -207,30 +245,37 @@ const CourseDetail = () => {
                       </p>
                     )}
                     <div className="space-y-2 pl-12">
-                      {module.lessons.map((lesson, lessonIndex) => (
-                        <div
-                          key={lesson.id}
-                          className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer"
-                          onClick={() => navigate(`/courses/${courseId}/lessons/${lesson.id}`)}
-                        >
-                          <div className="flex items-center gap-3 flex-1">
-                            <PlayCircle className="h-5 w-5 text-primary" />
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-sm truncate">
-                                {lessonIndex + 1}. {lesson.title}
-                              </h4>
-                              {lesson.duration_minutes && (
-                                <p className="text-xs text-muted-foreground">
-                                  {lesson.duration_minutes} min
-                                </p>
+                      {module.lessons.map((lesson, lessonIndex) => {
+                        const completed = isLessonCompleted(lesson.id);
+                        return (
+                          <div
+                            key={lesson.id}
+                            className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer"
+                            onClick={() => navigate(`/courses/${courseId}/lessons/${lesson.id}`)}
+                          >
+                            <div className="flex items-center gap-3 flex-1">
+                              {completed ? (
+                                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                              ) : (
+                                <PlayCircle className="h-5 w-5 text-primary" />
                               )}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-sm truncate">
+                                  {lessonIndex + 1}. {lesson.title}
+                                </h4>
+                                {lesson.duration_minutes && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {lesson.duration_minutes} min
+                                  </p>
+                                )}
+                              </div>
                             </div>
+                            <Button size="sm" variant={completed ? "outline" : "default"}>
+                              {completed ? "Review" : "Start"}
+                            </Button>
                           </div>
-                          <Button size="sm" variant="ghost">
-                            Start
-                          </Button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </AccordionContent>
                 </AccordionItem>

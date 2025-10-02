@@ -4,11 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileArchive } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, FileArchive, BookOpen, ClipboardList } from "lucide-react";
 import { ScormPlayer } from "@/components/ScormPlayer";
 import { ScormUpload } from "@/components/ScormUpload";
+import LessonQuiz from "@/components/LessonQuiz";
+import LessonNotes from "@/components/LessonNotes";
 
 interface Lesson {
   id: string;
@@ -120,7 +123,52 @@ const LessonViewer = () => {
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
   const markAsComplete = async () => {
-    toast.success("Lesson marked as complete!");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !module) return;
+
+      // Update course progress
+      const { data: progressData } = await supabase
+        .from("course_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("course_id", module.course_id)
+        .maybeSingle();
+
+      const completedLessons = (progressData?.completed_lessons as any as string[]) || [];
+      if (!completedLessons.includes(lessonId!)) {
+        completedLessons.push(lessonId!);
+        
+        // Calculate total lessons in course
+        const { data: allModules } = await supabase
+          .from("modules")
+          .select("id")
+          .eq("course_id", module.course_id);
+
+        const { data: allLessons } = await supabase
+          .from("lessons")
+          .select("id")
+          .in("module_id", (allModules || []).map(m => m.id));
+
+        const totalLessons = allLessons?.length || 1;
+        const progressPercentage = Math.round((completedLessons.length / totalLessons) * 100);
+        
+        await supabase
+          .from("course_progress")
+          .upsert({
+            user_id: user.id,
+            course_id: module.course_id,
+            completed_lessons: completedLessons,
+            progress_percentage: progressPercentage,
+            completed_at: progressPercentage === 100 ? new Date().toISOString() : null,
+          });
+      }
+
+      toast.success("Lesson marked as complete!");
+    } catch (error) {
+      console.error("Error marking lesson complete:", error);
+    }
+    
     if (nextLesson) {
       navigate(`/courses/${courseId}/lessons/${nextLesson.id}`);
     } else {
@@ -246,6 +294,26 @@ const LessonViewer = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Quiz and Notes Tabs */}
+        <Tabs defaultValue="quiz" className="mb-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="quiz" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              Quiz
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Notes
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="quiz" className="mt-4">
+            <LessonQuiz lessonId={lessonId!} onComplete={markAsComplete} />
+          </TabsContent>
+          <TabsContent value="notes" className="mt-4">
+            <LessonNotes lessonId={lessonId!} />
+          </TabsContent>
+        </Tabs>
 
         {/* Navigation */}
         <div className="flex items-center justify-between gap-4">
