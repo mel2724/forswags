@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,8 @@ import { FileText, Download, Loader2, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { UpgradePromptDialog } from "./UpgradePromptDialog";
+import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
 
 const MILESTONE_TYPES = [
   { value: "commitment", label: "College Commitment" },
@@ -21,6 +23,8 @@ const MILESTONE_TYPES = [
   { value: "other", label: "Other Milestone" },
 ];
 
+const PRESS_RELEASE_LIMIT_FREE = 2;
+
 export function PressReleaseGenerator() {
   const [generating, setGenerating] = useState(false);
   const [milestoneType, setMilestoneType] = useState("");
@@ -29,10 +33,38 @@ export function PressReleaseGenerator() {
   const [details, setDetails] = useState("");
   const [quote, setQuote] = useState("");
   const [generatedRelease, setGeneratedRelease] = useState("");
+  const [generationCount, setGenerationCount] = useState(0);
+  const { isOpen, config, showUpgradePrompt, closeUpgradePrompt, checkLimitAndPrompt, isFree } = useUpgradePrompt();
+
+  useEffect(() => {
+    // Load generation count from localStorage
+    const stored = localStorage.getItem("pressReleaseCount");
+    if (stored) {
+      setGenerationCount(parseInt(stored, 10));
+    }
+  }, []);
 
   const generatePressRelease = async () => {
     if (!milestoneType || !athleteName || !sport || !details) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Check limit for free users
+    if (isFree && generationCount >= PRESS_RELEASE_LIMIT_FREE) {
+      showUpgradePrompt({
+        title: "Press Release Limit Reached",
+        description: "You've reached the free tier limit for press releases. Upgrade to generate unlimited professional press releases.",
+        feature: "Unlimited Press Releases",
+        context: "limit",
+        benefits: [
+          "Unlimited press release generations",
+          "AI-powered professional writing",
+          "PDF download and printing",
+          "Customizable templates",
+          "Priority support",
+        ],
+      });
       return;
     }
 
@@ -56,6 +88,21 @@ export function PressReleaseGenerator() {
       }
 
       setGeneratedRelease(data.pressRelease);
+      
+      // Increment generation count for free users
+      if (isFree) {
+        const newCount = generationCount + 1;
+        setGenerationCount(newCount);
+        localStorage.setItem("pressReleaseCount", newCount.toString());
+        
+        // Show nudge after first generation
+        if (newCount === 1) {
+          toast.info(`You have ${PRESS_RELEASE_LIMIT_FREE - newCount} free press release${PRESS_RELEASE_LIMIT_FREE - newCount === 1 ? "" : "s"} remaining`, {
+            description: "Upgrade for unlimited press releases",
+          });
+        }
+      }
+      
       toast.success("Press release generated successfully!");
     } catch (error) {
       console.error("Error generating press release:", error);
@@ -198,6 +245,12 @@ export function PressReleaseGenerator() {
 
   return (
     <div className="space-y-6">
+      <UpgradePromptDialog
+        open={isOpen}
+        onOpenChange={closeUpgradePrompt}
+        {...config}
+      />
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -283,24 +336,31 @@ export function PressReleaseGenerator() {
             </p>
           </div>
 
-          <Button
-            onClick={generatePressRelease}
-            disabled={generating}
-            className="w-full"
-            size="lg"
-          >
-            {generating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Press Release...
-              </>
-            ) : (
-              <>
-                <FileText className="mr-2 h-4 w-4" />
-                Generate Press Release
-              </>
+          <div className="space-y-2">
+            <Button
+              onClick={generatePressRelease}
+              disabled={generating}
+              className="w-full"
+              size="lg"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Press Release...
+                </>
+              ) : (
+                <>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generate Press Release
+                </>
+              )}
+            </Button>
+            {isFree && (
+              <p className="text-xs text-center text-muted-foreground">
+                Free tier: {generationCount}/{PRESS_RELEASE_LIMIT_FREE} press releases used
+              </p>
             )}
-          </Button>
+          </div>
         </CardContent>
       </Card>
 

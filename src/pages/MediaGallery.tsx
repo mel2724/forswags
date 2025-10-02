@@ -6,9 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, Trash2, Video, Plus, Edit, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
+import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
 
 interface MediaAsset {
   id: string;
@@ -19,6 +22,8 @@ interface MediaAsset {
   created_at: string;
 }
 
+const MAX_GAME_VIDEOS_FREE = 3;
+
 const MediaGallery = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -28,6 +33,7 @@ const MediaGallery = () => {
   const [gameVideos, setGameVideos] = useState<MediaAsset[]>([]);
   const [athleteId, setAthleteId] = useState<string | null>(null);
   const [editingVideo, setEditingVideo] = useState<MediaAsset | null>(null);
+  const { isOpen, config, showUpgradePrompt, closeUpgradePrompt, checkLimitAndPrompt, isFree } = useUpgradePrompt();
 
   useEffect(() => {
     loadMediaAssets();
@@ -83,6 +89,24 @@ const MediaGallery = () => {
     description: string
   ) => {
     if (!athleteId) return;
+
+    // Check game video limit for free users
+    if (mediaType === "game_video" && isFree && gameVideos.length >= MAX_GAME_VIDEOS_FREE) {
+      showUpgradePrompt({
+        title: "Video Storage Limit Reached",
+        description: "You've reached the free tier limit for game videos. Upgrade to upload unlimited videos and showcase your full athletic journey.",
+        feature: "Unlimited Video Storage",
+        context: "limit",
+        benefits: [
+          "Unlimited game video uploads",
+          "HD video quality",
+          "Advanced video analytics",
+          "Video highlight reels",
+          "Priority video processing",
+        ],
+      });
+      return;
+    }
 
     try {
       setUploading(true);
@@ -463,6 +487,12 @@ const MediaGallery = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <UpgradePromptDialog
+        open={isOpen}
+        onOpenChange={closeUpgradePrompt}
+        {...config}
+      />
+      
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Button
           variant="ghost"
@@ -497,13 +527,22 @@ const MediaGallery = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Video className="h-5 w-5" />
-                Game Highlights
-              </CardTitle>
-              <CardDescription>
-                Add links to your game videos from YouTube, Hudl, or other platforms
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    Game Highlights
+                  </CardTitle>
+                  <CardDescription>
+                    Add links to your game videos from YouTube, Hudl, or other platforms
+                  </CardDescription>
+                </div>
+                {isFree && (
+                  <Badge variant="outline">
+                    {gameVideos.length}/{MAX_GAME_VIDEOS_FREE} videos
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {gameVideos.length > 0 ? (

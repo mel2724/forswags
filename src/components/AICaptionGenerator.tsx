@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Sparkles, Copy, RefreshCw } from "lucide-react";
+import { UpgradePromptDialog } from "./UpgradePromptDialog";
+import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
 
 interface AICaptionGeneratorProps {
   onCaptionGenerated?: (caption: string) => void;
 }
+
+const AI_CAPTION_LIMIT_FREE = 5;
 
 export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorProps) => {
   const [prompt, setPrompt] = useState("");
@@ -18,10 +22,37 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
   const [tone, setTone] = useState("professional");
   const [generatedCaption, setGeneratedCaption] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationCount, setGenerationCount] = useState(0);
+  const { isOpen, config, showUpgradePrompt, closeUpgradePrompt, isFree } = useUpgradePrompt();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("aiCaptionCount");
+    if (stored) {
+      setGenerationCount(parseInt(stored, 10));
+    }
+  }, []);
 
   const generateCaption = async () => {
     if (!prompt.trim()) {
       toast.error('Please enter a description of your post');
+      return;
+    }
+
+    // Check limit for free users
+    if (isFree && generationCount >= AI_CAPTION_LIMIT_FREE) {
+      showUpgradePrompt({
+        title: "AI Caption Limit Reached",
+        description: "You've reached the free tier limit for AI-generated captions. Upgrade for unlimited AI-powered content creation.",
+        feature: "Unlimited AI Captions",
+        context: "limit",
+        benefits: [
+          "Unlimited AI caption generations",
+          "Multiple tone options",
+          "Context-aware suggestions",
+          "Copy and edit capabilities",
+          "Priority AI processing",
+        ],
+      });
       return;
     }
 
@@ -40,6 +71,19 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
 
       const caption = data.caption;
       setGeneratedCaption(caption);
+      
+      // Increment generation count for free users
+      if (isFree) {
+        const newCount = generationCount + 1;
+        setGenerationCount(newCount);
+        localStorage.setItem("aiCaptionCount", newCount.toString());
+        
+        if (newCount === 3) {
+          toast.info(`You have ${AI_CAPTION_LIMIT_FREE - newCount} free AI captions remaining`, {
+            description: "Upgrade for unlimited AI content",
+          });
+        }
+      }
       
       if (onCaptionGenerated) {
         onCaptionGenerated(caption);
@@ -76,7 +120,14 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
   ];
 
   return (
-    <Card>
+    <>
+      <UpgradePromptDialog
+        open={isOpen}
+        onOpenChange={closeUpgradePrompt}
+        {...config}
+      />
+      
+      <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
@@ -160,6 +211,11 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
             </>
           )}
         </Button>
+        {isFree && (
+          <p className="text-xs text-center text-muted-foreground">
+            Free tier: {generationCount}/{AI_CAPTION_LIMIT_FREE} AI captions used
+          </p>
+        )}
 
         {generatedCaption && (
           <div className="space-y-2">
@@ -208,5 +264,6 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
         </div>
       </CardContent>
     </Card>
+    </>
   );
 };

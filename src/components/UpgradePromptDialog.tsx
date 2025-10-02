@@ -1,0 +1,134 @@
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Check, Crown, Sparkles, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useUserTier } from "@/hooks/useFeatureAccess";
+
+interface UpgradePromptDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title?: string;
+  description?: string;
+  feature?: string;
+  benefits?: string[];
+  context?: "general" | "limit" | "feature" | "analytics";
+}
+
+const DEFAULT_BENEFITS = {
+  general: [
+    "Unlimited evaluations and assessments",
+    "Advanced analytics and insights",
+    "Priority coach connections",
+    "AI-powered content generation",
+    "Unlimited media storage",
+    "College matching algorithm",
+    "Professional press releases",
+  ],
+  limit: [
+    "Remove all usage limits",
+    "Unlimited evaluations per month",
+    "Unlimited media uploads",
+    "Unlimited AI generations",
+    "Priority support",
+  ],
+  feature: [
+    "Access all premium features",
+    "Advanced analytics dashboard",
+    "AI-powered tools",
+    "Priority listing in search",
+    "Professional development resources",
+  ],
+  analytics: [
+    "Detailed performance metrics",
+    "Recruiter engagement tracking",
+    "Profile view analytics",
+    "Comparison insights",
+    "Export reports (PDF/Excel)",
+  ],
+};
+
+export function UpgradePromptDialog({
+  open,
+  onOpenChange,
+  title = "Upgrade to Premium",
+  description = "Unlock all features and take your athletic career to the next level",
+  feature,
+  benefits,
+  context = "general",
+}: UpgradePromptDialogProps) {
+  const navigate = useNavigate();
+  const { tier } = useUserTier();
+
+  const displayBenefits = benefits || DEFAULT_BENEFITS[context];
+
+  const handleUpgrade = () => {
+    onOpenChange(false);
+    navigate("/membership");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Crown className="h-6 w-6 text-primary" />
+            </div>
+            <Badge variant="secondary" className="uppercase font-bold">
+              {tier === "free" ? "Free Plan" : tier}
+            </Badge>
+          </div>
+          <DialogTitle className="text-2xl">{title}</DialogTitle>
+          <DialogDescription className="text-base">
+            {description}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {feature && (
+            <div className="p-4 rounded-lg bg-muted border-l-4 border-primary">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Feature: {feature}
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <p className="font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Premium Benefits:
+            </p>
+            <ul className="space-y-2">
+              {displayBenefits.map((benefit, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <span>{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="pt-4 space-y-3">
+            <Button onClick={handleUpgrade} className="w-full" size="lg">
+              <Crown className="mr-2 h-4 w-4" />
+              View Membership Plans
+            </Button>
+            <Button
+              onClick={() => onOpenChange(false)}
+              variant="ghost"
+              className="w-full"
+            >
+              Maybe Later
+            </Button>
+          </div>
+
+          <p className="text-xs text-center text-muted-foreground">
+            30-day money-back guarantee • Cancel anytime
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

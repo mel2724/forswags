@@ -13,6 +13,7 @@ import logoIcon from "@/assets/forswags-logo.png";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import NotificationCard from "@/components/NotificationCard";
 import SponsorCard from "@/components/SponsorCard";
+import { UpgradeNudge } from "@/components/UpgradeNudge";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -359,6 +360,17 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Upgrade Nudge for Free Users */}
+            {membership?.plan === "free" && (
+              <UpgradeNudge
+                title="Unlock Your Full Athletic Potential"
+                description="Get unlimited evaluations, advanced analytics, AI-powered content, and priority access to college recruiters"
+                variant="full"
+                highlight="Pro members get 3x more profile views from recruiters"
+                dismissible={true}
+              />
+            )}
 
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-6">
