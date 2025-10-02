@@ -20,36 +20,35 @@ export default function AthleteAnalytics() {
 function AthleteAnalyticsContent() {
   interface ProfileViewStats {
     total_views: number;
-  unique_viewers: number;
-  recruiter_views: number;
-  coach_views: number;
-  recent_views: Array<{
-    viewer_id: string;
+    unique_viewers: number;
+    recruiter_views: number;
+    coach_views: number;
+    recent_views: Array<{
+      viewer_id: string;
+      viewer_type: string;
+      viewed_at: string;
+    }>;
+  }
+
+  interface EngagementStats {
+    total_engagements: number;
+    views: number;
+    shares: number;
+    downloads: number;
+    engagement_by_type: Record<string, number>;
+  }
+
+  interface RecentView {
+    id: string;
     viewer_type: string;
     viewed_at: string;
-  }>;
-}
+    viewer_id: string;
+    profiles?: {
+      full_name: string;
+      avatar_url: string | null;
+    } | null;
+  }
 
-interface EngagementStats {
-  total_engagements: number;
-  views: number;
-  shares: number;
-  downloads: number;
-  engagement_by_type: Record<string, number>;
-}
-
-interface RecentView {
-  id: string;
-  viewer_type: string;
-  viewed_at: string;
-  viewer_id: string;
-  profiles?: {
-    full_name: string;
-    avatar_url: string | null;
-  } | null;
-}
-
-export function AthleteAnalytics() {
   const [athleteId, setAthleteId] = useState<string | null>(null);
   const [viewStats, setViewStats] = useState<ProfileViewStats | null>(null);
   const [engagementStats, setEngagementStats] = useState<EngagementStats | null>(null);

@@ -20,26 +20,28 @@ export default function Rankings() {
 }
 
 function RankingsPage() {
-  overall_rank: number | null;
-  position_rank: number | null;
-  state_rank: number | null;
-  national_rank: number | null;
-  composite_score: number | null;
-  last_calculated: string;
-  athletes: {
-    sport: string;
-    position: string | null;
-    graduation_year: number | null;
-    high_school: string | null;
-    user_id: string;
-  } | null;
-  profiles?: {
-    full_name: string | null;
-    avatar_url: string | null;
-  } | null;
-}
+  interface RankingData {
+    id: string;
+    athlete_id: string;
+    overall_rank: number | null;
+    position_rank: number | null;
+    state_rank: number | null;
+    national_rank: number | null;
+    composite_score: number | null;
+    last_calculated: string;
+    athletes: {
+      sport: string;
+      position: string | null;
+      graduation_year: number | null;
+      high_school: string | null;
+      user_id: string;
+    } | null;
+    profiles?: {
+      full_name: string | null;
+      avatar_url: string | null;
+    } | null;
+  }
 
-  const Rankings = () => {
   const navigate = useNavigate();
   const [rankings, setRankings] = useState<RankingData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -347,5 +349,4 @@ function RankingsPage() {
       </main>
     </div>
   );
-  };
 }
