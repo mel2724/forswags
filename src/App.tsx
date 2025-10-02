@@ -30,6 +30,7 @@ import CourseDetail from "./pages/CourseDetail";
 import Lesson from "./pages/Lesson";
 import Badges from "./pages/Badges";
 import Evaluations from "./pages/Evaluations";
+import EvaluationProgress from "./pages/EvaluationProgress";
 import SocialMedia from "./pages/SocialMedia";
 import Membership from "./pages/Membership";
 import MembershipAthlete from "./pages/MembershipAthlete";
@@ -96,8 +97,9 @@ const App = () => (
             <Route path="/courses/:courseId" element={<CourseDetail />} />
             <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
             <Route path="/badges" element={<Badges />} />
-            <Route path="/evaluations" element={<Evaluations />} />
-            <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
+          <Route path="/evaluations" element={<Evaluations />} />
+          <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
+          <Route path="/evaluations/progress" element={<EvaluationProgress />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/membership/athlete" element={<MembershipAthlete />} />
           <Route path="/membership/recruiter" element={<MembershipRecruiter />} />

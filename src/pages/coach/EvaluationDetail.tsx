@@ -4,11 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, User, Award } from "lucide-react";
+import { ArrowLeft, Save, User } from "lucide-react";
 import { VideoAnnotation } from "@/components/VideoAnnotation";
+import { SkillAssessmentMatrix } from "@/components/SkillAssessmentMatrix";
 
 interface EvaluationCriteria {
   id: string;
@@ -296,41 +295,12 @@ export default function EvaluationDetail() {
 
         {/* Scoring Panel */}
         <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                Evaluation Scores
-              </CardTitle>
-              <CardDescription>
-                Rate each criterion from 0-10
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {criteria.map((criterion) => (
-                <div key={criterion.id} className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Label className="font-medium">{criterion.name}</Label>
-                      <p className="text-xs text-muted-foreground">
-                        {criterion.description}
-                      </p>
-                    </div>
-                    <span className="text-lg font-bold text-primary">
-                      {scores[criterion.id] ?? 0}/{criterion.max_score}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[scores[criterion.id] ?? 0]}
-                    onValueChange={([value]) => handleScoreChange(criterion.id, value)}
-                    max={criterion.max_score}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <SkillAssessmentMatrix
+            criteria={criteria}
+            scores={scores}
+            onScoreChange={handleScoreChange}
+            isReadOnly={false}
+          />
 
           <div className="space-y-2">
             <Button

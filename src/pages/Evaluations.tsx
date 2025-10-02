@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, Clock, CheckCircle, AlertCircle, ArrowLeft, Video, DollarSign } from "lucide-react";
+import { Star, Clock, CheckCircle, AlertCircle, ArrowLeft, Video, DollarSign, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Evaluation {
@@ -168,15 +168,17 @@ export default function Evaluations() {
               Completed {new Date(evaluation.completed_at).toLocaleDateString()}
             </p>
           )}
-          {canReevaluate && isEligibleForReevaluation && (
-            <Button 
-              onClick={handleReevaluationRequest}
-              variant="outline"
-              className="w-full"
-            >
-              Request Re-evaluation
-            </Button>
-          )}
+      {canReevaluate && isEligibleForReevaluation && (
+        <div className="space-y-2">
+          <Button 
+            onClick={handleReevaluationRequest}
+            variant="outline"
+            className="w-full"
+          >
+            Request Re-evaluation
+          </Button>
+        </div>
+      )}
           {canReevaluate && !isEligibleForReevaluation && (
             <p className="text-xs text-muted-foreground text-center">
               Re-evaluation available {completedDate && new Date(completedDate.getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString()}
@@ -209,10 +211,20 @@ export default function Evaluations() {
       </Button>
 
       <div>
-        <h1 className="text-3xl font-bold mb-2">Coach Evaluations</h1>
-        <p className="text-muted-foreground mb-6">
-          Get professional feedback from certified coaches
-        </p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Coach Evaluations</h1>
+            <p className="text-muted-foreground">
+              Get professional feedback from certified coaches
+            </p>
+          </div>
+          {evaluations.length > 1 && (
+            <Button onClick={() => navigate("/evaluations/progress")} variant="outline">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              View Progress
+            </Button>
+          )}
+        </div>
 
         <Card className="border-primary mb-6">
           <CardHeader>

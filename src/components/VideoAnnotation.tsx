@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Canvas as FabricCanvas, Circle } from "fabric";
+import { Canvas as FabricCanvas, Circle, IText } from "fabric";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { 
   Pencil, 
@@ -11,7 +12,9 @@ import {
   Mic,
   Square,
   Play,
-  Pause
+  Pause,
+  Type,
+  MessageSquare
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,9 +37,11 @@ export const VideoAnnotation = ({ videoUrl, evaluationId, isReadOnly = false }: 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
-  const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'circle' | 'erase'>('select');
+  const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'circle' | 'text' | 'erase'>('select');
   const [drawColor, setDrawColor] = useState("#FF0000");
   const [lineWidth, setLineWidth] = useState(3);
+  const [textInput, setTextInput] = useState("");
+  const [showTextInput, setShowTextInput] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -177,7 +182,27 @@ export const VideoAnnotation = ({ videoUrl, evaluationId, isReadOnly = false }: 
       });
       fabricCanvas.add(circle);
       fabricCanvas.setActiveObject(circle);
+    } else if (tool === 'text') {
+      setShowTextInput(true);
     }
+  };
+
+  const handleAddText = () => {
+    if (!fabricCanvas || !textInput.trim()) return;
+
+    const text = new IText(textInput, {
+      left: 100,
+      top: 100,
+      fill: drawColor,
+      fontSize: 20,
+      fontFamily: 'Arial',
+    });
+    
+    fabricCanvas.add(text);
+    fabricCanvas.setActiveObject(text);
+    setTextInput("");
+    setShowTextInput(false);
+    setActiveTool('select');
   };
 
   const handleClear = () => {
@@ -384,6 +409,14 @@ export const VideoAnnotation = ({ videoUrl, evaluationId, isReadOnly = false }: 
               </Button>
               <Button
                 size="sm"
+                variant={activeTool === 'text' ? 'default' : 'outline'}
+                onClick={() => handleToolClick('text')}
+              >
+                <Type className="h-4 w-4 mr-2" />
+                Text
+              </Button>
+              <Button
+                size="sm"
                 variant="outline"
                 onClick={handleUndo}
               >
@@ -400,9 +433,25 @@ export const VideoAnnotation = ({ videoUrl, evaluationId, isReadOnly = false }: 
                 size="sm"
                 onClick={saveDrawing}
               >
-                Save Drawing
+                Save Annotation
               </Button>
             </div>
+
+            {/* Text Input */}
+            {showTextInput && (
+              <div className="flex gap-2 mb-4">
+                <Input
+                  placeholder="Enter text annotation..."
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddText()}
+                />
+                <Button onClick={handleAddText} disabled={!textInput.trim()}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+            )}
 
             {/* Drawing Settings */}
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -470,7 +519,8 @@ export const VideoAnnotation = ({ videoUrl, evaluationId, isReadOnly = false }: 
                       {Math.floor(annotation.timestamp_ms / 1000)}s
                     </span>
                     <span className="text-muted-foreground">
-                      {annotation.annotation_type === 'drawing' ? '✏️ Drawing' : '🎤 Voice'}
+                      {annotation.annotation_type === 'drawing' ? '✏️ Drawing' : 
+                       annotation.annotation_type === 'voice' ? '🎤 Voice' : '💬 Text'}
                     </span>
                     {annotation.annotation_type === 'voice' && annotation.data.audioUrl && (
                       <audio controls className="h-6 ml-auto">
