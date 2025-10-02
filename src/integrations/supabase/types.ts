@@ -203,6 +203,7 @@ export type Database = {
           signing_day_date: string | null
           sport: string
           squat_max: number | null
+          tier_based_visibility: boolean | null
           tiktok_handle: string | null
           twitter_handle: string | null
           upcoming_camps: string[] | null
@@ -265,6 +266,7 @@ export type Database = {
           signing_day_date?: string | null
           sport: string
           squat_max?: number | null
+          tier_based_visibility?: boolean | null
           tiktok_handle?: string | null
           twitter_handle?: string | null
           upcoming_camps?: string[] | null
@@ -327,6 +329,7 @@ export type Database = {
           signing_day_date?: string | null
           sport?: string
           squat_max?: number | null
+          tier_based_visibility?: boolean | null
           tiktok_handle?: string | null
           twitter_handle?: string | null
           upcoming_camps?: string[] | null
@@ -1354,35 +1357,47 @@ export type Database = {
       }
       memberships: {
         Row: {
+          archived_data: Json | null
           auto_renew: boolean | null
           created_at: string
+          downgraded_at: string | null
           end_date: string | null
           id: string
+          payment_failed_at: string | null
           plan: Database["public"]["Enums"]["subscription_plan"]
           start_date: string
           status: string
+          stripe_subscription_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          archived_data?: Json | null
           auto_renew?: boolean | null
           created_at?: string
+          downgraded_at?: string | null
           end_date?: string | null
           id?: string
+          payment_failed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           start_date?: string
           status?: string
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          archived_data?: Json | null
           auto_renew?: boolean | null
           created_at?: string
+          downgraded_at?: string | null
           end_date?: string | null
           id?: string
+          payment_failed_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           start_date?: string
           status?: string
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2390,6 +2405,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tier_features: {
+        Row: {
+          created_at: string | null
+          feature_key: string
+          id: string
+          is_enabled: boolean | null
+          limit_value: number | null
+          tier: string
+        }
+        Insert: {
+          created_at?: string | null
+          feature_key: string
+          id?: string
+          is_enabled?: boolean | null
+          limit_value?: number | null
+          tier: string
+        }
+        Update: {
+          created_at?: string | null
+          feature_key?: string
+          id?: string
+          is_enabled?: boolean | null
+          limit_value?: number | null
+          tier?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -2445,6 +2487,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_user_data: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       can_request_reevaluation: {
         Args: { p_athlete_id: string }
         Returns: boolean
@@ -2476,6 +2522,22 @@ export type Database = {
           total_views: number
           unique_viewers: number
         }[]
+      }
+      get_safe_athlete_profile: {
+        Args: { p_athlete_id: string }
+        Returns: Json
+      }
+      get_user_evaluation_price: {
+        Args: { p_is_reevaluation: boolean; p_user_id: string }
+        Returns: number
+      }
+      get_user_tier: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
+      has_feature_access: {
+        Args: { p_feature_key: string; p_user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
