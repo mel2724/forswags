@@ -874,6 +874,56 @@ export type Database = {
           },
         ]
       }
+      hashtag_performance: {
+        Row: {
+          clicks: number | null
+          created_at: string | null
+          engagements: number | null
+          hashtag: string
+          id: string
+          impressions: number | null
+          last_used_at: string | null
+          platform: string
+          post_id: string | null
+          used_count: number | null
+          user_id: string
+        }
+        Insert: {
+          clicks?: number | null
+          created_at?: string | null
+          engagements?: number | null
+          hashtag: string
+          id?: string
+          impressions?: number | null
+          last_used_at?: string | null
+          platform: string
+          post_id?: string | null
+          used_count?: number | null
+          user_id: string
+        }
+        Update: {
+          clicks?: number | null
+          created_at?: string | null
+          engagements?: number | null
+          hashtag?: string
+          id?: string
+          impressions?: number | null
+          last_used_at?: string | null
+          platform?: string
+          post_id?: string | null
+          used_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hashtag_performance_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           content: string | null
@@ -1246,6 +1296,51 @@ export type Database = {
           },
         ]
       }
+      post_templates: {
+        Row: {
+          content_template: string
+          created_at: string | null
+          description: string | null
+          graphic_config: Json | null
+          id: string
+          is_public: boolean | null
+          name: string
+          suggested_hashtags: string[] | null
+          template_type: string
+          updated_at: string | null
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          content_template: string
+          created_at?: string | null
+          description?: string | null
+          graphic_config?: Json | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          suggested_hashtags?: string[] | null
+          template_type: string
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          content_template?: string
+          created_at?: string | null
+          description?: string | null
+          graphic_config?: Json | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          suggested_hashtags?: string[] | null
+          template_type?: string
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profile_views: {
         Row: {
           athlete_id: string
@@ -1571,6 +1666,65 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_posts: {
+        Row: {
+          account_id: string | null
+          content: string
+          created_at: string | null
+          error_message: string | null
+          hashtags: string[] | null
+          id: string
+          media_url: string | null
+          platforms: string[]
+          posted_at: string | null
+          scheduled_for: string
+          status: string
+          template_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          content: string
+          created_at?: string | null
+          error_message?: string | null
+          hashtags?: string[] | null
+          id?: string
+          media_url?: string | null
+          platforms?: string[]
+          posted_at?: string | null
+          scheduled_for: string
+          status?: string
+          template_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          content?: string
+          created_at?: string | null
+          error_message?: string | null
+          hashtags?: string[] | null
+          id?: string
+          media_url?: string | null
+          platforms?: string[]
+          posted_at?: string | null
+          scheduled_for?: string
+          status?: string
+          template_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_posts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "social_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           acceptance_rate: number | null
@@ -1726,6 +1880,45 @@ export type Database = {
           results_count?: number | null
           search_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      social_accounts: {
+        Row: {
+          connected_at: string | null
+          created_at: string | null
+          follower_count: number | null
+          id: string
+          is_primary: boolean | null
+          last_posted_at: string | null
+          platform: string
+          updated_at: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          connected_at?: string | null
+          created_at?: string | null
+          follower_count?: number | null
+          id?: string
+          is_primary?: boolean | null
+          last_posted_at?: string | null
+          platform: string
+          updated_at?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          connected_at?: string | null
+          created_at?: string | null
+          follower_count?: number | null
+          id?: string
+          is_primary?: boolean | null
+          last_posted_at?: string | null
+          platform?: string
+          updated_at?: string | null
+          user_id?: string
+          username?: string
         }
         Relationships: []
       }

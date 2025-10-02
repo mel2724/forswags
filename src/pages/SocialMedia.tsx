@@ -9,6 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target, Hash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SocialMediaGraphicGenerator } from "@/components/SocialMediaGraphicGenerator";
+import { ContentCalendar } from "@/components/ContentCalendar";
+import { AICaptionGenerator } from "@/components/AICaptionGenerator";
+import { HashtagPerformance } from "@/components/HashtagPerformance";
+import { SocialAccountsManager } from "@/components/SocialAccountsManager";
+import { PostTemplatesLibrary } from "@/components/PostTemplatesLibrary";
 import { toast } from "sonner";
 
 const FORSWAGS_TAG = "#ForSWAGsNation";
@@ -207,18 +212,38 @@ export default function SocialMedia() {
       </div>
 
       <Tabs defaultValue="generator" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8">
           <TabsTrigger value="generator">
             <Sparkles className="mr-2 h-4 w-4" />
-            Graphic Generator
+            Graphics
           </TabsTrigger>
           <TabsTrigger value="post">
             <Share2 className="mr-2 h-4 w-4" />
-            Create Post
+            Quick Post
+          </TabsTrigger>
+          <TabsTrigger value="ai-caption">
+            <Sparkles className="mr-2 h-4 w-4" />
+            AI Captions
+          </TabsTrigger>
+          <TabsTrigger value="calendar">
+            <Share2 className="mr-2 h-4 w-4" />
+            Calendar
+          </TabsTrigger>
+          <TabsTrigger value="templates">
+            <Share2 className="mr-2 h-4 w-4" />
+            Templates
+          </TabsTrigger>
+          <TabsTrigger value="hashtags">
+            <Hash className="mr-2 h-4 w-4" />
+            Hashtags
+          </TabsTrigger>
+          <TabsTrigger value="accounts">
+            <Share2 className="mr-2 h-4 w-4" />
+            Accounts
           </TabsTrigger>
           <TabsTrigger value="tips">
             <Lightbulb className="mr-2 h-4 w-4" />
-            Tips & Best Practices
+            Tips
           </TabsTrigger>
         </TabsList>
 
@@ -383,6 +408,29 @@ export default function SocialMedia() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="ai-caption" className="space-y-4 mt-6">
+          <AICaptionGenerator onCaptionGenerated={(caption) => setPostContent(caption)} />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="space-y-4 mt-6">
+          <ContentCalendar />
+        </TabsContent>
+
+        <TabsContent value="templates" className="space-y-4 mt-6">
+          <PostTemplatesLibrary onTemplateSelect={(template) => {
+            setPostContent(template.content_template);
+            toast.info('Template loaded! Fill in the placeholders with your details.');
+          }} />
+        </TabsContent>
+
+        <TabsContent value="hashtags" className="space-y-4 mt-6">
+          <HashtagPerformance />
+        </TabsContent>
+
+        <TabsContent value="accounts" className="space-y-4 mt-6">
+          <SocialAccountsManager />
         </TabsContent>
 
         <TabsContent value="tips" className="space-y-4 mt-6">
