@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { ProfileActions } from "@/components/ProfileActions";
 import logoIcon from "@/assets/forswags-logo.png";
 import {
   User, Trophy, GraduationCap, Video, ArrowLeft, Save,
@@ -785,6 +786,14 @@ export default function ProfileComprehensive() {
             </Card>
           </AccordionItem>
         </Accordion>
+
+        {/* Profile Sharing Actions */}
+        {athleteId && (
+          <ProfileActions 
+            athleteId={athleteId}
+            athleteName={fullName}
+          />
+        )}
 
         <div className="mt-8 flex gap-4">
           <Button onClick={handleSave} disabled={saving} className="flex-1" size="lg">
