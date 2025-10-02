@@ -103,6 +103,71 @@ export type Database = {
           },
         ]
       }
+      archived_media: {
+        Row: {
+          archived_at: string
+          archived_reason: string
+          athlete_id: string | null
+          content_type: string | null
+          file_name: string
+          file_size: number | null
+          id: string
+          is_deleted: boolean | null
+          media_type: string
+          metadata: Json | null
+          original_media_id: string
+          replaced_by_media_id: string | null
+          storage_bucket: string
+          storage_path: string
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          archived_at?: string
+          archived_reason: string
+          athlete_id?: string | null
+          content_type?: string | null
+          file_name: string
+          file_size?: number | null
+          id?: string
+          is_deleted?: boolean | null
+          media_type: string
+          metadata?: Json | null
+          original_media_id: string
+          replaced_by_media_id?: string | null
+          storage_bucket: string
+          storage_path: string
+          user_id: string
+          version_number?: number
+        }
+        Update: {
+          archived_at?: string
+          archived_reason?: string
+          athlete_id?: string | null
+          content_type?: string | null
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          is_deleted?: boolean | null
+          media_type?: string
+          metadata?: Json | null
+          original_media_id?: string
+          replaced_by_media_id?: string | null
+          storage_bucket?: string
+          storage_path?: string
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_original_media"
+            columns: ["original_media_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_stats: {
         Row: {
           athlete_id: string
@@ -1307,43 +1372,52 @@ export type Database = {
       }
       media_assets: {
         Row: {
+          archived_at: string | null
           athlete_id: string | null
           created_at: string
           description: string | null
           file_size: number | null
           id: string
+          is_archived: boolean | null
           media_type: string
           thumbnail_url: string | null
           title: string
           updated_at: string
           url: string
           user_id: string
+          version_number: number | null
         }
         Insert: {
+          archived_at?: string | null
           athlete_id?: string | null
           created_at?: string
           description?: string | null
           file_size?: number | null
           id?: string
+          is_archived?: boolean | null
           media_type: string
           thumbnail_url?: string | null
           title: string
           updated_at?: string
           url: string
           user_id: string
+          version_number?: number | null
         }
         Update: {
+          archived_at?: string | null
           athlete_id?: string | null
           created_at?: string
           description?: string | null
           file_size?: number | null
           id?: string
+          is_archived?: boolean | null
           media_type?: string
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
           url?: string
           user_id?: string
+          version_number?: number | null
         }
         Relationships: [
           {
@@ -2487,6 +2561,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_archived_media: {
+        Args: { p_athlete_id?: string; p_limit?: number; p_user_id?: string }
+        Returns: {
+          archived_at: string
+          archived_reason: string
+          athlete_id: string
+          athlete_name: string
+          file_name: string
+          id: string
+          is_deleted: boolean
+          media_type: string
+          original_media_id: string
+          storage_path: string
+          user_email: string
+          user_id: string
+          version_number: number
+        }[]
+      }
+      archive_alumni_account: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       archive_user_data: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -2512,6 +2608,16 @@ export type Database = {
       get_evaluation_price: {
         Args: { p_athlete_id: string }
         Returns: string
+      }
+      get_media_version_history: {
+        Args: { p_media_id: string }
+        Returns: {
+          archived_at: string
+          archived_reason: string
+          file_size: number
+          storage_path: string
+          version_number: number
+        }[]
       }
       get_profile_view_stats: {
         Args: { p_athlete_id: string; p_days?: number }

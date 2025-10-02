@@ -848,6 +848,106 @@ const { data, error } = await supabase.functions.invoke('export-user-data');
 
 ---
 
+## Usage Limits and Tier Features
+
+**Status**: ✅ Implemented
+
+### Tier-Based Access Control
+- **Database Functions**: `get_user_tier()`, `has_feature_access()`, `get_user_evaluation_price()`
+- **Features Table**: `tier_features` tracks all feature access by tier
+- **Automatic Enforcement**: RLS policies and feature gates protect premium features
+
+### Free Tier Limitations
+- **No Public Profile**: Profiles not publicly accessible, only searchable within site
+- **Evaluation Pricing**: $197 for initial and re-evaluations (no discount)
+- **No Rankings**: Rankings feature disabled
+- **No Analytics**: Profile view notifications and analytics disabled  
+- **No College Matching**: College matching feature disabled
+- **Contact Info Protected**: Social media handles hidden from all users
+
+### Paid Tier Benefits (Pro/Championship)
+- **Public Profiles**: Athletes discoverable by recruiters
+- **Reduced Evaluation Pricing**: $97 initial, $49 re-evaluation
+- **Full Analytics**: Profile views, engagement metrics, recruiter interest
+- **College Matching**: AI-powered college recommendations
+- **Rankings**: National, state, and position rankings
+- **Contact Visibility**: Paid recruiters can view athlete contact info
+
+### Payment Failure Handling
+- **Automatic Downgrade**: Failed payments trigger automatic downgrade to free tier
+- **Data Archival**: Premium data and media archived for 6 months
+- **Data Restoration**: Archived data restored if user upgrades within 6 months
+- **Webhook Integration**: Stripe webhooks handle subscription lifecycle events
+
+---
+
+## Media Archival System 📦
+
+**Status**: ✅ Fully Implemented
+
+### Automatic Archival on Account Cancellation
+All videos, images, and media are automatically archived when:
+- Account is canceled or closed
+- Payment fails and account downgrades to free tier
+- Alumni accounts are deactivated
+- User updates/replaces media files (versioning)
+
+### Version History System
+**Every media update is preserved:**
+- Original files archived before replacement
+- Version numbers tracked automatically
+- Full metadata preserved (file size, upload date, description)
+- Complete audit trail of all changes
+
+### Admin-Only Access
+**Security Features:**
+- Only admins can view archived media
+- Archived media stored in separate `archived-media` storage bucket
+- RLS policies prevent unauthorized access
+- Deletion requires explicit admin override (effectively prevented)
+
+### Storage Architecture
+```
+media-assets/          → Active media files
+profile-pictures/      → Current profile images
+archived-media/        → All archived content (admin only)
+```
+
+### Alumni Network Integration
+**Special handling for alumni accounts:**
+- `archive_alumni_account()` function archives all user data
+- Alumni profiles marked as inactive but preserved
+- Media remains accessible to admins indefinitely
+- Biography updated with [ACCOUNT ARCHIVED] marker
+
+### Data Retention Policy
+**Account Cancellation:**
+- All media archived immediately on cancellation
+- Data retained for 6 months for potential restoration
+- After 6 months, data remains in archive (admin access only)
+- No automatic deletion - compliance with legal requirements
+
+**Media Updates:**
+- Previous versions preserved permanently
+- Version history accessible to admins and file owners
+- No limit on version history retention
+
+### Admin Tools
+- **AdminArchivedMedia** page - View all archived content
+- **MediaVersionHistory** component - Track file version changes
+- Search by user email or athlete name
+- Filter by archive reason and media type
+
+### Functions Available
+```sql
+archive_user_data(user_id)           -- Archive all user media
+archive_alumni_account(user_id)       -- Archive alumni account
+admin_get_archived_media()            -- Admin retrieval
+get_media_version_history(media_id)   -- Version history
+```
+
+---
+
 ## Summary of Security Improvements
 
 ✅ **Database Security**

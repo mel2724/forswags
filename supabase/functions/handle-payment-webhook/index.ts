@@ -47,8 +47,10 @@ serve(async (req) => {
           const user = authData?.users.find(u => u.email === email);
           
           if (user) {
-            // Archive user data before downgrade
+            // Archive user data including all media before downgrade
             await supabase.rpc('archive_user_data', { p_user_id: user.id });
+            
+            console.log(`Archived all data and media for user ${user.id}`);
 
             // Update membership to free tier
             await supabase
