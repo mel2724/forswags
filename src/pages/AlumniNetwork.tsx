@@ -67,12 +67,15 @@ export default function AlumniNetwork() {
         .from('alumni')
         .select(`
           *,
-          profiles:user_id (
+          profiles!inner(
             full_name,
             avatar_url
           ),
-          schools:school_id (
-            name
+          schools(
+            id,
+            name,
+            city,
+            state
           )
         `)
         .order('graduation_year', { ascending: false });
