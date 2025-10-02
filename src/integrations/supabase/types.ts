@@ -2080,6 +2080,10 @@ export type Database = {
           views: number
         }[]
       }
+      get_evaluation_composite_score: {
+        Args: { eval_scores: Json }
+        Returns: number
+      }
       get_evaluation_price: {
         Args: { p_athlete_id: string }
         Returns: string
