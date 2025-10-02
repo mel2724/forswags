@@ -29,7 +29,7 @@ interface VideoAnnotationProps {
   isReadOnly?: boolean;
 }
 
-export default function VideoAnnotation({ videoUrl, evaluationId, isReadOnly = false }: VideoAnnotationProps) {
+export const VideoAnnotation = ({ videoUrl, evaluationId, isReadOnly = false }: VideoAnnotationProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -97,13 +97,30 @@ export default function VideoAnnotation({ videoUrl, evaluationId, isReadOnly = f
     }
   }, [fabricCanvas, activeTool, drawColor, lineWidth]);
 
-  // Video time update
+  // Video time update and annotation display
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime * 1000);
+      const time = video.currentTime * 1000;
+      setCurrentTime(time);
+      
+      // Find and display drawing annotation at current timestamp
+      const currentAnnotation = annotations.find(
+        a => a.annotation_type === 'drawing' && 
+        Math.abs(a.timestamp_ms - time) < 500
+      );
+      
+      if (currentAnnotation && fabricCanvas) {
+        try {
+          fabricCanvas.loadFromJSON(currentAnnotation.data, () => {
+            fabricCanvas.renderAll();
+          });
+        } catch (error) {
+          console.error('Error loading annotation:', error);
+        }
+      }
     };
 
     const handlePlay = () => setIsPlaying(true);
@@ -118,7 +135,7 @@ export default function VideoAnnotation({ videoUrl, evaluationId, isReadOnly = f
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
     };
-  }, []);
+  }, [annotations, fabricCanvas]);
 
   // Load annotations
   useEffect(() => {
@@ -431,27 +448,42 @@ export default function VideoAnnotation({ videoUrl, evaluationId, isReadOnly = f
         {/* Annotations Timeline */}
         {annotations.length > 0 && (
           <div className="mt-4 pt-4 border-t">
-            <h3 className="text-sm font-medium mb-2">Annotations</h3>
-            <div className="space-y-2">
-              {annotations.map((annotation) => (
-                <div key={annotation.id} className="text-xs flex items-center gap-2 p-2 bg-muted rounded">
-                  <span className="font-medium">
-                    {Math.floor(annotation.timestamp_ms / 1000)}s
-                  </span>
-                  <span className="text-muted-foreground">
-                    {annotation.annotation_type === 'drawing' ? '✏️ Drawing' : '🎤 Voice'}
-                  </span>
-                  {annotation.annotation_type === 'voice' && annotation.data.audioUrl && (
-                    <audio controls className="h-6 ml-auto">
-                      <source src={annotation.data.audioUrl} type="audio/webm" />
-                    </audio>
-                  )}
-                </div>
-              ))}
+            <h3 className="text-sm font-medium mb-2">
+              Annotations ({annotations.length})
+            </h3>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {annotations.map((annotation) => {
+                const isActive = Math.abs(annotation.timestamp_ms - currentTime) < 500;
+                return (
+                  <div 
+                    key={annotation.id} 
+                    className={`text-xs flex items-center gap-2 p-2 rounded transition-colors cursor-pointer ${
+                      isActive ? 'bg-primary/20 border border-primary' : 'bg-muted hover:bg-muted/80'
+                    }`}
+                    onClick={() => {
+                      if (videoRef.current) {
+                        videoRef.current.currentTime = annotation.timestamp_ms / 1000;
+                      }
+                    }}
+                  >
+                    <span className="font-medium min-w-[40px]">
+                      {Math.floor(annotation.timestamp_ms / 1000)}s
+                    </span>
+                    <span className="text-muted-foreground">
+                      {annotation.annotation_type === 'drawing' ? '✏️ Drawing' : '🎤 Voice'}
+                    </span>
+                    {annotation.annotation_type === 'voice' && annotation.data.audioUrl && (
+                      <audio controls className="h-6 ml-auto">
+                        <source src={annotation.data.audioUrl} type="audio/webm" />
+                      </audio>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
       </Card>
     </div>
   );
-}
+};
