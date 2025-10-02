@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/AppLayout";
 import Landing from "./pages/Landing";
 import Sponsors from "./pages/Sponsors";
 import SponsorShowcase from "./pages/SponsorShowcase";
+import SchoolSearch from "./pages/SchoolSearch";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/preferences" element={<CollegePreferences />} />
             <Route path="/media" element={<MediaGallery />} />
             <Route path="/rankings" element={<Rankings />} />
+            <Route path="/schools" element={<SchoolSearch />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/courses/:courseId" element={<CourseDetail />} />

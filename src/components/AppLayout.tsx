@@ -4,6 +4,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { supabase } from "@/integrations/supabase/client";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,6 +16,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -57,8 +61,21 @@ export function AppLayout({ children }: AppLayoutProps) {
               <div className="flex-1">
                 <Breadcrumbs />
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSearchOpen(true)}
+                className="gap-2"
+              >
+                <Search className="h-4 w-4" />
+                <span className="hidden sm:inline">Search</span>
+                <kbd className="hidden sm:inline pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100">
+                  <span className="text-xs">⌘</span>K
+                </kbd>
+              </Button>
             </div>
           </header>
+          <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
           {/* Main content */}
           <main className="flex-1">

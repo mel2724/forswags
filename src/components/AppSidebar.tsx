@@ -145,6 +145,7 @@ export function AppSidebar() {
     { title: "Courses", url: "/courses", icon: GraduationCap },
     { title: "Badges", url: "/badges", icon: Medal },
     { title: "Rankings", url: "/rankings", icon: Trophy },
+    { title: "Schools", url: "/schools", icon: School },
     { title: "Offers", url: "/offers", icon: Target },
     { title: "Media Gallery", url: "/media", icon: Image },
     { title: "Social Media", url: "/social", icon: Share2 },
@@ -163,6 +164,7 @@ export function AppSidebar() {
     { title: "Recruiter Dashboard", url: "/recruiter/dashboard", icon: Home },
     { title: "Athlete Search", url: "/recruiter/search", icon: Search },
     { title: "My Profile", url: "/recruiter/profile", icon: User },
+    { title: "Players", url: "/players", icon: Users },
     { title: "Rankings", url: "/rankings", icon: Trophy },
   ];
 
