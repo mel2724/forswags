@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      alumni: {
+        Row: {
+          available_for_calls: boolean | null
+          bio: string | null
+          company: string | null
+          created_at: string
+          graduation_year: number
+          id: string
+          linkedin_url: string | null
+          position: string | null
+          professional_role: string | null
+          school_id: string
+          sport: string
+          updated_at: string
+          user_id: string
+          willing_to_mentor: boolean | null
+        }
+        Insert: {
+          available_for_calls?: boolean | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          graduation_year: number
+          id?: string
+          linkedin_url?: string | null
+          position?: string | null
+          professional_role?: string | null
+          school_id: string
+          sport: string
+          updated_at?: string
+          user_id: string
+          willing_to_mentor?: boolean | null
+        }
+        Update: {
+          available_for_calls?: boolean | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string
+          graduation_year?: number
+          id?: string
+          linkedin_url?: string | null
+          position?: string | null
+          professional_role?: string | null
+          school_id?: string
+          sport?: string
+          updated_at?: string
+          user_id?: string
+          willing_to_mentor?: boolean | null
+        }
+        Relationships: []
+      }
+      alumni_connections: {
+        Row: {
+          alumni_id: string
+          athlete_id: string
+          created_at: string
+          id: string
+          message: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          alumni_id: string
+          athlete_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          alumni_id?: string
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alumni_connections_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_stats: {
         Row: {
           athlete_id: string

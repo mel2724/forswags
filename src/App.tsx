@@ -23,6 +23,7 @@ import OfferTracker from "./pages/OfferTracker";
 import StatsManager from "./pages/StatsManager";
 import CollegePreferences from "./pages/CollegePreferences";
 import CollegeMatching from "./pages/CollegeMatching";
+import AlumniNetwork from "./pages/AlumniNetwork";
 import MediaGallery from "./pages/MediaGallery";
 import Rankings from "./pages/Rankings";
 import Notifications from "./pages/Notifications";
@@ -91,6 +92,7 @@ const App = () => (
             <Route path="/stats" element={<StatsManager />} />
             <Route path="/preferences" element={<CollegePreferences />} />
             <Route path="/college-matches" element={<CollegeMatching />} />
+            <Route path="/alumni-network" element={<AlumniNetwork />} />
             <Route path="/media" element={<MediaGallery />} />
             <Route path="/rankings" element={<Rankings />} />
             <Route path="/schools" element={<SchoolSearch />} />
