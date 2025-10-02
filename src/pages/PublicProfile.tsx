@@ -49,7 +49,7 @@ interface AthleteProfile {
 }
 
 export default function PublicProfile() {
-  const { athleteId } = useParams();
+  const { username } = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<AthleteProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,11 +57,11 @@ export default function PublicProfile() {
 
   useEffect(() => {
     loadProfile();
-  }, [athleteId]);
+  }, [username]);
 
   const loadProfile = async () => {
     try {
-      if (!athleteId) {
+      if (!username) {
         setNotFound(true);
         return;
       }
@@ -77,7 +77,7 @@ export default function PublicProfile() {
             state
           )
         `)
-        .eq('id', athleteId)
+        .eq('username', username)
         .eq('visibility', 'public')
         .maybeSingle();
 

@@ -43,6 +43,7 @@ export default function ProfileComprehensive() {
   const [country, setCountry] = useState("United States");
 
   // Athletic Information
+  const [username, setUsername] = useState("");
   const [sport, setSport] = useState("");
   const [secondarySports, setSecondarySports] = useState<string[]>([]);
   const [position, setPosition] = useState("");
@@ -145,6 +146,7 @@ export default function ProfileComprehensive() {
 
     if (athleteData) {
       setAthleteId(athleteData.id);
+      setUsername(athleteData.username || "");
       setNickname(athleteData.nickname || "");
       setSport(athleteData.sport || "");
       setSecondarySports(athleteData.secondary_sports || []);
@@ -243,10 +245,16 @@ export default function ProfileComprehensive() {
         ? parseInt(heightFeet) * 12 + parseInt(heightInches)
         : null;
 
+      // Validate and format username
+      const formattedUsername = username
+        ? username.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-')
+        : undefined;
+
       // Update athlete
       const { error: athleteError } = await supabase
         .from("athletes")
         .update({
+          username: formattedUsername,
           nickname: nickname || null,
           sport,
           secondary_sports: secondarySports.length > 0 ? secondarySports : null,
@@ -363,6 +371,18 @@ export default function ProfileComprehensive() {
                       <Label>Nickname / Preferred Name</Label>
                       <Input value={nickname} onChange={(e) => setNickname(e.target.value)} />
                     </div>
+                  </div>
+
+                  <div>
+                    <Label>Profile Username *</Label>
+                    <Input 
+                      value={username} 
+                      onChange={(e) => setUsername(e.target.value)} 
+                      placeholder="john-smith"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your public profile URL: forswags.com/athlete/{username || 'your-username'}
+                    </p>
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-4">
@@ -792,6 +812,7 @@ export default function ProfileComprehensive() {
           <ProfileActions 
             athleteId={athleteId}
             athleteName={fullName}
+            athleteUsername={username}
           />
         )}
 

@@ -18,15 +18,16 @@ import {
 interface ProfileActionsProps {
   athleteId: string;
   athleteName: string;
+  athleteUsername?: string;
   onGeneratePDF?: () => void;
 }
 
-export const ProfileActions = ({ athleteId, athleteName, onGeneratePDF }: ProfileActionsProps) => {
+export const ProfileActions = ({ athleteId, athleteName, athleteUsername, onGeneratePDF }: ProfileActionsProps) => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [isQROpen, setIsQROpen] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
 
-  const publicProfileUrl = `${window.location.origin}/athlete/${athleteId}`;
+  const publicProfileUrl = `${window.location.origin}/athlete/${athleteUsername || athleteId}`;
 
   const generateQRCode = async () => {
     try {
@@ -86,7 +87,7 @@ export const ProfileActions = ({ athleteId, athleteName, onGeneratePDF }: Profil
     setGeneratingPDF(true);
     try {
       // Create a new window with the public profile
-      const printWindow = window.open(`/athlete/${athleteId}`, '_blank');
+      const printWindow = window.open(`/athlete/${athleteUsername || athleteId}`, '_blank');
       
       if (!printWindow) {
         toast.error('Please allow popups to export PDF');

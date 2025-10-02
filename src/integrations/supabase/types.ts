@@ -118,6 +118,7 @@ export type Database = {
           upcoming_camps: string[] | null
           updated_at: string
           user_id: string
+          username: string | null
           vertical_jump: number | null
           visibility: string | null
           weight_lb: number | null
@@ -178,6 +179,7 @@ export type Database = {
           upcoming_camps?: string[] | null
           updated_at?: string
           user_id: string
+          username?: string | null
           vertical_jump?: number | null
           visibility?: string | null
           weight_lb?: number | null
@@ -238,6 +240,7 @@ export type Database = {
           upcoming_camps?: string[] | null
           updated_at?: string
           user_id?: string
+          username?: string | null
           vertical_jump?: number | null
           visibility?: string | null
           weight_lb?: number | null

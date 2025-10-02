@@ -99,6 +99,7 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Athlete fields
+  const [username, setUsername] = useState("");
   const [sport, setSport] = useState("");
   const [position, setPosition] = useState("");
   const [heightFeet, setHeightFeet] = useState("");
@@ -146,6 +147,7 @@ const Profile = () => {
 
       if (athleteData) {
         setAthleteId(athleteData.id);
+        setUsername(athleteData.username || "");
         setSport(athleteData.sport || "");
         setPosition(athleteData.position || "");
         setWeight(athleteData.weight_lb?.toString() || "");
@@ -225,10 +227,16 @@ const Profile = () => {
 
       if (profileError) throw profileError;
 
+      // Validate and format username
+      const formattedUsername = username
+        ? username.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-')
+        : undefined;
+
       // Update athlete profile
       const { error: athleteError } = await supabase
         .from("athletes")
         .update({
+          username: formattedUsername,
           sport: athleteData.sport,
           position: athleteData.position,
           height_in: athleteData.height_in,
@@ -328,6 +336,19 @@ const Profile = () => {
                     className="bg-muted cursor-not-allowed"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="username">Profile Username *</Label>
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="john-smith"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Your public profile URL: forswags.com/athlete/{username || 'your-username'}
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -558,6 +579,7 @@ const Profile = () => {
             <ProfileActions 
               athleteId={athleteId}
               athleteName={fullName}
+              athleteUsername={username}
             />
           )}
 

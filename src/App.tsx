@@ -75,7 +75,7 @@ const App = () => (
           <AppLayout>
             <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/athlete/:athleteId" element={<PublicProfile />} />
+            <Route path="/athlete/:username" element={<PublicProfile />} />
             <Route path="/sponsors" element={<Sponsors />} />
             <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
             <Route path="/auth" element={<Auth />} />
