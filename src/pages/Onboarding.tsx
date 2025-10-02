@@ -13,14 +13,14 @@ import { toast } from "sonner";
 import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft } from "lucide-react";
 import { z } from "zod";
 
-type Role = "athlete" | "parent" | "coach" | "recruiter" | "admin";
+type Role = "athlete" | "parent" | "recruiter";
 
+// Only athlete, parent, and recruiter can be self-selected
+// Admin and coach roles are assigned manually by administrators
 const roles = [
   { value: "athlete", label: "Athlete", icon: Trophy, description: "Student-athlete building their profile" },
   { value: "parent", label: "Parent", icon: Users, description: "Supporting my athlete's journey" },
-  { value: "coach", label: "Coach", icon: User, description: "Evaluating and mentoring athletes" },
   { value: "recruiter", label: "Recruiter", icon: Search, description: "Discovering talent for college programs" },
-  { value: "admin", label: "Admin", icon: Shield, description: "Platform administration" },
 ];
 
 const sports = ["Football", "Basketball", "Baseball", "Softball", "Soccer", "Track & Field", "Volleyball", "Lacrosse", "Tennis", "Swimming", "Wrestling", "Golf", "Cross Country", "Other"];
