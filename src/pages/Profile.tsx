@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+import { ProfileActions } from "@/components/ProfileActions";
 import { toast } from "sonner";
 import { z } from "zod";
 import logoIcon from "@/assets/forswags-logo.png";
@@ -551,6 +552,14 @@ const Profile = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Profile Sharing Actions */}
+          {athleteId && (
+            <ProfileActions 
+              athleteId={athleteId}
+              athleteName={fullName}
+            />
+          )}
 
           {/* Save Button */}
           <div className="flex gap-4">

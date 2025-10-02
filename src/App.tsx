@@ -17,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import Players from "./pages/Players";
 import Profile from "./pages/Profile";
 import ProfileComprehensive from "./pages/ProfileComprehensive";
+import PublicProfile from "./pages/PublicProfile";
 import PrimeDime from "./pages/PrimeDime";
 import OfferTracker from "./pages/OfferTracker";
 import StatsManager from "./pages/StatsManager";
@@ -74,6 +75,7 @@ const App = () => (
           <AppLayout>
             <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/athlete/:athleteId" element={<PublicProfile />} />
             <Route path="/sponsors" element={<Sponsors />} />
             <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
             <Route path="/auth" element={<Auth />} />
