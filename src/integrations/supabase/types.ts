@@ -691,6 +691,36 @@ export type Database = {
         }
         Relationships: []
       }
+      engagement_metrics: {
+        Row: {
+          action_type: string
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       evaluation_annotations: {
         Row: {
           annotation_type: string
@@ -1216,6 +1246,47 @@ export type Database = {
           },
         ]
       }
+      profile_views: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          id: string
+          referrer: string | null
+          session_id: string | null
+          viewed_at: string
+          viewer_id: string
+          viewer_type: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          session_id?: string | null
+          viewed_at?: string
+          viewer_id: string
+          viewer_type: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          session_id?: string | null
+          viewed_at?: string
+          viewer_id?: string
+          viewer_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_views_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1628,6 +1699,36 @@ export type Database = {
           },
         ]
       }
+      search_analytics: {
+        Row: {
+          clicked_result_ids: string[] | null
+          created_at: string
+          filters: Json
+          id: string
+          results_count: number | null
+          search_type: string
+          user_id: string
+        }
+        Insert: {
+          clicked_result_ids?: string[] | null
+          created_at?: string
+          filters?: Json
+          id?: string
+          results_count?: number | null
+          search_type: string
+          user_id: string
+        }
+        Update: {
+          clicked_result_ids?: string[] | null
+          created_at?: string
+          filters?: Json
+          id?: string
+          results_count?: number | null
+          search_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_posts: {
         Row: {
           athlete_id: string | null
@@ -1773,9 +1874,29 @@ export type Database = {
         Args: { p_athlete_id: string }
         Returns: boolean
       }
+      get_engagement_stats: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: {
+          downloads: number
+          engagement_by_type: Json
+          shares: number
+          total_engagements: number
+          views: number
+        }[]
+      }
       get_evaluation_price: {
         Args: { p_athlete_id: string }
         Returns: string
+      }
+      get_profile_view_stats: {
+        Args: { p_athlete_id: string; p_days?: number }
+        Returns: {
+          coach_views: number
+          recent_views: Json
+          recruiter_views: number
+          total_views: number
+          unique_viewers: number
+        }[]
       }
       has_role: {
         Args: {

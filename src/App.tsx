@@ -36,6 +36,7 @@ import MembershipRecruiter from "./pages/MembershipRecruiter";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import AthleteSearch from "./pages/recruiter/AthleteSearch";
 import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
+import RecruiterAnalyticsPage from "./pages/recruiter/RecruiterAnalyticsPage";
 import ParentDashboard from "./pages/ParentDashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -102,6 +103,7 @@ const App = () => (
             <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
             <Route path="/recruiter/search" element={<AthleteSearch />} />
             <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+            <Route path="/recruiter/analytics" element={<RecruiterAnalyticsPage />} />
             <Route path="/parent/dashboard" element={<ParentDashboard />} />
             <Route path="/coach/apply" element={<CoachApplication />} />
           <Route path="/coach/dashboard" element={<CoachDashboard />} />

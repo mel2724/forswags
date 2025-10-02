@@ -163,6 +163,7 @@ export function AppSidebar() {
   const recruiterItems = [
     { title: "Recruiter Dashboard", url: "/recruiter/dashboard", icon: Home },
     { title: "Athlete Search", url: "/recruiter/search", icon: Search },
+    { title: "Analytics", url: "/recruiter/analytics", icon: BarChart3 },
     { title: "My Profile", url: "/recruiter/profile", icon: User },
     { title: "Players", url: "/players", icon: Users },
     { title: "Rankings", url: "/rankings", icon: Trophy },
