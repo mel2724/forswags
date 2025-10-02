@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,65 +7,89 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { AppLayout } from "@/components/AppLayout";
+
+// Eager load critical pages
 import Landing from "./pages/Landing";
-import Sponsors from "./pages/Sponsors";
-import SponsorShowcase from "./pages/SponsorShowcase";
-import SchoolSearch from "./pages/SchoolSearch";
 import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
-import Players from "./pages/Players";
-import Profile from "./pages/Profile";
-import ProfileComprehensive from "./pages/ProfileComprehensive";
-import PublicProfile from "./pages/PublicProfile";
-import PrimeDime from "./pages/PrimeDime";
-import OfferTracker from "./pages/OfferTracker";
-import StatsManager from "./pages/StatsManager";
-import CollegePreferences from "./pages/CollegePreferences";
-import CollegeMatching from "./pages/CollegeMatching";
-import AlumniNetwork from "./pages/AlumniNetwork";
-import MediaGallery from "./pages/MediaGallery";
-import Rankings from "./pages/Rankings";
-import Notifications from "./pages/Notifications";
-import Courses from "./pages/Courses";
-import CourseDetail from "./pages/CourseDetail";
-import Lesson from "./pages/Lesson";
-import Badges from "./pages/Badges";
-import Evaluations from "./pages/Evaluations";
-import EvaluationProgress from "./pages/EvaluationProgress";
-import SocialMedia from "./pages/SocialMedia";
-import Membership from "./pages/Membership";
-import MembershipAthlete from "./pages/MembershipAthlete";
-import MembershipRecruiter from "./pages/MembershipRecruiter";
-import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
-import AthleteSearch from "./pages/recruiter/AthleteSearch";
-import RecruiterProfile from "./pages/recruiter/RecruiterProfile";
-import RecruiterAnalyticsPage from "./pages/recruiter/RecruiterAnalyticsPage";
-import ParentDashboard from "./pages/ParentDashboard";
-import AdminLayout from "./pages/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminMemberships from "./pages/admin/AdminMemberships";
-import AdminCourses from "./pages/admin/AdminCourses";
-import AdminAthletes from "./pages/admin/AdminAthletes";
-import AdminSchools from "./pages/admin/AdminSchools";
-import AdminEmailTemplates from "./pages/admin/AdminEmailTemplates";
-import AdminCoachApplications from "./pages/admin/AdminCoachApplications";
-import AdminRankings from "./pages/admin/AdminRankings";
-import AdminNotifications from "./pages/admin/AdminNotifications";
-import AdminEvaluations from "./pages/admin/AdminEvaluations";
-import AdminSponsors from "./pages/admin/AdminSponsors";
-import CoachApplication from "./pages/CoachApplication";
-import PurchaseEvaluation from "./pages/PurchaseEvaluation";
-import CoachDashboard from "./pages/coach/CoachDashboard";
-import CoachProfile from "./pages/coach/CoachProfile";
-import CoachProfileView from "./pages/coach/CoachProfileView";
-import CoachDirectory from "./pages/coach/CoachDirectory";
-import AvailableEvaluations from "./pages/coach/AvailableEvaluations";
-import EvaluationDetail from "./pages/coach/EvaluationDetail";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Lazy load secondary pages for code splitting
+const Sponsors = lazy(() => import("./pages/Sponsors"));
+const SponsorShowcase = lazy(() => import("./pages/SponsorShowcase"));
+const SchoolSearch = lazy(() => import("./pages/SchoolSearch"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Players = lazy(() => import("./pages/Players"));
+const Profile = lazy(() => import("./pages/Profile"));
+const ProfileComprehensive = lazy(() => import("./pages/ProfileComprehensive"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+const PrimeDime = lazy(() => import("./pages/PrimeDime"));
+const OfferTracker = lazy(() => import("./pages/OfferTracker"));
+const StatsManager = lazy(() => import("./pages/StatsManager"));
+const CollegePreferences = lazy(() => import("./pages/CollegePreferences"));
+const CollegeMatching = lazy(() => import("./pages/CollegeMatching"));
+const AlumniNetwork = lazy(() => import("./pages/AlumniNetwork"));
+const MediaGallery = lazy(() => import("./pages/MediaGallery"));
+const Rankings = lazy(() => import("./pages/Rankings"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Courses = lazy(() => import("./pages/Courses"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const Lesson = lazy(() => import("./pages/Lesson"));
+const Badges = lazy(() => import("./pages/Badges"));
+const Evaluations = lazy(() => import("./pages/Evaluations"));
+const EvaluationProgress = lazy(() => import("./pages/EvaluationProgress"));
+const SocialMedia = lazy(() => import("./pages/SocialMedia"));
+const Membership = lazy(() => import("./pages/Membership"));
+const MembershipAthlete = lazy(() => import("./pages/MembershipAthlete"));
+const MembershipRecruiter = lazy(() => import("./pages/MembershipRecruiter"));
+const RecruiterDashboard = lazy(() => import("./pages/recruiter/RecruiterDashboard"));
+const AthleteSearch = lazy(() => import("./pages/recruiter/AthleteSearch"));
+const RecruiterProfile = lazy(() => import("./pages/recruiter/RecruiterProfile"));
+const RecruiterAnalyticsPage = lazy(() => import("./pages/recruiter/RecruiterAnalyticsPage"));
+const ParentDashboard = lazy(() => import("./pages/ParentDashboard"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminMemberships = lazy(() => import("./pages/admin/AdminMemberships"));
+const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
+const AdminAthletes = lazy(() => import("./pages/admin/AdminAthletes"));
+const AdminSchools = lazy(() => import("./pages/admin/AdminSchools"));
+const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
+const AdminCoachApplications = lazy(() => import("./pages/admin/AdminCoachApplications"));
+const AdminRankings = lazy(() => import("./pages/admin/AdminRankings"));
+const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const AdminEvaluations = lazy(() => import("./pages/admin/AdminEvaluations"));
+const AdminSponsors = lazy(() => import("./pages/admin/AdminSponsors"));
+const CoachApplication = lazy(() => import("./pages/CoachApplication"));
+const PurchaseEvaluation = lazy(() => import("./pages/PurchaseEvaluation"));
+const CoachDashboard = lazy(() => import("./pages/coach/CoachDashboard"));
+const CoachProfile = lazy(() => import("./pages/coach/CoachProfile"));
+const CoachProfileView = lazy(() => import("./pages/coach/CoachProfileView"));
+const CoachDirectory = lazy(() => import("./pages/coach/CoachDirectory"));
+const AvailableEvaluations = lazy(() => import("./pages/coach/AvailableEvaluations"));
+const EvaluationDetail = lazy(() => import("./pages/coach/EvaluationDetail"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-center space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      <p className="text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
+
+// Optimized React Query client with caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -76,7 +100,8 @@ const App = () => (
         <ImpersonationProvider>
           <ImpersonationBanner />
           <AppLayout>
-            <Routes>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/athlete/:username" element={<PublicProfile />} />
             <Route path="/sponsors" element={<Sponsors />} />
@@ -136,7 +161,8 @@ const App = () => (
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
+              </Routes>
+            </Suspense>
           </AppLayout>
         </ImpersonationProvider>
       </BrowserRouter>
