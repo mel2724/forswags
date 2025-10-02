@@ -56,9 +56,11 @@ const OfferTracker = () => {
   const [signingDayDate, setSigningDayDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [signingDayDialogOpen, setSigningDayDialogOpen] = useState(false);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [tempSigningDay, setTempSigningDay] = useState("");
 
   const [formData, setFormData] = useState({
     school_id: "",
@@ -276,6 +278,29 @@ const OfferTracker = () => {
     setDocuments([]);
   };
 
+  const handleSetSigningDay = async () => {
+    if (!tempSigningDay) {
+      toast.error("Please select a date");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("athletes")
+        .update({ signing_day_date: tempSigningDay })
+        .eq("id", athleteId);
+
+      if (error) throw error;
+
+      setSigningDayDate(tempSigningDay);
+      setSigningDayDialogOpen(false);
+      toast.success("Signing day date updated");
+    } catch (error) {
+      console.error("Error updating signing day:", error);
+      toast.error("Failed to update signing day");
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "accepted":
@@ -315,16 +340,54 @@ const OfferTracker = () => {
             </div>
           </div>
 
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
-            setDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Offer
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            {!signingDayDate && (
+              <Dialog open={signingDayDialogOpen} onOpenChange={setSigningDayDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Set Signing Day
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Set National Signing Day</DialogTitle>
+                    <DialogDescription>
+                      Enter your target signing day date to track your timeline
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Signing Day Date</Label>
+                      <Input
+                        type="date"
+                        value={tempSigningDay}
+                        onChange={(e) => setTempSigningDay(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setSigningDayDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSetSigningDay}>
+                        Set Date
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) resetForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Offer
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingOffer ? "Edit" : "Add"} College Offer</DialogTitle>
@@ -523,6 +586,7 @@ const OfferTracker = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {offers.length === 0 ? (
