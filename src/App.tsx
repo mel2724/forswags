@@ -68,6 +68,7 @@ const CoachProfileView = lazy(() => import("./pages/coach/CoachProfileView"));
 const CoachDirectory = lazy(() => import("./pages/coach/CoachDirectory"));
 const AvailableEvaluations = lazy(() => import("./pages/coach/AvailableEvaluations"));
 const EvaluationDetail = lazy(() => import("./pages/coach/EvaluationDetail"));
+const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -133,6 +134,7 @@ const App = () => (
           <Route path="/membership/athlete" element={<MembershipAthlete />} />
           <Route path="/membership/recruiter" element={<MembershipRecruiter />} />
             <Route path="/social" element={<SocialMedia />} />
+            <Route path="/security" element={<SecuritySettings />} />
             <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
             <Route path="/recruiter/search" element={<AthleteSearch />} />
             <Route path="/recruiter/profile" element={<RecruiterProfile />} />

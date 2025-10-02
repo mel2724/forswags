@@ -339,6 +339,42 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           created_at: string
@@ -876,6 +912,39 @@ export type Database = {
         }
         Relationships: []
       }
+      data_export_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          expires_at: string | null
+          export_url: string | null
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          expires_at?: string | null
+          export_url?: string | null
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          expires_at?: string | null
+          export_url?: string | null
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           available_variables: Json | null
@@ -1315,6 +1384,30 @@ export type Database = {
           start_date?: string
           status?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mfa_backup_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          id: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          id?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          id?: string
+          used_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2357,6 +2450,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_audit_event: {
+        Args: {
+          p_action: string
+          p_metadata?: Json
+          p_resource_id?: string
+          p_resource_type: string
+        }
+        Returns: string
       }
     }
     Enums: {
