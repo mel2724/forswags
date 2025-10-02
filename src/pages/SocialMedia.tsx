@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target, Hash } from "lucide-react";
+import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target, Hash, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SocialMediaGraphicGenerator } from "@/components/SocialMediaGraphicGenerator";
 import { ContentCalendar } from "@/components/ContentCalendar";
@@ -14,6 +14,7 @@ import { AICaptionGenerator } from "@/components/AICaptionGenerator";
 import { HashtagPerformance } from "@/components/HashtagPerformance";
 import { SocialAccountsManager } from "@/components/SocialAccountsManager";
 import { PostTemplatesLibrary } from "@/components/PostTemplatesLibrary";
+import { PressReleaseGenerator } from "@/components/PressReleaseGenerator";
 import { toast } from "sonner";
 
 const FORSWAGS_TAG = "#ForSWAGsNation";
@@ -212,7 +213,7 @@ export default function SocialMedia() {
       </div>
 
       <Tabs defaultValue="generator" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-2 h-auto p-2">
           <TabsTrigger value="generator" className="flex-1">
             <Sparkles className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Graphics</span>
@@ -224,6 +225,10 @@ export default function SocialMedia() {
           <TabsTrigger value="ai-caption" className="flex-1">
             <Sparkles className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">AI Captions</span>
+          </TabsTrigger>
+          <TabsTrigger value="press-release" className="flex-1">
+            <FileText className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Press Release</span>
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex-1">
             <Share2 className="mr-2 h-4 w-4" />
@@ -412,6 +417,10 @@ export default function SocialMedia() {
 
         <TabsContent value="ai-caption" className="space-y-4 mt-8">
           <AICaptionGenerator onCaptionGenerated={(caption) => setPostContent(caption)} />
+        </TabsContent>
+
+        <TabsContent value="press-release" className="space-y-4 mt-8">
+          <PressReleaseGenerator />
         </TabsContent>
 
         <TabsContent value="calendar" className="space-y-4 mt-8">
