@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { AppLayout } from "@/components/AppLayout";
 import Landing from "./pages/Landing";
 import Sponsors from "./pages/Sponsors";
 import SponsorShowcase from "./pages/SponsorShowcase";
@@ -68,7 +69,8 @@ const App = () => (
       <BrowserRouter>
         <ImpersonationProvider>
           <ImpersonationBanner />
-          <Routes>
+          <AppLayout>
+            <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/sponsors" element={<Sponsors />} />
             <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
@@ -123,6 +125,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </AppLayout>
         </ImpersonationProvider>
       </BrowserRouter>
     </TooltipProvider>

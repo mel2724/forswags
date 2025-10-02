@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ProgressIndicator } from "@/components/ProgressIndicator";
 import { toast } from "sonner";
 import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft } from "lucide-react";
 import { z } from "zod";
@@ -303,18 +304,18 @@ const Onboarding = () => {
       <Card className="w-full max-w-2xl p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
         {/* Progress indicator */}
         {selectedRole === "athlete" && step > 1 && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Step {step - 1} of {totalSteps - 1}</span>
-              <span>{Math.round(((step - 1) / (totalSteps - 1)) * 100)}%</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }}
-              />
-            </div>
-          </div>
+          <ProgressIndicator
+            steps={[
+              { title: "Role", completed: true },
+              { title: "Basic Info", completed: step > 2 },
+              { title: "Sport Details", completed: step > 3 },
+              { title: "Measurements", completed: step > 4 },
+              { title: "Academics", completed: step > 5 },
+              { title: "Profile", completed: step > 6 },
+            ]}
+            currentStep={step - 2}
+            variant="steps"
+          />
         )}
 
         {/* Step 1: Role Selection */}
