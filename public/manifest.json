@@ -1,0 +1,50 @@
+{
+  "name": "ForSWAGs - For Students With Athletic Goals",
+  "short_name": "ForSWAGs",
+  "description": "Build your athletic profile, connect with college coaches, and achieve your sports dreams",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#141414",
+  "theme_color": "#9B51E0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/src/assets/logo-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/src/assets/logo-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["sports", "education", "social"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "View your athlete dashboard"
+    },
+    {
+      "name": "Profile",
+      "url": "/profile",
+      "description": "Edit your athletic profile"
+    },
+    {
+      "name": "Evaluations",
+      "url": "/evaluations",
+      "description": "View your evaluations"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/src/assets/logo-full.jpeg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    }
+  ]
+}

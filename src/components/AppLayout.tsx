@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { SkipToContent } from "@/components/SkipToContent";
 import { AccessibilityMenu } from "@/components/AccessibilityMenu";
+import { MobileNavigation } from "@/components/MobileNavigation";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { UpdateNotification } from "@/components/UpdateNotification";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -54,9 +58,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider defaultOpen>
       <SkipToContent />
-      <div className="min-h-screen flex w-full">
+      <OfflineIndicator />
+      <UpdateNotification />
+      <PWAInstallPrompt />
+      <div className="min-h-screen flex w-full pb-safe">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col mb-16 md:mb-0">
           {/* Header with trigger */}
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container flex h-14 items-center gap-4 px-4">
@@ -87,6 +94,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             {children}
           </main>
         </div>
+        <MobileNavigation />
       </div>
     </SidebarProvider>
   );

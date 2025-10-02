@@ -3,6 +3,15 @@ import App from "./App.tsx";
 import "./index.css";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Service worker registration failed silently
+    });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <AccessibilityProvider>
     <App />
