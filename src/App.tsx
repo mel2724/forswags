@@ -22,6 +22,7 @@ import PrimeDime from "./pages/PrimeDime";
 import OfferTracker from "./pages/OfferTracker";
 import StatsManager from "./pages/StatsManager";
 import CollegePreferences from "./pages/CollegePreferences";
+import CollegeMatching from "./pages/CollegeMatching";
 import MediaGallery from "./pages/MediaGallery";
 import Rankings from "./pages/Rankings";
 import Notifications from "./pages/Notifications";
@@ -89,6 +90,7 @@ const App = () => (
             <Route path="/offers" element={<OfferTracker />} />
             <Route path="/stats" element={<StatsManager />} />
             <Route path="/preferences" element={<CollegePreferences />} />
+            <Route path="/college-matches" element={<CollegeMatching />} />
             <Route path="/media" element={<MediaGallery />} />
             <Route path="/rankings" element={<Rankings />} />
             <Route path="/schools" element={<SchoolSearch />} />
