@@ -1871,6 +1871,89 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_code_usage: {
+        Row: {
+          discount_amount: number
+          id: string
+          promo_code_id: string
+          stripe_subscription_id: string | null
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          discount_amount: number
+          id?: string
+          promo_code_id: string
+          stripe_subscription_id?: string | null
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          discount_amount?: number
+          id?: string
+          promo_code_id?: string
+          stripe_subscription_id?: string | null
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_usage_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          applicable_products: Json
+          code: string
+          created_at: string
+          created_by: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          times_used: number
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          applicable_products?: Json
+          code: string
+          created_at?: string
+          created_by?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          times_used?: number
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          applicable_products?: Json
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          times_used?: number
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           correct_answer: string
@@ -2069,6 +2152,45 @@ export type Database = {
           school_name?: string
           states_focus?: string[] | null
           title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      refunds: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          processed_by: string | null
+          reason: string | null
+          status: string
+          stripe_payment_intent_id: string
+          stripe_refund_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          processed_by?: string | null
+          reason?: string | null
+          status?: string
+          stripe_payment_intent_id: string
+          stripe_refund_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          processed_by?: string | null
+          reason?: string | null
+          status?: string
+          stripe_payment_intent_id?: string
+          stripe_refund_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -2669,6 +2791,10 @@ export type Database = {
           p_severity: string
         }
         Returns: string
+      }
+      validate_promo_code: {
+        Args: { p_code: string; p_product_id: string }
+        Returns: Json
       }
     }
     Enums: {

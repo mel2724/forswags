@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, ArrowLeft } from "lucide-react";
 import { STRIPE_PRODUCTS, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
+import { Input } from "@/components/ui/input";
 
 interface SubscriptionStatus {
   subscribed: boolean;
@@ -18,6 +19,9 @@ export default function Membership() {
   const [loading, setLoading] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoCodeLoading, setPromoCodeLoading] = useState(false);
+  const [validPromoCode, setValidPromoCode] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -59,7 +63,7 @@ export default function Membership() {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
+        body: { priceId, promoCode: validPromoCode },
       });
 
       if (error) throw error;
@@ -71,11 +75,56 @@ export default function Membership() {
       console.error("Checkout error:", error);
       toast({
         title: "Error",
-        description: "Failed to start checkout process",
+        description: error.message || "Failed to start checkout process",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const validatePromoCode = async () => {
+    if (!promoCode.trim()) return;
+    
+    setPromoCodeLoading(true);
+    try {
+      const { data, error } = await supabase
+        .rpc('validate_promo_code', { 
+          p_code: promoCode.trim(),
+          p_product_id: STRIPE_PRODUCTS.membership.athlete.monthly.product_id
+        });
+
+      if (error) throw error;
+
+      const result = data as { valid: boolean; error?: string; discount_type?: string; discount_value?: number };
+
+      if (result.valid) {
+        setValidPromoCode(promoCode.trim());
+        const discount = result.discount_type === 'percentage' 
+          ? `${result.discount_value}% off`
+          : `$${result.discount_value} off`;
+        toast({
+          title: "Promo code applied!",
+          description: `You'll receive ${discount} on your subscription.`,
+        });
+      } else {
+        toast({
+          title: "Invalid promo code",
+          description: result.error || "This promo code is not valid.",
+          variant: "destructive",
+        });
+        setValidPromoCode(null);
+      }
+    } catch (error: any) {
+      console.error("Promo code error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to validate promo code",
+        variant: "destructive",
+      });
+      setValidPromoCode(null);
+    } finally {
+      setPromoCodeLoading(false);
     }
   };
 
@@ -146,6 +195,40 @@ export default function Membership() {
                   <CreditCard className="h-4 w-4 mr-2" />
                   Manage Subscription
                 </Button>
+              </div>
+            )}
+
+            {/* Promo Code Section */}
+            {!subscriptionStatus?.subscribed && (
+              <div className="mb-8 max-w-md mx-auto">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Have a promo code?</CardTitle>
+                    <CardDescription>Enter it below to get a discount</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter promo code"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        disabled={promoCodeLoading || !!validPromoCode}
+                      />
+                      {validPromoCode ? (
+                        <Button variant="outline" onClick={() => { setValidPromoCode(null); setPromoCode(""); }}>
+                          Remove
+                        </Button>
+                      ) : (
+                        <Button onClick={validatePromoCode} disabled={promoCodeLoading || !promoCode.trim()}>
+                          {promoCodeLoading ? "Validating..." : "Apply"}
+                        </Button>
+                      )}
+                    </div>
+                    {validPromoCode && (
+                      <p className="text-sm text-green-600 mt-2">✓ Promo code applied: {validPromoCode}</p>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
 
