@@ -203,7 +203,7 @@ export default function SocialMedia() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Social Media Content Creator</h1>
         <p className="text-muted-foreground">
@@ -212,49 +212,49 @@ export default function SocialMedia() {
       </div>
 
       <Tabs defaultValue="generator" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8">
-          <TabsTrigger value="generator">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-2">
+          <TabsTrigger value="generator" className="flex-1">
             <Sparkles className="mr-2 h-4 w-4" />
-            Graphics
+            <span className="hidden sm:inline">Graphics</span>
           </TabsTrigger>
-          <TabsTrigger value="post">
+          <TabsTrigger value="post" className="flex-1">
             <Share2 className="mr-2 h-4 w-4" />
-            Quick Post
+            <span className="hidden sm:inline">Quick Post</span>
           </TabsTrigger>
-          <TabsTrigger value="ai-caption">
+          <TabsTrigger value="ai-caption" className="flex-1">
             <Sparkles className="mr-2 h-4 w-4" />
-            AI Captions
+            <span className="hidden sm:inline">AI Captions</span>
           </TabsTrigger>
-          <TabsTrigger value="calendar">
+          <TabsTrigger value="calendar" className="flex-1">
             <Share2 className="mr-2 h-4 w-4" />
-            Calendar
+            <span className="hidden sm:inline">Calendar</span>
           </TabsTrigger>
-          <TabsTrigger value="templates">
+          <TabsTrigger value="templates" className="flex-1">
             <Share2 className="mr-2 h-4 w-4" />
-            Templates
+            <span className="hidden sm:inline">Templates</span>
           </TabsTrigger>
-          <TabsTrigger value="hashtags">
+          <TabsTrigger value="hashtags" className="flex-1">
             <Hash className="mr-2 h-4 w-4" />
-            Hashtags
+            <span className="hidden sm:inline">Hashtags</span>
           </TabsTrigger>
-          <TabsTrigger value="accounts">
+          <TabsTrigger value="accounts" className="flex-1">
             <Share2 className="mr-2 h-4 w-4" />
-            Accounts
+            <span className="hidden sm:inline">Accounts</span>
           </TabsTrigger>
-          <TabsTrigger value="tips">
+          <TabsTrigger value="tips" className="flex-1">
             <Lightbulb className="mr-2 h-4 w-4" />
-            Tips
+            <span className="hidden sm:inline">Tips</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="generator" className="space-y-4 mt-6">
+        <TabsContent value="generator" className="space-y-4 mt-8">
           <SocialMediaGraphicGenerator 
             athleteName={athleteInfo.name}
             athleteSport={athleteInfo.sport}
           />
         </TabsContent>
 
-        <TabsContent value="post" className="space-y-4 mt-6">
+        <TabsContent value="post" className="space-y-4 mt-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -410,30 +410,30 @@ export default function SocialMedia() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="ai-caption" className="space-y-4 mt-6">
+        <TabsContent value="ai-caption" className="space-y-4 mt-8">
           <AICaptionGenerator onCaptionGenerated={(caption) => setPostContent(caption)} />
         </TabsContent>
 
-        <TabsContent value="calendar" className="space-y-4 mt-6">
+        <TabsContent value="calendar" className="space-y-4 mt-8">
           <ContentCalendar />
         </TabsContent>
 
-        <TabsContent value="templates" className="space-y-4 mt-6">
+        <TabsContent value="templates" className="space-y-4 mt-8">
           <PostTemplatesLibrary onTemplateSelect={(template) => {
             setPostContent(template.content_template);
             toast.info('Template loaded! Fill in the placeholders with your details.');
           }} />
         </TabsContent>
 
-        <TabsContent value="hashtags" className="space-y-4 mt-6">
+        <TabsContent value="hashtags" className="space-y-4 mt-8">
           <HashtagPerformance />
         </TabsContent>
 
-        <TabsContent value="accounts" className="space-y-4 mt-6">
+        <TabsContent value="accounts" className="space-y-4 mt-8">
           <SocialAccountsManager />
         </TabsContent>
 
-        <TabsContent value="tips" className="space-y-4 mt-6">
+        <TabsContent value="tips" className="space-y-4 mt-8">
           <div className="grid md:grid-cols-2 gap-4">
             {SOCIAL_TIPS.map((tip, index) => (
               <Card key={index}>
