@@ -203,11 +203,12 @@ export const ScormPlayer = ({ lessonId, scormPackageUrl, scormVersion }: ScormPl
 
             <iframe
               ref={iframeRef}
+              src={scormPackageUrl}
               title="SCORM Content"
               className="w-full h-full"
               onLoad={handleIframeLoad}
               onError={handleIframeError}
-              sandbox="allow-same-origin allow-scripts allow-forms"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             />
           </div>
         </Card>
