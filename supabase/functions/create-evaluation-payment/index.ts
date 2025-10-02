@@ -79,23 +79,22 @@ serve(async (req) => {
       throw new Error("You must wait 2 months between evaluations");
     }
 
-    // Determine pricing based on purchase history
-    const { data: priceType, error: priceError } = await supabaseClient
-      .rpc("get_evaluation_price", { p_athlete_id: athleteData.id });
+    // Determine if this is a re-evaluation
+    const isReevaluation = Boolean(previous_evaluation_id);
+    
+    // Get tier-based pricing for this user
+    const { data: priceInCents, error: priceError } = await supabaseClient
+      .rpc("get_user_evaluation_price", { 
+        p_user_id: user.id,
+        p_is_reevaluation: isReevaluation
+      });
 
     if (priceError) {
       console.error("[CREATE-EVALUATION-PAYMENT] Error getting price:", priceError);
       throw new Error("Cannot determine pricing");
     }
 
-    console.log("[CREATE-EVALUATION-PAYMENT] Price type:", priceType);
-
-    // Select appropriate price
-    const priceId = priceType === "initial" 
-      ? "price_1SDFN9HrmnLSQTHjsbprafBL"  // $97
-      : "price_1SDFO4HrmnLSQTHjLDKxkkMl";  // $49
-
-    const isReevaluation = priceType === "reevaluation";
+    console.log("[CREATE-EVALUATION-PAYMENT] Price (cents):", priceInCents, "Is re-evaluation:", isReevaluation);
 
     // Get previous coach if this is a re-evaluation
     let previousCoachId = null;
@@ -117,7 +116,16 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: priceId,
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: isReevaluation ? 'Skills Evaluation - Re-evaluation' : 'Skills Evaluation - Initial',
+              description: isReevaluation 
+                ? 'Re-evaluation from certified coaches'
+                : 'First professional video evaluation from certified coaches'
+            },
+            unit_amount: priceInCents as number,
+          },
           quantity: 1,
         },
       ],

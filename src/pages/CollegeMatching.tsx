@@ -7,8 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollegeMatchCard } from "@/components/CollegeMatchCard";
 import { Loader2, RefreshCw, Settings } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TierFeatureGuard } from "@/components/TierFeatureGuard";
 
 export default function CollegeMatching() {
+  return (
+    <TierFeatureGuard featureKey="college_matching">
+      <CollegeMatchingPage />
+    </TierFeatureGuard>
+  );
+}
+
+function CollegeMatchingPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);

@@ -7,9 +7,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Eye, TrendingUp, Users, Share2, Download, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { FeatureGate } from "@/components/FeatureGate";
 
-interface ProfileViewStats {
-  total_views: number;
+export default function AthleteAnalytics() {
+  return (
+    <FeatureGate featureKey="analytics" featureName="Analytics">
+      <AthleteAnalyticsContent />
+    </FeatureGate>
+  );
+}
+
+function AthleteAnalyticsContent() {
+  interface ProfileViewStats {
+    total_views: number;
   unique_viewers: number;
   recruiter_views: number;
   coach_views: number;

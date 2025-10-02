@@ -9,10 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { Trophy, Medal, Crown, TrendingUp, MapPin, Target } from "lucide-react";
+import { TierFeatureGuard } from "@/components/TierFeatureGuard";
 
-interface RankingData {
-  id: string;
-  athlete_id: string;
+export default function Rankings() {
+  return (
+    <TierFeatureGuard featureKey="rankings">
+      <RankingsPage />
+    </TierFeatureGuard>
+  );
+}
+
+function RankingsPage() {
   overall_rank: number | null;
   position_rank: number | null;
   state_rank: number | null;
@@ -32,7 +39,7 @@ interface RankingData {
   } | null;
 }
 
-const Rankings = () => {
+  const Rankings = () => {
   const navigate = useNavigate();
   const [rankings, setRankings] = useState<RankingData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -340,6 +347,5 @@ const Rankings = () => {
       </main>
     </div>
   );
-};
-
-export default Rankings;
+  };
+}
