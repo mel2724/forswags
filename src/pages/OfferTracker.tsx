@@ -9,9 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, School, Calendar, DollarSign, User, Phone, Mail, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, School, Calendar, DollarSign, User, Phone, Mail, Edit, Trash2, FileText, Upload, X } from "lucide-react";
 import { format } from "date-fns";
+import OfferComparison from "@/components/OfferComparison";
+import DecisionTimeline from "@/components/DecisionTimeline";
 
 interface School {
   id: string;
@@ -30,11 +33,18 @@ interface Offer {
   status: string;
   scholarship_amount: number | null;
   notes: string | null;
+  negotiation_notes: string | null;
   response_deadline: string | null;
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  documents: Array<{ name: string; url: string }>;
   schools: School;
+}
+
+interface Document {
+  name: string;
+  url: string;
 }
 
 const OfferTracker = () => {
@@ -42,9 +52,13 @@ const OfferTracker = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
   const [athleteId, setAthleteId] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
+  const [signingDayDate, setSigningDayDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
 
   const [formData, setFormData] = useState({
     school_id: "",
@@ -53,6 +67,7 @@ const OfferTracker = () => {
     status: "pending",
     scholarship_amount: "",
     notes: "",
+    negotiation_notes: "",
     response_deadline: "",
     contact_name: "",
     contact_email: "",
@@ -71,9 +86,11 @@ const OfferTracker = () => {
         return;
       }
 
+      setUserId(user.id);
+
       const { data: athlete } = await supabase
         .from("athletes")
-        .select("id")
+        .select("id, signing_day_date")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -84,6 +101,7 @@ const OfferTracker = () => {
       }
 
       setAthleteId(athlete.id);
+      setSigningDayDate(athlete.signing_day_date);
 
       const { data: offersData, error: offersError } = await supabase
         .from("college_offers")
@@ -101,7 +119,13 @@ const OfferTracker = () => {
         .order("offer_date", { ascending: false });
 
       if (offersError) throw offersError;
-      setOffers(offersData || []);
+      
+      const formattedOffers = (offersData || []).map(offer => ({
+        ...offer,
+        documents: (offer.documents as any as Document[]) || []
+      })) as Offer[];
+      
+      setOffers(formattedOffers);
 
       const { data: schoolsData } = await supabase
         .from("schools")
@@ -117,6 +141,39 @@ const OfferTracker = () => {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingDocument(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('offer-documents')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('offer-documents')
+        .getPublicUrl(fileName);
+
+      setDocuments([...documents, { name: file.name, url: fileName }]);
+      toast.success("Document uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      toast.error("Failed to upload document");
+    } finally {
+      setUploadingDocument(false);
+    }
+  };
+
+  const handleRemoveDocument = (index: number) => {
+    setDocuments(documents.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -129,10 +186,12 @@ const OfferTracker = () => {
         status: formData.status,
         scholarship_amount: formData.scholarship_amount ? parseFloat(formData.scholarship_amount) : null,
         notes: formData.notes || null,
+        negotiation_notes: formData.negotiation_notes || null,
         response_deadline: formData.response_deadline || null,
         contact_name: formData.contact_name || null,
         contact_email: formData.contact_email || null,
         contact_phone: formData.contact_phone || null,
+        documents: JSON.parse(JSON.stringify(documents)),
       };
 
       if (editingOffer) {
@@ -146,7 +205,7 @@ const OfferTracker = () => {
       } else {
         const { error } = await supabase
           .from("college_offers")
-          .insert(offerData);
+          .insert([offerData]);
 
         if (error) throw error;
         toast.success("Offer added successfully");
@@ -189,11 +248,13 @@ const OfferTracker = () => {
       status: offer.status,
       scholarship_amount: offer.scholarship_amount?.toString() || "",
       notes: offer.notes || "",
+      negotiation_notes: offer.negotiation_notes || "",
       response_deadline: offer.response_deadline || "",
       contact_name: offer.contact_name || "",
       contact_email: offer.contact_email || "",
       contact_phone: offer.contact_phone || "",
     });
+    setDocuments(offer.documents || []);
     setDialogOpen(true);
   };
 
@@ -206,11 +267,13 @@ const OfferTracker = () => {
       status: "pending",
       scholarship_amount: "",
       notes: "",
+      negotiation_notes: "",
       response_deadline: "",
       contact_name: "",
       contact_email: "",
       contact_phone: "",
     });
+    setDocuments([]);
   };
 
   const getStatusColor = (status: string) => {
@@ -390,6 +453,62 @@ const OfferTracker = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label>Negotiation Notes</Label>
+                  <Textarea
+                    placeholder="Track negotiation discussions, counteroffers, and strategies..."
+                    value={formData.negotiation_notes}
+                    onChange={(e) => setFormData({ ...formData, negotiation_notes: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Documents</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="file"
+                        onChange={handleFileUpload}
+                        disabled={uploadingDocument}
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        disabled={uploadingDocument}
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {documents.length > 0 && (
+                      <div className="space-y-1">
+                        {documents.map((doc, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-2 rounded border bg-muted/50"
+                          >
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{doc.name}</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleRemoveDocument(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => {
                     setDialogOpen(false);
@@ -419,8 +538,16 @@ const OfferTracker = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
-            {offers.map((offer) => (
+        <Tabs defaultValue="cards" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="cards">Card View</TabsTrigger>
+            <TabsTrigger value="comparison">Comparison Matrix</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="cards" className="space-y-4">
+            <div className="grid gap-4">
+              {offers.map((offer) => (
               <Card key={offer.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -520,7 +647,17 @@ const OfferTracker = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="comparison">
+            <OfferComparison offers={offers} />
+          </TabsContent>
+
+          <TabsContent value="timeline">
+            <DecisionTimeline offers={offers} signingDayDate={signingDayDate} />
+          </TabsContent>
+        </Tabs>
         )}
       </div>
     </div>

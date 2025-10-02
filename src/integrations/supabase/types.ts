@@ -200,6 +200,7 @@ export type Database = {
           role_model: string | null
           sat_score: number | null
           secondary_sports: string[] | null
+          signing_day_date: string | null
           sport: string
           squat_max: number | null
           tiktok_handle: string | null
@@ -261,6 +262,7 @@ export type Database = {
           role_model?: string | null
           sat_score?: number | null
           secondary_sports?: string[] | null
+          signing_day_date?: string | null
           sport: string
           squat_max?: number | null
           tiktok_handle?: string | null
@@ -322,6 +324,7 @@ export type Database = {
           role_model?: string | null
           sat_score?: number | null
           secondary_sports?: string[] | null
+          signing_day_date?: string | null
           sport?: string
           squat_max?: number | null
           tiktok_handle?: string | null
@@ -629,7 +632,9 @@ export type Database = {
           contact_name: string | null
           contact_phone: string | null
           created_at: string
+          documents: Json | null
           id: string
+          negotiation_notes: string | null
           notes: string | null
           offer_date: string
           offer_type: string
@@ -645,7 +650,9 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          documents?: Json | null
           id?: string
+          negotiation_notes?: string | null
           notes?: string | null
           offer_date?: string
           offer_type: string
@@ -661,7 +668,9 @@ export type Database = {
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          documents?: Json | null
           id?: string
+          negotiation_notes?: string | null
           notes?: string | null
           offer_date?: string
           offer_type?: string
