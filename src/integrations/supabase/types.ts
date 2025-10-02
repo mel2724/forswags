@@ -2232,6 +2232,39 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          created_at: string
+          description: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          severity: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       social_accounts: {
         Row: {
           connected_at: string | null
@@ -2457,6 +2490,15 @@ export type Database = {
           p_metadata?: Json
           p_resource_id?: string
           p_resource_type: string
+        }
+        Returns: string
+      }
+      log_security_event: {
+        Args: {
+          p_description: string
+          p_event_type: string
+          p_metadata?: Json
+          p_severity: string
         }
         Returns: string
       }
