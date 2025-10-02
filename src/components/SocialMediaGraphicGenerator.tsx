@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Download, Sparkles, Image as ImageIcon } from "lucide-react";
+import { Download, Sparkles, Image as ImageIcon, Crown } from "lucide-react";
 import logoFull from "@/assets/logo-full.jpeg";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useNavigate } from "react-router-dom";
 
 interface GraphicTemplate {
   type: "offer" | "commitment" | "achievement" | "match" | "custom";
@@ -30,6 +32,7 @@ interface SocialMediaGraphicGeneratorProps {
 }
 
 export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "" }: SocialMediaGraphicGeneratorProps) => {
+  const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<GraphicTemplate>(TEMPLATES[0]);
@@ -37,6 +40,7 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
   const [subText, setSubText] = useState("");
   const [detailText, setDetailText] = useState("");
   const [loading, setLoading] = useState(false);
+  const { hasAccess, isLoading } = useFeatureAccess("social_media_graphics");
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -643,6 +647,60 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
 
     toast.success("Graphic downloaded successfully!");
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">Loading...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <Card className="border-primary/50">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Crown className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Social Media Graphic Generator
+              </CardTitle>
+              <CardDescription>Premium Feature - Requires Paid Membership</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Create professional graphics to announce your achievements, offers, commitments, and build your brand with unlimited generations.
+          </p>
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>Multiple professional templates</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4 text-primary" />
+              <span>Optimized for all social platforms</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Download className="h-4 w-4 text-primary" />
+              <span>High-quality downloads</span>
+            </li>
+          </ul>
+          <Button onClick={() => navigate("/membership")} className="w-full" size="lg">
+            <Crown className="mr-2 h-4 w-4" />
+            Upgrade to Access
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">

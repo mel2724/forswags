@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Download, Loader2, Printer } from "lucide-react";
+import { FileText, Download, Loader2, Printer, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
-import { UpgradePromptDialog } from "./UpgradePromptDialog";
-import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useNavigate } from "react-router-dom";
 
 const MILESTONE_TYPES = [
   { value: "commitment", label: "College Commitment" },
@@ -23,9 +23,8 @@ const MILESTONE_TYPES = [
   { value: "other", label: "Other Milestone" },
 ];
 
-const PRESS_RELEASE_LIMIT_FREE = 2;
-
 export function PressReleaseGenerator() {
+  const navigate = useNavigate();
   const [generating, setGenerating] = useState(false);
   const [milestoneType, setMilestoneType] = useState("");
   const [athleteName, setAthleteName] = useState("");
@@ -33,38 +32,16 @@ export function PressReleaseGenerator() {
   const [details, setDetails] = useState("");
   const [quote, setQuote] = useState("");
   const [generatedRelease, setGeneratedRelease] = useState("");
-  const [generationCount, setGenerationCount] = useState(0);
-  const { isOpen, config, showUpgradePrompt, closeUpgradePrompt, checkLimitAndPrompt, isFree } = useUpgradePrompt();
-
-  useEffect(() => {
-    // Load generation count from localStorage
-    const stored = localStorage.getItem("pressReleaseCount");
-    if (stored) {
-      setGenerationCount(parseInt(stored, 10));
-    }
-  }, []);
+  const { hasAccess, isLoading } = useFeatureAccess("press_release_generator");
 
   const generatePressRelease = async () => {
-    if (!milestoneType || !athleteName || !sport || !details) {
-      toast.error("Please fill in all required fields");
+    if (!hasAccess) {
+      toast.error("This feature requires a paid membership");
       return;
     }
 
-    // Check limit for free users
-    if (isFree && generationCount >= PRESS_RELEASE_LIMIT_FREE) {
-      showUpgradePrompt({
-        title: "Press Release Limit Reached",
-        description: "You've reached the free tier limit for press releases. Upgrade to generate unlimited professional press releases.",
-        feature: "Unlimited Press Releases",
-        context: "limit",
-        benefits: [
-          "Unlimited press release generations",
-          "AI-powered professional writing",
-          "PDF download and printing",
-          "Customizable templates",
-          "Priority support",
-        ],
-      });
+    if (!milestoneType || !athleteName || !sport || !details) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -88,21 +65,6 @@ export function PressReleaseGenerator() {
       }
 
       setGeneratedRelease(data.pressRelease);
-      
-      // Increment generation count for free users
-      if (isFree) {
-        const newCount = generationCount + 1;
-        setGenerationCount(newCount);
-        localStorage.setItem("pressReleaseCount", newCount.toString());
-        
-        // Show nudge after first generation
-        if (newCount === 1) {
-          toast.info(`You have ${PRESS_RELEASE_LIMIT_FREE - newCount} free press release${PRESS_RELEASE_LIMIT_FREE - newCount === 1 ? "" : "s"} remaining`, {
-            description: "Upgrade for unlimited press releases",
-          });
-        }
-      }
-      
       toast.success("Press release generated successfully!");
     } catch (error) {
       console.error("Error generating press release:", error);
@@ -243,14 +205,59 @@ export function PressReleaseGenerator() {
     printWindow.print();
   };
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">Loading...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <Card className="border-primary/50">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Crown className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle>Premium Feature</CardTitle>
+              <CardDescription>Press Release Generator requires a paid membership</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Create professional press releases for major athletic achievements and milestones with AI-powered writing assistance.
+          </p>
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              <span>Unlimited press release generations</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Download className="h-4 w-4 text-primary" />
+              <span>PDF download and printing</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Printer className="h-4 w-4 text-primary" />
+              <span>Professional formatting</span>
+            </li>
+          </ul>
+          <Button onClick={() => navigate("/membership")} className="w-full" size="lg">
+            <Crown className="mr-2 h-4 w-4" />
+            Upgrade to Access
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <UpgradePromptDialog
-        open={isOpen}
-        onOpenChange={closeUpgradePrompt}
-        {...config}
-      />
-      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -336,31 +343,24 @@ export function PressReleaseGenerator() {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Button
-              onClick={generatePressRelease}
-              disabled={generating}
-              className="w-full"
-              size="lg"
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Press Release...
-                </>
-              ) : (
-                <>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generate Press Release
-                </>
-              )}
-            </Button>
-            {isFree && (
-              <p className="text-xs text-center text-muted-foreground">
-                Free tier: {generationCount}/{PRESS_RELEASE_LIMIT_FREE} press releases used
-              </p>
+          <Button
+            onClick={generatePressRelease}
+            disabled={generating}
+            className="w-full"
+            size="lg"
+          >
+            {generating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating Press Release...
+              </>
+            ) : (
+              <>
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Press Release
+              </>
             )}
-          </div>
+          </Button>
         </CardContent>
       </Card>
 

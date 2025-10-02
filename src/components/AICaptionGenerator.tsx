@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,53 +6,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Sparkles, Copy, RefreshCw } from "lucide-react";
-import { UpgradePromptDialog } from "./UpgradePromptDialog";
-import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
+import { Sparkles, Copy, RefreshCw, Crown } from "lucide-react";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useNavigate } from "react-router-dom";
 
 interface AICaptionGeneratorProps {
   onCaptionGenerated?: (caption: string) => void;
 }
 
-const AI_CAPTION_LIMIT_FREE = 5;
-
 export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorProps) => {
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [context, setContext] = useState("");
   const [tone, setTone] = useState("professional");
   const [generatedCaption, setGeneratedCaption] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationCount, setGenerationCount] = useState(0);
-  const { isOpen, config, showUpgradePrompt, closeUpgradePrompt, isFree } = useUpgradePrompt();
-
-  useEffect(() => {
-    const stored = localStorage.getItem("aiCaptionCount");
-    if (stored) {
-      setGenerationCount(parseInt(stored, 10));
-    }
-  }, []);
+  const { hasAccess, isLoading } = useFeatureAccess("ai_caption_generator");
 
   const generateCaption = async () => {
-    if (!prompt.trim()) {
-      toast.error('Please enter a description of your post');
+    if (!hasAccess) {
+      toast.error("This feature requires a paid membership");
       return;
     }
 
-    // Check limit for free users
-    if (isFree && generationCount >= AI_CAPTION_LIMIT_FREE) {
-      showUpgradePrompt({
-        title: "AI Caption Limit Reached",
-        description: "You've reached the free tier limit for AI-generated captions. Upgrade for unlimited AI-powered content creation.",
-        feature: "Unlimited AI Captions",
-        context: "limit",
-        benefits: [
-          "Unlimited AI caption generations",
-          "Multiple tone options",
-          "Context-aware suggestions",
-          "Copy and edit capabilities",
-          "Priority AI processing",
-        ],
-      });
+    if (!prompt.trim()) {
+      toast.error('Please enter a description of your post');
       return;
     }
 
@@ -71,19 +49,6 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
 
       const caption = data.caption;
       setGeneratedCaption(caption);
-      
-      // Increment generation count for free users
-      if (isFree) {
-        const newCount = generationCount + 1;
-        setGenerationCount(newCount);
-        localStorage.setItem("aiCaptionCount", newCount.toString());
-        
-        if (newCount === 3) {
-          toast.info(`You have ${AI_CAPTION_LIMIT_FREE - newCount} free AI captions remaining`, {
-            description: "Upgrade for unlimited AI content",
-          });
-        }
-      }
       
       if (onCaptionGenerated) {
         onCaptionGenerated(caption);
@@ -119,15 +84,62 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
     "Highlight my academic achievement",
   ];
 
-  return (
-    <>
-      <UpgradePromptDialog
-        open={isOpen}
-        onOpenChange={closeUpgradePrompt}
-        {...config}
-      />
-      
+  if (isLoading) {
+    return (
       <Card>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">Loading...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <Card className="border-primary/50">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Crown className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                AI Caption Generator
+              </CardTitle>
+              <CardDescription>Premium Feature - Requires Paid Membership</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Let AI help you create engaging captions for your social media posts with unlimited generations, multiple tone options, and context-aware suggestions.
+          </p>
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>Unlimited AI-powered captions</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4 text-primary" />
+              <span>Multiple tone options</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Copy className="h-4 w-4 text-primary" />
+              <span>Easy copy & paste</span>
+            </li>
+          </ul>
+          <Button onClick={() => navigate("/membership")} className="w-full" size="lg">
+            <Crown className="mr-2 h-4 w-4" />
+            Upgrade to Access
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
@@ -211,11 +223,6 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
             </>
           )}
         </Button>
-        {isFree && (
-          <p className="text-xs text-center text-muted-foreground">
-            Free tier: {generationCount}/{AI_CAPTION_LIMIT_FREE} AI captions used
-          </p>
-        )}
 
         {generatedCaption && (
           <div className="space-y-2">
@@ -264,6 +271,5 @@ export const AICaptionGenerator = ({ onCaptionGenerated }: AICaptionGeneratorPro
         </div>
       </CardContent>
     </Card>
-    </>
   );
 };
