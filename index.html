@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
     <title>ForSWAGs - For Students With Athletic Goals</title>
     <meta name="description" content="Build your athletic profile, connect with college coaches, and achieve your sports dreams with ForSWAGs - the premier platform for student-athletes" />
     <meta name="author" content="ForSWAGs" />
@@ -16,9 +17,19 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="ForSWAGs" />
     <meta name="twitter:image" content="/src/assets/logo-full.jpeg" />
+    
+    <!-- Accessibility enhancements -->
+    <meta name="theme-color" content="#9B51E0" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#9B51E0" media="(prefers-color-scheme: light)" />
   </head>
 
   <body>
+    <noscript>
+      <div style="padding: 2rem; text-align: center; background: #9B51E0; color: white;">
+        <h1>JavaScript Required</h1>
+        <p>This application requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

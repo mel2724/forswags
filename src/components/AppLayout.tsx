@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { SkipToContent } from "@/components/SkipToContent";
+import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -51,6 +53,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <SidebarProvider defaultOpen>
+      <SkipToContent />
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -66,6 +69,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 size="sm"
                 onClick={() => setSearchOpen(true)}
                 className="gap-2"
+                aria-label="Open search"
               >
                 <Search className="h-4 w-4" />
                 <span className="hidden sm:inline">Search</span>
@@ -73,12 +77,13 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <span className="text-xs">⌘</span>K
                 </kbd>
               </Button>
+              <AccessibilityMenu />
             </div>
           </header>
           <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
           {/* Main content */}
-          <main className="flex-1">
+          <main className="flex-1" id="main-content" tabIndex={-1}>
             {children}
           </main>
         </div>
