@@ -1,8 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
-import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { AppLayout } from "@/components/AppLayout";
 
 // Eager load critical pages
@@ -93,11 +91,9 @@ const queryClient = new QueryClient({
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <ImpersonationProvider>
-        <ImpersonationBanner />
-        <AppLayout>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+      <AppLayout>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/athlete/:username" element={<PublicProfile />} />
             <Route path="/sponsors" element={<Sponsors />} />
@@ -157,12 +153,11 @@ const App = () => (
               <Route path="sponsors" element={<AdminSponsors />} />
               <Route path="paypal-setup" element={<AdminPayPalSetup />} />
             </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </AppLayout>
-        </ImpersonationProvider>
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </AppLayout>
       </BrowserRouter>
   </QueryClientProvider>
 );
