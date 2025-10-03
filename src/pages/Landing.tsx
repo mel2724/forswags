@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
 import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// Temporarily removed Select to force cache rebuild
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const Landing = () => {
@@ -169,17 +169,28 @@ const Landing = () => {
             <p className="text-xl text-muted-foreground mb-8">Choose the plan that fits your goals</p>
             
             {/* Role Selector */}
-            <div className="flex justify-center mb-8">
-              <Select value={selectedRole} onValueChange={(value: any) => setSelectedRole(value)}>
-                <SelectTrigger className="w-[280px] h-12 text-lg font-bold border-2 border-primary/30">
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="athlete" className="text-lg">Student Athlete</SelectItem>
-                  <SelectItem value="parent" className="text-lg">Parent/Guardian</SelectItem>
-                  <SelectItem value="recruiter" className="text-lg">College Recruiter</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex justify-center mb-8 gap-2">
+              <Button
+                variant={selectedRole === "athlete" ? "default" : "outline"}
+                onClick={() => setSelectedRole("athlete")}
+                className="text-sm font-bold"
+              >
+                Student Athlete
+              </Button>
+              <Button
+                variant={selectedRole === "parent" ? "default" : "outline"}
+                onClick={() => setSelectedRole("parent")}
+                className="text-sm font-bold"
+              >
+                Parent/Guardian
+              </Button>
+              <Button
+                variant={selectedRole === "recruiter" ? "default" : "outline"}
+                onClick={() => setSelectedRole("recruiter")}
+                className="text-sm font-bold"
+              >
+                College Recruiter
+              </Button>
             </div>
           </div>
           
