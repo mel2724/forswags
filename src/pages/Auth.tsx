@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import logoFull from "@/assets/forswags-logo.png";
 
@@ -20,6 +21,7 @@ const Auth = () => {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
     // Check for password recovery tokens in URL
@@ -50,10 +52,16 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!termsAccepted) {
+      toast.error("Please accept the Terms and Conditions to continue");
+      return;
+    }
+    
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -64,7 +72,23 @@ const Auth = () => {
         },
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
+
+      // Create or update profile with terms acceptance
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            user_id: authData.user.id,
+            terms_accepted: true,
+            terms_accepted_at: new Date().toISOString(),
+          } as any);
+
+        if (profileError) {
+          console.error("Error creating profile:", profileError);
+          // Don't throw here, profile creation is secondary
+        }
+      }
 
       toast.success("Account created! Please check your email to verify.");
     } catch (error: any) {
@@ -330,7 +354,29 @@ const Auth = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full btn-hero" disabled={loading}>
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                  required
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-sm leading-tight cursor-pointer"
+                >
+                  I agree to the{" "}
+                  <Link 
+                    to="/terms" 
+                    target="_blank"
+                    className="text-primary hover:underline font-semibold"
+                  >
+                    Terms and Conditions
+                  </Link>
+                </label>
+              </div>
+
+              <Button type="submit" className="w-full btn-hero" disabled={loading || !termsAccepted}>
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
             </form>
