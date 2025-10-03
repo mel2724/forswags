@@ -116,9 +116,9 @@ const Landing = () => {
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
                 <Brain className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">AI College Matching</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Expert College Matching</h3>
               <p className="text-muted-foreground leading-relaxed">
-                AI-powered analysis finds your perfect college fit based on athletics, academics, and personal preferences
+                Our expert team personally reviews your profile to find your perfect college fit based on athletics, academics, and personal preferences
               </p>
             </Card>
 
