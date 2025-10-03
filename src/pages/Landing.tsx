@@ -548,9 +548,10 @@ const Landing = () => {
             <div className="flex justify-center gap-8 text-sm text-muted-foreground">
               <a href="/sponsors" className="hover:text-primary transition-colors">Sponsors</a>
               <a href="/sponsor-showcase" className="hover:text-primary transition-colors">Our Sponsors</a>
+              <a href="/about" className="hover:text-primary transition-colors">About Us</a>
               <a href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</a>
               <a href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-primary transition-colors">Contact</a>
+              <a href="/contact" className="hover:text-primary transition-colors">Contact</a>
             </div>
             
             <p className="text-xs text-muted-foreground/60 uppercase tracking-wider">
