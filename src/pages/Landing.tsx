@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
 import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal } from "lucide-react";
 // Temporarily removed Select to force cache rebuild
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+// Temporarily removed to force cache rebuild
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -456,114 +456,28 @@ const Landing = () => {
             </p>
           </div>
           
-          <Accordion type="single" collapsible className="space-y-4">
-            <AccordionItem value="item-1" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                What is ForSWAGs?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                ForSWAGs stands for For Students With Athletic Goals. We're a platform built by experienced coaches, scouts, and educators to help student-athletes succeed both on the field and in life. We combine recruiting exposure with life-skills education so every athlete has the tools to reach their full potential.
-              </AccordionContent>
-            </AccordionItem>
+          <div className="space-y-4">
+            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-border">
+              <h3 className="font-bold text-lg mb-2">What is ForSWAGs?</h3>
+              <p className="text-muted-foreground">
+                ForSWAGs stands for For Students With Athletic Goals. We're a platform built by experienced coaches, scouts, and educators to help student-athletes succeed both on the field and in life.
+              </p>
+            </Card>
+            
+            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-border">
+              <h3 className="font-bold text-lg mb-2">How is ForSWAGs different?</h3>
+              <p className="text-muted-foreground">
+                Unlike most recruiting companies that promise scholarships and charge thousands upfront, ForSWAGs is built on education, exposure, and affordability. Our membership is only $97 per year.
+              </p>
+            </Card>
 
-            <AccordionItem value="item-2" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                How is ForSWAGs different from other recruiting services?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                Unlike most recruiting companies that promise scholarships and charge thousands upfront, ForSWAGs is built on education, exposure, and affordability. Our membership is only $97 per year, and all life-skills courses are included, even for free accounts. Athletic evaluations, training, and promotional services are offered as affordable add-ons, not overpriced bundles.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                What does a membership include?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                Your annual ForSWAGs membership includes:
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>A personalized Player Profile Page for exposure</li>
-                  <li>Access to the Playbook for Life (our life-skills lessons)</li>
-                  <li>Access to training modules & recruiting tips and insights</li>
-                  <li>Access to recruiting and player evaluation services</li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-4" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                Do you guarantee a scholarship or recruiting offer?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                No. No one can guarantee scholarships. What we do is give athletes the education, tools, and exposure needed to maximize their chances. We help with college matches, skill evaluations, and getting your name in front of the right people, but success depends on the athlete's effort, talent, and academics.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-5" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                What services can I add on to my membership?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                Athletes and families can choose from a variety of add-on services, such as:
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Player Evaluations ($97 initial, $49 each additional)</li>
-                  <li>Player Skills Training Courses ($99, position-specific)</li>
-                  <li>Highlight promotion on ForSWAGs social media (70K+ followers, many coaches watching)</li>
-                  <li>College Match List (10 schools tailored to your goals)</li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-6" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                Who can join ForSWAGs?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                ForSWAGs is open to all student-athletes, boys and girls, ages 8–18, in any sport. Whether you're just starting out or already playing at a high level, we'll help you grow. Parents and recruiters are also welcome as part of our learning community.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-7" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                What is the Playbook for Life?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                The Playbook for Life is our signature series of life-skills courses included in every membership. Topics include respect, responsibility, nutrition, mindset, leadership, dealing with adversity, and preparing for careers beyond sports. Every lesson completed boosts your overall ranking, combining both athletic and life skills.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-8" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                How do I sign up?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                It's simple:
-                <ol className="list-decimal list-inside mt-2 space-y-1">
-                  <li>Click Join Now</li>
-                  <li>Choose your membership (only $97/year or $14.99/month)</li>
-                  <li>Start building your profile and accessing your courses immediately</li>
-                </ol>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-9" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                Can parents use ForSWAGs, too?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                Absolutely. Parents can learn about supporting their athlete's journey (sideline behavior, nutrition, navigating recruiting scams). ForSWAGs is built as a team resource, not just for players.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-10" className="bg-card/50 backdrop-blur border-2 border-border rounded-lg px-6 data-[state=open]:border-primary/50 transition-all">
-              <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">
-                How do rankings work?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                Our rankings are unique—we don't use the traditional "star system." Instead, athletes are evaluated based on both their athletic ability and their life skills progress from the Playbook for Life. This creates a fair, unbiased, and well-rounded ranking system that college coaches respect.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-border">
+              <h3 className="font-bold text-lg mb-2">What does a membership include?</h3>
+              <p className="text-muted-foreground">
+                Your annual ForSWAGs membership includes a personalized Player Profile Page, access to the Playbook for Life, training modules, recruiting tips, and evaluation services.
+              </p>
+            </Card>
+          </div>
         </div>
       </section>
 
