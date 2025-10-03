@@ -60,6 +60,7 @@ const AdminRankings = lazy(() => import("./pages/admin/AdminRankings"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
 const AdminEvaluations = lazy(() => import("./pages/admin/AdminEvaluations"));
 const AdminSponsors = lazy(() => import("./pages/admin/AdminSponsors"));
+const AdminPayPalSetup = lazy(() => import("./pages/admin/AdminPayPalSetup"));
 const CoachApplication = lazy(() => import("./pages/CoachApplication"));
 const PurchaseEvaluation = lazy(() => import("./pages/PurchaseEvaluation"));
 const CoachDashboard = lazy(() => import("./pages/coach/CoachDashboard"));
@@ -160,6 +161,7 @@ const App = () => (
               <Route path="notifications" element={<AdminNotifications />} />
               <Route path="evaluations" element={<AdminEvaluations />} />
               <Route path="sponsors" element={<AdminSponsors />} />
+              <Route path="paypal-setup" element={<AdminPayPalSetup />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

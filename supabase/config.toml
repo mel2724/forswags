@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.generate-press-release]
 verify_jwt = true
+
+[functions.create-paypal-plans]
+verify_jwt = false
