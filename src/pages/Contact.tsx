@@ -18,7 +18,7 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-function Contact() {
+const Contact = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<ContactFormData>({
@@ -280,6 +280,6 @@ function Contact() {
       </div>
     </div>
   );
-}
+};
 
 export default Contact;
