@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
-import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal, ChevronDown } from "lucide-react";
+import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal, ChevronDown, Video, Brain, Sparkles, TrendingUp, Share2, BookOpen } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -104,61 +104,61 @@ const Landing = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-3 bg-primary/10 rounded-lg w-fit mb-6 group-hover:bg-primary/20 transition-colors">
-                <Trophy className="h-10 w-10 text-primary" />
+                <Video className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Elite Profile</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Pro Coach Evaluations</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Build a professional athlete profile with stats, highlights, and achievements that recruiters notice
+                Get professionally scouted by experienced coaches with detailed video analysis and performance feedback
               </p>
             </Card>
 
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
-                <Target className="h-10 w-10 text-secondary" />
+                <Brain className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">College Matches</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">AI College Matching</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Our expert team personally matches you with colleges that fit your athletic and academic profile
+                AI-powered analysis finds your perfect college fit based on athletics, academics, and personal preferences
               </p>
             </Card>
 
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-3 bg-primary/10 rounded-lg w-fit mb-6 group-hover:bg-primary/20 transition-colors">
-                <BarChart3 className="h-10 w-10 text-primary" />
+                <BookOpen className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Pro Analytics</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Life Skills Training</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Track performance with advanced stats and rankings that show your growth over time
+                Our Playbook for Life teaches leadership, character development, and real-world skills beyond athletics
               </p>
             </Card>
 
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
-                <Award className="h-10 w-10 text-secondary" />
+                <Share2 className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Expert Training</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Social Media Tools</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Learn from the best with courses, drills, and evaluations from experienced coaches
+                AI-generated captions, custom graphics, and press releases help you build your brand and get noticed
               </p>
             </Card>
 
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-3 bg-primary/10 rounded-lg w-fit mb-6 group-hover:bg-primary/20 transition-colors">
-                <Medal className="h-10 w-10 text-primary" />
+                <TrendingUp className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Earn Badges</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">National Exposure</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Unlock achievements and showcase your dedication with digital badges and awards
+                Public athlete profiles visible to college recruiters nationwide—showcase your talent 24/7
               </p>
             </Card>
 
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
-                <GraduationCap className="h-10 w-10 text-secondary" />
+                <Sparkles className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Get Recruited</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Holistic Rankings</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Connect directly with college coaches and recruiters looking for talent like yours
+                Unique ranking system that evaluates both athletic ability and life skills—no traditional star ratings
               </p>
             </Card>
           </div>
