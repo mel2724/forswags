@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-const Contact = () => {
+function Contact() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<ContactFormData>({
@@ -39,7 +39,6 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form data
     const result = contactSchema.safeParse(formData);
     
     if (!result.success) {
@@ -67,7 +66,6 @@ const Contact = () => {
         description: "We've received your message and will get back to you soon.",
       });
 
-      // Reset form
       setFormData({
         name: "",
         email: "",
@@ -89,7 +87,6 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
             Contact <span className="text-gradient-primary">Us</span>
@@ -100,7 +97,6 @@ const Contact = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* Contact Form */}
           <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
             <CardHeader>
               <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -199,9 +195,7 @@ const Contact = () => {
             </CardContent>
           </Card>
 
-          {/* Contact Information & FAQ */}
           <div className="space-y-6">
-            {/* Contact Info */}
             <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Get in Touch</CardTitle>
@@ -244,7 +238,6 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            {/* Common Questions */}
             <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -287,6 +280,6 @@ const Contact = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Contact;
