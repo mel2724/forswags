@@ -8,7 +8,6 @@ import { GlobalSearch } from "@/components/GlobalSearch";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { SkipToContent } from "@/components/SkipToContent";
-import { AccessibilityMenu } from "@/components/AccessibilityMenu";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { UpdateNotification } from "@/components/UpdateNotification";
@@ -84,7 +83,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <span className="text-xs">⌘</span>K
                 </kbd>
               </Button>
-              <AccessibilityMenu />
             </div>
           </header>
           <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
