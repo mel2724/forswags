@@ -27,6 +27,9 @@ const Landing = () => {
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <a href="#features" className="text-primary hover:text-primary/80 transition-colors font-bold">Features</a>
             <a href="#pricing" className="text-primary hover:text-primary/80 transition-colors font-bold">Pricing</a>
+            <Button variant="ghost" onClick={() => navigate("/about")} className="text-primary hover:text-primary/80 font-bold">
+              About
+            </Button>
             <Button variant="ghost" onClick={() => navigate("/players")} className="text-primary hover:text-primary/80 font-bold">
               Athletes
             </Button>

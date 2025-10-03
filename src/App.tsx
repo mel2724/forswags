@@ -67,6 +67,7 @@ const EvaluationDetail = lazy(() => import("./pages/coach/EvaluationDetail"));
 const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const About = lazy(() => import("./pages/About"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -102,6 +103,7 @@ const App = () => (
             <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/about" element={<About />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
