@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 
 type TextSize = "small" | "medium" | "large" | "x-large";
 type ContrastMode = "normal" | "high";
@@ -15,7 +16,7 @@ interface AccessibilityContextType {
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
 
-export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
+export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [textSize, setTextSize] = useState<TextSize>(() => {
     const saved = localStorage.getItem("a11y-text-size");
     return (saved as TextSize) || "medium";
