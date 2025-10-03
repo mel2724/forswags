@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import Contact from "./pages/Contact";
 
 // Lazy load secondary pages for code splitting
 const Sponsors = lazy(() => import("./pages/Sponsors"));
@@ -68,7 +69,6 @@ const SecuritySettings = lazy(() => import("./pages/SecuritySettings"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
 
 // Loading fallback component
 const PageLoader = () => (
