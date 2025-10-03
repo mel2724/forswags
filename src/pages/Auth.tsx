@@ -22,6 +22,7 @@ const Auth = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   useEffect(() => {
     // Check for password recovery tokens in URL
@@ -58,6 +59,11 @@ const Auth = () => {
       return;
     }
     
+    if (!privacyAccepted) {
+      toast.error("Please accept the Privacy Policy to continue");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -74,7 +80,7 @@ const Auth = () => {
 
       if (authError) throw authError;
 
-      // Create or update profile with terms acceptance
+      // Create or update profile with terms and privacy acceptance
       if (authData.user) {
         const { error: profileError } = await supabase
           .from('profiles')
@@ -82,6 +88,8 @@ const Auth = () => {
             user_id: authData.user.id,
             terms_accepted: true,
             terms_accepted_at: new Date().toISOString(),
+            privacy_accepted: true,
+            privacy_accepted_at: new Date().toISOString(),
           } as any);
 
         if (profileError) {
@@ -354,29 +362,54 @@ const Auth = () => {
                 />
               </div>
 
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={termsAccepted}
-                  onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
-                  required
-                />
-                <label
-                  htmlFor="terms"
-                  className="text-sm leading-tight cursor-pointer"
-                >
-                  I agree to the{" "}
-                  <Link 
-                    to="/terms" 
-                    target="_blank"
-                    className="text-primary hover:underline font-semibold"
+              <div className="space-y-3">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={termsAccepted}
+                    onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                    required
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm leading-tight cursor-pointer"
                   >
-                    Terms and Conditions
-                  </Link>
-                </label>
+                    I agree to the{" "}
+                    <Link 
+                      to="/terms" 
+                      target="_blank"
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Terms and Conditions
+                    </Link>
+                  </label>
+                </div>
+
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="privacy"
+                    checked={privacyAccepted}
+                    onCheckedChange={(checked) => setPrivacyAccepted(checked as boolean)}
+                    required
+                  />
+                  <label
+                    htmlFor="privacy"
+                    className="text-sm leading-tight cursor-pointer"
+                  >
+                    I agree to the{" "}
+                    <Link 
+                      to="/privacy" 
+                      target="_blank"
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Privacy Policy
+                    </Link>
+                    {" "}and understand that my athletic information will be publicly visible
+                  </label>
+                </div>
               </div>
 
-              <Button type="submit" className="w-full btn-hero" disabled={loading || !termsAccepted}>
+              <Button type="submit" className="w-full btn-hero" disabled={loading || !termsAccepted || !privacyAccepted}>
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
             </form>

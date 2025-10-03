@@ -1834,6 +1834,8 @@ export type Database = {
           id: string
           last_name: string | null
           phone: string | null
+          privacy_accepted: boolean
+          privacy_accepted_at: string | null
           state: string | null
           terms_accepted: boolean
           terms_accepted_at: string | null
@@ -1852,6 +1854,8 @@ export type Database = {
           id: string
           last_name?: string | null
           phone?: string | null
+          privacy_accepted?: boolean
+          privacy_accepted_at?: string | null
           state?: string | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
@@ -1870,6 +1874,8 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          privacy_accepted?: boolean
+          privacy_accepted_at?: string | null
           state?: string | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
