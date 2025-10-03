@@ -2,7 +2,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
@@ -15,8 +14,6 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AccessibilityProvider>
-      <App />
-    </AccessibilityProvider>
+    <App />
   </StrictMode>
 );
