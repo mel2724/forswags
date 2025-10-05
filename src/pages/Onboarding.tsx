@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProgressIndicator } from "@/components/ProgressIndicator";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft } from "lucide-react";
+import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft, Zap, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 type Role = "athlete" | "parent" | "recruiter";
@@ -24,6 +25,24 @@ const roles = [
 ];
 
 const sports = ["Football", "Basketball", "Baseball", "Softball", "Soccer", "Track & Field", "Volleyball", "Lacrosse", "Tennis", "Swimming", "Wrestling", "Golf", "Cross Country", "Other"];
+
+// Sample data for demo mode
+const SAMPLE_DATA = {
+  fullName: "Jordan Taylor",
+  phone: "(555) 234-5678",
+  sport: "Basketball",
+  position: "Point Guard",
+  heightFeet: "6",
+  heightInches: "2",
+  weight: "185",
+  highSchool: "Lincoln High School",
+  gradYear: "2026",
+  gpa: "3.8",
+  satScore: "1280",
+  actScore: "28",
+  highlightsUrl: "https://youtube.com/watch?v=example",
+  bio: "Passionate athlete with strong leadership skills and dedication to both academics and athletics. Team captain for 2 years with proven track record in competitive play.",
+};
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -50,6 +69,8 @@ const Onboarding = () => {
   const [selectedRole, setSelectedRole] = useState<Role>("athlete");
   const [userId, setUserId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [setupMode, setSetupMode] = useState<"quick" | "complete">("quick");
+  const [useSampleData, setUseSampleData] = useState(false);
   
   // Profile form data
   const [fullName, setFullName] = useState("");
@@ -72,6 +93,26 @@ const Onboarding = () => {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [isParentConsenting, setIsParentConsenting] = useState(false);
 
+  // Load sample data function
+  const loadSampleData = () => {
+    setFullName(SAMPLE_DATA.fullName);
+    setPhone(SAMPLE_DATA.phone);
+    setSport(SAMPLE_DATA.sport);
+    setPosition(SAMPLE_DATA.position);
+    setHeightFeet(SAMPLE_DATA.heightFeet);
+    setHeightInches(SAMPLE_DATA.heightInches);
+    setWeight(SAMPLE_DATA.weight);
+    setHighSchool(SAMPLE_DATA.highSchool);
+    setGradYear(SAMPLE_DATA.gradYear);
+    setGpa(SAMPLE_DATA.gpa);
+    setSatScore(SAMPLE_DATA.satScore);
+    setActScore(SAMPLE_DATA.actScore);
+    setHighlightsUrl(SAMPLE_DATA.highlightsUrl);
+    setBio(SAMPLE_DATA.bio);
+    setUseSampleData(true);
+    toast.success("Sample data loaded! Feel free to customize it.");
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -90,7 +131,7 @@ const Onboarding = () => {
     checkAuth();
   }, [navigate]);
 
-  const totalSteps = selectedRole === "athlete" ? 6 : 1;
+  const totalSteps = selectedRole === "athlete" ? (setupMode === "quick" ? 4 : 6) : 1;
 
   const handleRoleSelect = () => {
     if (selectedRole === "athlete") {
@@ -159,6 +200,12 @@ const Onboarding = () => {
     if (step === 3) {
       if (!sport) {
         toast.error("Please select a sport");
+        return;
+      }
+      
+      // In quick mode, skip from step 3 to final step (step 4 in quick mode = step 6 in complete mode)
+      if (setupMode === "quick") {
+        setStep(6); // Jump to final consent step
         return;
       }
     }
@@ -325,18 +372,40 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
       <Card className="w-full max-w-2xl p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
+        {/* Sample Data Toggle */}
+        {selectedRole === "athlete" && step > 1 && step < 6 && !useSampleData && (
+          <div className="flex items-center justify-between p-4 bg-accent/10 rounded-lg border border-accent/20">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-accent" />
+              <span className="text-sm font-medium">Try with sample data</span>
+            </div>
+            <Button onClick={loadSampleData} variant="outline" size="sm">
+              Load Demo
+            </Button>
+          </div>
+        )}
+
         {/* Progress indicator */}
         {selectedRole === "athlete" && step > 1 && (
           <ProgressIndicator
-            steps={[
-              { title: "Role", completed: true },
-              { title: "Basic Info", completed: step > 2 },
-              { title: "Sport Details", completed: step > 3 },
-              { title: "Measurements", completed: step > 4 },
-              { title: "Academics", completed: step > 5 },
-              { title: "Profile", completed: step > 6 },
-            ]}
-            currentStep={step - 2}
+            steps={
+              setupMode === "quick"
+                ? [
+                    { title: "Role", completed: true },
+                    { title: "Basic Info", completed: step > 2 },
+                    { title: "Sport", completed: step > 3 },
+                    { title: "Consent", completed: step > 6 },
+                  ]
+                : [
+                    { title: "Role", completed: true },
+                    { title: "Basic Info", completed: step > 2 },
+                    { title: "Sport Details", completed: step > 3 },
+                    { title: "Measurements", completed: step > 4 },
+                    { title: "Academics", completed: step > 5 },
+                    { title: "Profile", completed: step > 6 },
+                  ]
+            }
+            currentStep={setupMode === "quick" ? Math.min(step - 1, 3) : step - 2}
             variant="steps"
           />
         )}
@@ -371,6 +440,37 @@ const Onboarding = () => {
                 })}
               </div>
             </RadioGroup>
+
+            {/* Setup Mode Selection (only for athletes) */}
+            {selectedRole === "athlete" && (
+              <div className="space-y-3 p-4 bg-primary/5 rounded-lg border border-primary/10">
+                <Label className="text-sm font-semibold">Setup Mode</Label>
+                <RadioGroup value={setupMode} onValueChange={(value) => setSetupMode(value as "quick" | "complete")}>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="quick" id="quick" />
+                      <Label htmlFor="quick" className="cursor-pointer flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-accent" />
+                        <div>
+                          <div className="font-medium">Quick Setup (5 min)</div>
+                          <div className="text-xs text-muted-foreground">Just the essentials, complete profile later</div>
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="complete" id="complete" />
+                      <Label htmlFor="complete" className="cursor-pointer flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-primary" />
+                        <div>
+                          <div className="font-medium">Complete Setup (10 min)</div>
+                          <div className="text-xs text-muted-foreground">Full profile with all details</div>
+                        </div>
+                      </Label>
+                    </div>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
 
             <Button onClick={handleRoleSelect} className="w-full btn-hero" disabled={loading}>
               {loading ? "Setting up..." : "Continue"}
@@ -427,7 +527,9 @@ const Onboarding = () => {
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Your Sport</h2>
-              <p className="text-muted-foreground">What do you play?</p>
+              <p className="text-muted-foreground">
+                {setupMode === "quick" ? "What do you play? (You can add more details later)" : "What do you play?"}
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -446,7 +548,7 @@ const Onboarding = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="position">Position</Label>
+                <Label htmlFor="position">Position {setupMode === "quick" && "(Optional)"}</Label>
                 <Input
                   id="position"
                   value={position}
@@ -454,6 +556,14 @@ const Onboarding = () => {
                   placeholder="e.g., Quarterback, Point Guard"
                 />
               </div>
+
+              {setupMode === "quick" && (
+                <div className="p-3 bg-accent/10 rounded-md border border-accent/20">
+                  <p className="text-xs text-muted-foreground">
+                    ⚡ Quick Setup: You can add measurements, academics, and more details in your profile later!
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3">
@@ -462,15 +572,15 @@ const Onboarding = () => {
                 Back
               </Button>
               <Button onClick={handleNext} className="flex-1 btn-hero">
-                Next
+                {setupMode === "quick" ? "Almost Done" : "Next"}
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </>
         )}
 
-        {/* Step 4: Physical Stats */}
-        {step === 4 && (
+        {/* Step 4: Physical Stats (Complete mode only) */}
+        {step === 4 && setupMode === "complete" && (
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Physical Stats</h2>
@@ -529,8 +639,8 @@ const Onboarding = () => {
           </>
         )}
 
-        {/* Step 5: Academic Info */}
-        {step === 5 && (
+        {/* Step 5: Academic Info (Complete mode only) */}
+        {step === 5 && setupMode === "complete" && (
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Academics</h2>
