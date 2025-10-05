@@ -2772,9 +2772,21 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      calculate_age: {
+        Args: { p_date_of_birth: string }
+        Returns: number
+      }
       can_request_reevaluation: {
         Args: { p_athlete_id: string }
         Returns: boolean
+      }
+      decrypt_oauth_token: {
+        Args: { encrypted_token: string }
+        Returns: string
+      }
+      encrypt_oauth_token: {
+        Args: { token: string }
+        Returns: string
       }
       end_impersonation_session: {
         Args: Record<PropertyKey, never>

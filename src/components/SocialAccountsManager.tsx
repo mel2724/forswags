@@ -44,12 +44,40 @@ export const SocialAccountsManager = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // If tokens are provided, encrypt them (for future OAuth integration)
+      let insertData: any = {
+        user_id: user.id,
+        ...accountData,
+      };
+
+      // Remove plain tokens and add encrypted ones if tokens exist
+      if (accountData.access_token || accountData.refresh_token) {
+        const { data: encryptedAccess, error: encryptError } = await supabase.rpc(
+          'encrypt_oauth_token',
+          { token: accountData.access_token || '' }
+        );
+        
+        const { data: encryptedRefresh, error: refreshError } = await supabase.rpc(
+          'encrypt_oauth_token',
+          { token: accountData.refresh_token || '' }
+        );
+
+        if (encryptError || refreshError) {
+          throw new Error('Failed to encrypt tokens');
+        }
+
+        // Remove plain text tokens and add encrypted ones
+        const { access_token, refresh_token, ...rest } = insertData;
+        insertData = {
+          ...rest,
+          encrypted_access_token: encryptedAccess,
+          encrypted_refresh_token: encryptedRefresh,
+        };
+      }
+
       const { error } = await supabase
-        .from('social_accounts')
-        .insert({
-          user_id: user.id,
-          ...accountData,
-        });
+        .from('connected_accounts')
+        .insert([insertData]);
       
       if (error) throw error;
     },

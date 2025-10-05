@@ -209,6 +209,16 @@ const Onboarding = () => {
 
       if (profileError) throw profileError;
 
+      // Capture consent IP address (client-side approximation)
+      let consentIpAddress: string | null = null;
+      try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        consentIpAddress = ipData.ip;
+      } catch (e) {
+        console.warn('Could not fetch IP address for consent tracking');
+      }
+
       // Insert or update athlete profile
       const { data: existingAthlete } = await supabase
         .from("athletes")
@@ -234,7 +244,8 @@ const Onboarding = () => {
             bio: athleteData.bio,
             public_profile_consent: publicProfileConsent,
             date_of_birth: dateOfBirth || null,
-            consent_timestamp: publicProfileConsent ? new Date().toISOString() : null,
+            consent_timestamp: publicProfileConsent && isParentConsenting ? new Date().toISOString() : null,
+            consent_ip_address: publicProfileConsent && isParentConsenting ? consentIpAddress : null,
             is_parent_verified: isParentConsenting,
           })
           .eq("user_id", userId);
@@ -259,7 +270,8 @@ const Onboarding = () => {
             bio: athleteData.bio,
             public_profile_consent: publicProfileConsent,
             date_of_birth: dateOfBirth || null,
-            consent_timestamp: publicProfileConsent ? new Date().toISOString() : null,
+            consent_timestamp: publicProfileConsent && isParentConsenting ? new Date().toISOString() : null,
+            consent_ip_address: publicProfileConsent && isParentConsenting ? consentIpAddress : null,
             is_parent_verified: isParentConsenting,
           }]);
 

@@ -1,15 +1,18 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Mail, Edit, Save, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Edit, Mail, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
+import DOMPurify from "dompurify";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EmailTemplate {
   id: string;
@@ -17,136 +20,121 @@ interface EmailTemplate {
   subject: string;
   content: string;
   description: string | null;
-  available_variables: string[];
+  available_variables: string[] | null;
   created_at: string;
   updated_at: string;
 }
 
 export default function AdminEmailTemplates() {
-  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
   const [editSubject, setEditSubject] = useState("");
   const [editContent, setEditContent] = useState("");
-  const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
-  const { toast } = useToast();
 
-  useEffect(() => {
-    loadTemplates();
-  }, []);
-
-  const loadTemplates = async () => {
-    try {
+  const { data: templates, isLoading } = useQuery({
+    queryKey: ["email-templates"],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("email_templates")
         .select("*")
         .order("template_key");
-
+      
       if (error) throw error;
-      const templatesData = (data || []).map(t => ({
-        ...t,
-        available_variables: Array.isArray(t.available_variables) 
-          ? t.available_variables as string[]
-          : []
-      }));
-      setTemplates(templatesData as EmailTemplate[]);
-    } catch (error: any) {
-      console.error("Error loading templates:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load email templates",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data as EmailTemplate[];
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, subject, content }: { id: string; subject: string; content: string }) => {
+      const { error } = await supabase
+        .from("email_templates")
+        .update({ subject, content })
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["email-templates"] });
+      toast.success("Template updated successfully");
+      setEditingTemplate(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to update template: " + error.message);
+    },
+  });
 
   const handleEdit = (template: EmailTemplate) => {
     setEditingTemplate(template);
     setEditSubject(template.subject);
     setEditContent(template.content);
-    setEditDescription(template.description || "");
   };
 
   const handleSave = async () => {
     if (!editingTemplate) return;
-
+    
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("email_templates")
-        .update({
-          subject: editSubject,
-          content: editContent,
-          description: editDescription,
-        })
-        .eq("id", editingTemplate.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Email template updated successfully",
-      });
-
-      setEditingTemplate(null);
-      loadTemplates();
-    } catch (error: any) {
-      console.error("Error saving template:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save template",
-        variant: "destructive",
+      await updateMutation.mutateAsync({
+        id: editingTemplate.id,
+        subject: editSubject,
+        content: editContent,
       });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleCancel = () => {
-    setEditingTemplate(null);
-    setEditSubject("");
-    setEditContent("");
-    setEditDescription("");
+  // Sanitize HTML before rendering to prevent XSS
+  const sanitizeHtml = (html: string) => {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'div', 'span'],
+      ALLOWED_ATTR: ['href', 'target', 'style', 'class'],
+    });
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">Loading templates...</div>
-      </div>
-    );
+  if (isLoading) {
+    return <div>Loading templates...</div>;
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center gap-3">
-        <Mail className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">Email Templates</h1>
-          <p className="text-muted-foreground">
-            Manage automated email notifications sent to users
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Email Templates</h1>
+        <p className="text-muted-foreground">
+          Manage automated email templates sent to users
+        </p>
       </div>
 
-      <div className="grid gap-6">
-        {templates.map((template) => (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Email content is sanitized for security. Only safe HTML tags are allowed in previews and emails.
+        </AlertDescription>
+      </Alert>
+
+      <div className="grid gap-4">
+        {templates?.map((template) => (
           <Card key={template.id}>
             <CardHeader>
               <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="flex items-center gap-2">
-                    {template.template_key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                  </CardTitle>
-                  <CardDescription>{template.description}</CardDescription>
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <CardTitle className="text-lg">{template.template_key}</CardTitle>
+                    <Badge variant="secondary" className="text-xs">
+                      {template.available_variables?.length || 0} variables
+                    </Badge>
+                  </div>
+                  {template.description && (
+                    <p className="text-sm text-muted-foreground">{template.description}</p>
+                  )}
                 </div>
+                
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
+                    <Button 
+                      variant="outline" 
                       size="sm"
                       onClick={() => handleEdit(template)}
                     >
@@ -154,15 +142,15 @@ export default function AdminEmailTemplates() {
                       Edit
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>Edit Email Template</DialogTitle>
+                      <DialogTitle>Edit Email Template: {template.template_key}</DialogTitle>
                       <DialogDescription>
-                        Customize the subject, content, and description for this email template
+                        Customize the subject and content of this email template
                       </DialogDescription>
                     </DialogHeader>
 
-                    {editingTemplate && (
+                    {editingTemplate?.id === template.id && (
                       <Tabs defaultValue="edit" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
                           <TabsTrigger value="edit">Edit</TabsTrigger>
@@ -171,62 +159,48 @@ export default function AdminEmailTemplates() {
 
                         <TabsContent value="edit" className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Input
-                              id="description"
-                              value={editDescription}
-                              onChange={(e) => setEditDescription(e.target.value)}
-                              placeholder="When is this email sent?"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="subject">Subject Line</Label>
+                            <Label htmlFor="subject">Subject</Label>
                             <Input
                               id="subject"
                               value={editSubject}
                               onChange={(e) => setEditSubject(e.target.value)}
-                              placeholder="Email subject"
+                              maxLength={200}
+                              placeholder="Email subject line"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="content">Email Content (HTML)</Label>
+                            <Label htmlFor="content">Content (HTML)</Label>
                             <Textarea
                               id="content"
                               value={editContent}
                               onChange={(e) => setEditContent(e.target.value)}
+                              className="min-h-[300px] font-mono text-sm"
                               placeholder="Email HTML content"
-                              rows={15}
-                              className="font-mono text-sm"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>Available Variables</Label>
-                            <div className="flex flex-wrap gap-2">
-                              {editingTemplate.available_variables.map((variable) => (
-                                <Badge key={variable} variant="secondary">
-                                  {`{{${variable}}}`}
-                                </Badge>
-                              ))}
+                          {template.available_variables && template.available_variables.length > 0 && (
+                            <div className="rounded-lg border p-3 bg-muted/50">
+                              <div className="text-sm font-medium mb-2">Available Variables:</div>
+                              <div className="flex flex-wrap gap-2">
+                                {template.available_variables.map((variable: string) => (
+                                  <Badge key={variable} variant="secondary" className="text-xs">
+                                    {`{{${variable}}}`}
+                                  </Badge>
+                                ))}
+                              </div>
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                              Use these variables in your template by wrapping them in double curly braces
-                            </p>
-                          </div>
+                          )}
 
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
-                              onClick={handleCancel}
-                              disabled={saving}
+                              onClick={() => setEditingTemplate(null)}
                             >
-                              <X className="h-4 w-4 mr-2" />
                               Cancel
                             </Button>
                             <Button onClick={handleSave} disabled={saving}>
-                              <Save className="h-4 w-4 mr-2" />
                               {saving ? "Saving..." : "Save Changes"}
                             </Button>
                           </div>
@@ -239,12 +213,17 @@ export default function AdminEmailTemplates() {
                               <div className="font-semibold">{editSubject}</div>
                             </div>
                             <div className="rounded border bg-background p-6">
-                              <div dangerouslySetInnerHTML={{ __html: editContent }} />
+                              {/* SECURITY FIX: Sanitize HTML before rendering */}
+                              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(editContent) }} />
                             </div>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            Note: Variables will be replaced with actual values when the email is sent
-                          </p>
+                          <Alert>
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription className="text-xs">
+                              Preview shows sanitized HTML. Variables will be replaced with actual values when the email is sent.
+                              For security, only safe HTML tags are allowed.
+                            </AlertDescription>
+                          </Alert>
                         </TabsContent>
                       </Tabs>
                     )}
@@ -259,13 +238,9 @@ export default function AdminEmailTemplates() {
                   <div className="text-sm text-muted-foreground">{template.subject}</div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium mb-2">Available Variables:</div>
-                  <div className="flex flex-wrap gap-2">
-                    {template.available_variables.map((variable) => (
-                      <Badge key={variable} variant="outline">
-                        {`{{${variable}}}`}
-                      </Badge>
-                    ))}
+                  <div className="text-sm font-medium mb-1">Last Updated:</div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(template.updated_at).toLocaleDateString()}
                   </div>
                 </div>
               </div>
