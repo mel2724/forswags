@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
 import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal, ChevronDown, Video, Brain, Sparkles, TrendingUp, Share2, BookOpen } from "lucide-react";
 import {
@@ -55,54 +55,54 @@ const Landing = () => {
                     <ul className="grid w-[400px] gap-3 p-4">
                       <li>
                         <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate("/about")}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          <Link
+                            to="/about"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="text-sm font-bold leading-none">About</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Learn more about ForSWAGs and our mission
                             </p>
-                          </button>
+                          </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate("/players")}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          <Link
+                            to="/players"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="text-sm font-bold leading-none">Athletes</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Browse our athlete directory
                             </p>
-                          </button>
+                          </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate("/for-recruiters")}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          <Link
+                            to="/for-recruiters"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="text-sm font-bold leading-none">For Recruiters</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Tools and resources for college recruiters
                             </p>
-                          </button>
+                          </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <button
-                            onClick={() => navigate("/sponsors")}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          <Link
+                            to="/sponsors"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="text-sm font-bold leading-none">Sponsors</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               View our sponsors and partners
                             </p>
-                          </button>
+                          </Link>
                         </NavigationMenuLink>
                       </li>
                     </ul>
