@@ -16,6 +16,18 @@ interface ContactEmailRequest {
   message: string;
 }
 
+// HTML escape function to prevent XSS
+const escapeHtml = (text: string): string => {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -63,13 +75,13 @@ const handler = async (req: Request): Promise<Response> => {
                 <h1 style="margin: 0;">Thank You for Contacting ForSWAGs!</h1>
               </div>
               <div class="content">
-                <p>Hi ${name},</p>
+                <p>Hi ${escapeHtml(name)},</p>
                 <p>We've received your message and our team will get back to you as soon as possible, usually within 24-48 hours.</p>
                 
                 <div class="message-box">
                   <p><strong>Your Message:</strong></p>
-                  <p><strong>Subject:</strong> ${subject}</p>
-                  <p><strong>Message:</strong><br>${message.replace(/\n/g, '<br>')}</p>
+                  <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+                  <p><strong>Message:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
                 </div>
                 
                 <p>In the meantime, feel free to explore our platform and check out athlete profiles, training courses, and more.</p>
@@ -111,17 +123,17 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               <div class="content">
                 <div class="info-row">
-                  <strong>Name:</strong> ${name}
+                  <strong>Name:</strong> ${escapeHtml(name)}
                 </div>
                 <div class="info-row">
-                  <strong>Email:</strong> <a href="mailto:${email}">${email}</a>
+                  <strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>
                 </div>
                 <div class="info-row">
-                  <strong>Subject:</strong> ${subject}
+                  <strong>Subject:</strong> ${escapeHtml(subject)}
                 </div>
                 <div class="info-row">
                   <strong>Message:</strong><br>
-                  ${message.replace(/\n/g, '<br>')}
+                  ${escapeHtml(message).replace(/\n/g, '<br>')}
                 </div>
               </div>
             </div>

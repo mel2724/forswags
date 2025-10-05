@@ -69,6 +69,8 @@ const Onboarding = () => {
   const [highlightsUrl, setHighlightsUrl] = useState("");
   const [bio, setBio] = useState("");
   const [publicProfileConsent, setPublicProfileConsent] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [isParentConsenting, setIsParentConsenting] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -231,6 +233,9 @@ const Onboarding = () => {
             highlights_url: athleteData.highlights_url,
             bio: athleteData.bio,
             public_profile_consent: publicProfileConsent,
+            date_of_birth: dateOfBirth || null,
+            consent_timestamp: publicProfileConsent ? new Date().toISOString() : null,
+            is_parent_verified: isParentConsenting,
           })
           .eq("user_id", userId);
 
@@ -253,6 +258,9 @@ const Onboarding = () => {
             highlights_url: athleteData.highlights_url,
             bio: athleteData.bio,
             public_profile_consent: publicProfileConsent,
+            date_of_birth: dateOfBirth || null,
+            consent_timestamp: publicProfileConsent ? new Date().toISOString() : null,
+            is_parent_verified: isParentConsenting,
           }]);
 
         if (athleteError) throw athleteError;
@@ -631,6 +639,19 @@ const Onboarding = () => {
                 <p className="text-xs text-muted-foreground text-right">{bio.length}/1000</p>
               </div>
 
+              {/* Date of Birth */}
+              <div className="space-y-2">
+                <Label htmlFor="dob">Date of Birth</Label>
+                <Input
+                  id="dob"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+                <p className="text-xs text-muted-foreground">Required for COPPA compliance</p>
+              </div>
+
               {/* Public Profile Consent */}
               <div className="space-y-4 p-6 bg-muted/50 rounded-lg border-2 border-primary/20">
                 <div className="flex items-start space-x-3">
@@ -652,11 +673,34 @@ const Onboarding = () => {
                       By checking this box, you agree to make your profile searchable by college recruiters with active memberships. 
                       Your profile will be accessible via a public link, but only paid recruiters can search for you. 
                       Contact information (email/phone) will never be publicly displayed - recruiters must connect through our platform.
-                      {" "}
-                      <strong>If you are under 18, please ensure your parent or guardian consents to this.</strong>
                     </p>
                   </div>
                 </div>
+
+                {/* Parent/Guardian Consent for Minors */}
+                {dateOfBirth && new Date().getFullYear() - new Date(dateOfBirth).getFullYear() < 18 && publicProfileConsent && (
+                  <div className="flex items-start space-x-3 pt-4 border-t border-border">
+                    <input
+                      type="checkbox"
+                      id="parent-consent"
+                      checked={isParentConsenting}
+                      onChange={(e) => setIsParentConsenting(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-gray-300"
+                    />
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="parent-consent"
+                        className="text-sm font-medium leading-none"
+                      >
+                        Parent/Guardian Consent (Required for under 18)
+                      </label>
+                      <p className="text-sm text-muted-foreground">
+                        As a parent or legal guardian, I consent to my child's athletic profile being made publicly searchable by college recruiters. 
+                        I understand that contact information will not be publicly displayed and recruiters must connect through the platform.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -665,7 +709,11 @@ const Onboarding = () => {
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
-              <Button onClick={handleComplete} className="flex-1 btn-hero" disabled={loading}>
+              <Button 
+                onClick={handleComplete} 
+                className="flex-1 btn-hero" 
+                disabled={loading || (publicProfileConsent && dateOfBirth && new Date().getFullYear() - new Date(dateOfBirth).getFullYear() < 18 && !isParentConsenting)}
+              >
                 {loading ? "Creating Profile..." : "Complete Setup"}
               </Button>
             </div>
