@@ -260,6 +260,7 @@ export type Database = {
           position: string | null
           profile_completion_pct: number | null
           profile_photo_url: string | null
+          public_profile_consent: boolean | null
           received_offers: boolean | null
           recruiting_schools: string[] | null
           role_model: string | null
@@ -323,6 +324,7 @@ export type Database = {
           position?: string | null
           profile_completion_pct?: number | null
           profile_photo_url?: string | null
+          public_profile_consent?: boolean | null
           received_offers?: boolean | null
           recruiting_schools?: string[] | null
           role_model?: string | null
@@ -386,6 +388,7 @@ export type Database = {
           position?: string | null
           profile_completion_pct?: number | null
           profile_photo_url?: string | null
+          public_profile_consent?: boolean | null
           received_offers?: boolean | null
           recruiting_schools?: string[] | null
           role_model?: string | null
@@ -2784,6 +2787,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_paid_recruiter: {
+        Args: { p_user_id: string }
         Returns: boolean
       }
       log_audit_event: {

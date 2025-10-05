@@ -418,7 +418,7 @@ export default function PublicProfile() {
               </Card>
             )}
 
-            {/* Social Media */}
+            {/* Social Media - For Recruiting Purposes */}
             {(profile.twitter_handle || profile.instagram_handle || profile.tiktok_handle) && (
               <Card>
                 <CardHeader>
@@ -464,6 +464,19 @@ export default function PublicProfile() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Contact Information - Removed for Privacy */}
+            <Card className="border-primary/20">
+              <CardContent className="pt-6 text-center space-y-2">
+                <p className="text-sm font-medium">Interested in recruiting this athlete?</p>
+                <p className="text-xs text-muted-foreground">
+                  Connect through our platform for direct communication
+                </p>
+                <Button onClick={() => navigate('/')} className="w-full">
+                  Go to ForSWAGs
+                </Button>
+              </CardContent>
+            </Card>
 
             {/* Awards */}
             {profile.athletic_awards && profile.athletic_awards.length > 0 && (

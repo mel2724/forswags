@@ -68,6 +68,7 @@ const Onboarding = () => {
   const [actScore, setActScore] = useState("");
   const [highlightsUrl, setHighlightsUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [publicProfileConsent, setPublicProfileConsent] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -229,6 +230,7 @@ const Onboarding = () => {
             act_score: athleteData.act_score,
             highlights_url: athleteData.highlights_url,
             bio: athleteData.bio,
+            public_profile_consent: publicProfileConsent,
           })
           .eq("user_id", userId);
 
@@ -250,6 +252,7 @@ const Onboarding = () => {
             act_score: athleteData.act_score,
             highlights_url: athleteData.highlights_url,
             bio: athleteData.bio,
+            public_profile_consent: publicProfileConsent,
           }]);
 
         if (athleteError) throw athleteError;
@@ -626,6 +629,34 @@ const Onboarding = () => {
                   maxLength={1000}
                 />
                 <p className="text-xs text-muted-foreground text-right">{bio.length}/1000</p>
+              </div>
+
+              {/* Public Profile Consent */}
+              <div className="space-y-4 p-6 bg-muted/50 rounded-lg border-2 border-primary/20">
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="public-consent"
+                    checked={publicProfileConsent}
+                    onChange={(e) => setPublicProfileConsent(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300"
+                  />
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="public-consent"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      I consent to making my athletic profile publicly searchable
+                    </label>
+                    <p className="text-sm text-muted-foreground">
+                      By checking this box, you agree to make your profile searchable by college recruiters with active memberships. 
+                      Your profile will be accessible via a public link, but only paid recruiters can search for you. 
+                      Contact information (email/phone) will never be publicly displayed - recruiters must connect through our platform.
+                      {" "}
+                      <strong>If you are under 18, please ensure your parent or guardian consents to this.</strong>
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 

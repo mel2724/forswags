@@ -47,6 +47,22 @@ export default function AthleteSearch() {
         variant: "destructive",
       });
       navigate("/dashboard");
+      return;
+    }
+
+    // Check if recruiter has paid membership
+    const { data: isPaid, error } = await supabase.rpc('is_paid_recruiter', {
+      p_user_id: user.id
+    });
+
+    if (error || !isPaid) {
+      toast({
+        title: "Membership Required",
+        description: "You need an active paid membership to search athlete profiles. Please upgrade your membership.",
+        variant: "destructive",
+      });
+      navigate("/membership-recruiter");
+      return;
     }
   };
 
