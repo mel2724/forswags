@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Eager load critical pages
 import Landing from "./pages/Landing";
@@ -96,80 +97,82 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AppLayout>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/athlete/:username" element={<PublicProfile />} />
-            <Route path="/sponsors" element={<Sponsors />} />
-            <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
-            <Route path="/for-recruiters" element={<ForRecruiters />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/players" element={<Players />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/complete" element={<ProfileComprehensive />} />
-            <Route path="/prime-dime" element={<PrimeDime />} />
-            <Route path="/offers" element={<OfferTracker />} />
-            <Route path="/stats" element={<StatsManager />} />
-            <Route path="/preferences" element={<CollegePreferences />} />
-            <Route path="/college-matches" element={<CollegeMatching />} />
-            <Route path="/alumni-network" element={<AlumniNetwork />} />
-            <Route path="/media" element={<MediaGallery />} />
-            <Route path="/rankings" element={<Rankings />} />
-            <Route path="/schools" element={<SchoolSearch />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/courses/:courseId" element={<CourseDetail />} />
-            <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
-            <Route path="/badges" element={<Badges />} />
-          <Route path="/evaluations" element={<Evaluations />} />
-          <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
-          <Route path="/evaluations/progress" element={<EvaluationProgress />} />
-          <Route path="/membership" element={<Membership />} />
-          <Route path="/membership/athlete" element={<MembershipAthlete />} />
-          <Route path="/membership/recruiter" element={<MembershipRecruiter />} />
-            <Route path="/social" element={<SocialMedia />} />
-            <Route path="/security" element={<SecuritySettings />} />
-            <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
-            <Route path="/recruiter/search" element={<AthleteSearch />} />
-            <Route path="/recruiter/profile" element={<RecruiterProfile />} />
-            <Route path="/recruiter/analytics" element={<RecruiterAnalyticsPage />} />
-            <Route path="/parent/dashboard" element={<ParentDashboard />} />
-            <Route path="/coach/apply" element={<CoachApplication />} />
-          <Route path="/coach/dashboard" element={<CoachDashboard />} />
-          <Route path="/coach/profile" element={<CoachProfile />} />
-          <Route path="/coach/view/:id" element={<CoachProfileView />} />
-          <Route path="/coaches" element={<CoachDirectory />} />
-          <Route path="/coach/available" element={<AvailableEvaluations />} />
-          <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="memberships" element={<AdminMemberships />} />
-              <Route path="courses" element={<AdminCourses />} />
-              <Route path="athletes" element={<AdminAthletes />} />
-              <Route path="rankings" element={<AdminRankings />} />
-              <Route path="schools" element={<AdminSchools />} />
-              <Route path="coach-applications" element={<AdminCoachApplications />} />
-              <Route path="email-templates" element={<AdminEmailTemplates />} />
-              <Route path="notifications" element={<AdminNotifications />} />
-              <Route path="evaluations" element={<AdminEvaluations />} />
-              <Route path="sponsors" element={<AdminSponsors />} />
-              <Route path="paypal-setup" element={<AdminPayPalSetup />} />
-            </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </AppLayout>
-      </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppLayout>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/athlete/:username" element={<PublicProfile />} />
+              <Route path="/sponsors" element={<Sponsors />} />
+              <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
+              <Route path="/for-recruiters" element={<ForRecruiters />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/players" element={<Players />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/complete" element={<ProfileComprehensive />} />
+              <Route path="/prime-dime" element={<PrimeDime />} />
+              <Route path="/offers" element={<OfferTracker />} />
+              <Route path="/stats" element={<StatsManager />} />
+              <Route path="/preferences" element={<CollegePreferences />} />
+              <Route path="/college-matches" element={<CollegeMatching />} />
+              <Route path="/alumni-network" element={<AlumniNetwork />} />
+              <Route path="/media" element={<MediaGallery />} />
+              <Route path="/rankings" element={<Rankings />} />
+              <Route path="/schools" element={<SchoolSearch />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/:courseId" element={<CourseDetail />} />
+              <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+              <Route path="/badges" element={<Badges />} />
+            <Route path="/evaluations" element={<Evaluations />} />
+            <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
+            <Route path="/evaluations/progress" element={<EvaluationProgress />} />
+            <Route path="/membership" element={<Membership />} />
+            <Route path="/membership/athlete" element={<MembershipAthlete />} />
+            <Route path="/membership/recruiter" element={<MembershipRecruiter />} />
+              <Route path="/social" element={<SocialMedia />} />
+              <Route path="/security" element={<SecuritySettings />} />
+              <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
+              <Route path="/recruiter/search" element={<AthleteSearch />} />
+              <Route path="/recruiter/profile" element={<RecruiterProfile />} />
+              <Route path="/recruiter/analytics" element={<RecruiterAnalyticsPage />} />
+              <Route path="/parent/dashboard" element={<ParentDashboard />} />
+              <Route path="/coach/apply" element={<CoachApplication />} />
+            <Route path="/coach/dashboard" element={<CoachDashboard />} />
+            <Route path="/coach/profile" element={<CoachProfile />} />
+            <Route path="/coach/view/:id" element={<CoachProfileView />} />
+            <Route path="/coaches" element={<CoachDirectory />} />
+            <Route path="/coach/available" element={<AvailableEvaluations />} />
+            <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="memberships" element={<AdminMemberships />} />
+                <Route path="courses" element={<AdminCourses />} />
+                <Route path="athletes" element={<AdminAthletes />} />
+                <Route path="rankings" element={<AdminRankings />} />
+                <Route path="schools" element={<AdminSchools />} />
+                <Route path="coach-applications" element={<AdminCoachApplications />} />
+                <Route path="email-templates" element={<AdminEmailTemplates />} />
+                <Route path="notifications" element={<AdminNotifications />} />
+                <Route path="evaluations" element={<AdminEvaluations />} />
+                <Route path="sponsors" element={<AdminSponsors />} />
+                <Route path="paypal-setup" element={<AdminPayPalSetup />} />
+              </Route>
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </AppLayout>
+        </BrowserRouter>
+    </ErrorBoundary>
   </QueryClientProvider>
 );
 
