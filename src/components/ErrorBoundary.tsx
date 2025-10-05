@@ -20,8 +20,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public static getDerivedStateFromError(error: Error): State {
     // Immediately reload on React dispatcher errors - don't even show error UI
-    if (error.message?.includes('dispatcher is null') || error.message?.includes('useContext')) {
-      window.location.reload();
+    if (error.message?.includes('dispatcher is null') || 
+        error.message?.includes('useContext') ||
+        error.message?.includes('useState') ||
+        error.message?.includes('useEffect') ||
+        error.message?.includes('useReducer')) {
+      // Force immediate reload without delay
+      setTimeout(() => window.location.reload(), 0);
     }
     return { hasError: true, error };
   }
@@ -29,12 +34,15 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
-    // Auto-reload on React context errors during development
-    if (error.message?.includes('dispatcher is null') || error.message?.includes('useContext')) {
-      console.log('React context error detected - reloading in 1 second...');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+    // Auto-reload on React dispatcher errors during development
+    if (error.message?.includes('dispatcher is null') || 
+        error.message?.includes('useContext') ||
+        error.message?.includes('useState') ||
+        error.message?.includes('useEffect') ||
+        error.message?.includes('useReducer')) {
+      console.log('React HMR error detected - reloading immediately...');
+      // Immediate reload
+      window.location.reload();
     }
   }
 
