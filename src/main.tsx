@@ -68,9 +68,7 @@ if ('serviceWorker' in navigator) {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <HMRErrorBoundary>
-      <App />
-    </HMRErrorBoundary>
-  </StrictMode>
+  <HMRErrorBoundary>
+    <App />
+  </HMRErrorBoundary>
 );
