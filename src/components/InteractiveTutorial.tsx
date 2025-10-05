@@ -24,7 +24,7 @@ export const InteractiveTutorial = ({
   useEffect(() => {
     // Check if tutorial should be shown
     const checkTutorialStatus = async () => {
-      if (!enabled) return;
+      if (!enabled || tutorialSteps.length === 0) return;
 
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -102,7 +102,10 @@ export const InteractiveTutorial = ({
     }
   };
 
-  if (!showTutorial || tutorialSteps.length === 0) return null;
+  // Return null if not enabled, no steps, or not showing tutorial
+  if (!enabled || tutorialSteps.length === 0 || !showTutorial) {
+    return null;
+  }
 
   return (
     <TutorialStep
