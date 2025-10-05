@@ -19,6 +19,10 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
+    // Immediately reload on React dispatcher errors - don't even show error UI
+    if (error.message?.includes('dispatcher is null') || error.message?.includes('useContext')) {
+      window.location.reload();
+    }
     return { hasError: true, error };
   }
 
