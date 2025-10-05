@@ -24,6 +24,14 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // Auto-reload on React context errors during development
+    if (error.message?.includes('dispatcher is null') || error.message?.includes('useContext')) {
+      console.log('React context error detected - reloading in 1 second...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
   }
 
   private handleReset = () => {
