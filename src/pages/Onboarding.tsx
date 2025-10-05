@@ -15,6 +15,7 @@ import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft, Zap, Sp
 import { z } from "zod";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { VideoWalkthroughModal, VideoWalkthroughButton } from "@/components/VideoWalkthroughModal";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 type Role = "athlete" | "parent" | "recruiter";
 
@@ -373,19 +374,20 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
-      {userId && selectedRole === 'athlete' && step > 1 && (
-        <>
-          <InteractiveTutorial 
-            currentOnboardingStep={step}
-            onComplete={() => setTutorialEnabled(false)}
-            enabled={tutorialEnabled}
-          />
-          <VideoWalkthroughModal />
-        </>
-      )}
-      
-      <Card className="w-full max-w-2xl p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
+    <ErrorBoundary>
+      <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
+        {userId && selectedRole === 'athlete' && step > 1 && (
+          <ErrorBoundary fallback={null}>
+            <InteractiveTutorial 
+              currentOnboardingStep={step}
+              onComplete={() => setTutorialEnabled(false)}
+              enabled={tutorialEnabled}
+            />
+            <VideoWalkthroughModal />
+          </ErrorBoundary>
+        )}
+        
+        <Card className="w-full max-w-2xl p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
         {/* Sample Data Toggle */}
         {selectedRole === "athlete" && step > 1 && step < 6 && !useSampleData && (
           <div className="flex items-center justify-between p-4 bg-accent/10 rounded-lg border border-accent/20">
@@ -862,6 +864,7 @@ const Onboarding = () => {
         )}
       </Card>
     </div>
+    </ErrorBoundary>
   );
 };
 
