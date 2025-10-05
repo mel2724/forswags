@@ -13,6 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft, Zap, Sparkles } from "lucide-react";
 import { z } from "zod";
+import { InteractiveTutorial } from "@/components/InteractiveTutorial";
+import { VideoWalkthroughModal, VideoWalkthroughButton } from "@/components/VideoWalkthroughModal";
 
 type Role = "athlete" | "parent" | "recruiter";
 
@@ -71,6 +73,7 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [setupMode, setSetupMode] = useState<"quick" | "complete">("quick");
   const [useSampleData, setUseSampleData] = useState(false);
+  const [tutorialEnabled, setTutorialEnabled] = useState(true);
   
   // Profile form data
   const [fullName, setFullName] = useState("");
@@ -371,6 +374,13 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background sports-pattern p-4">
+      <InteractiveTutorial 
+        currentOnboardingStep={step}
+        onComplete={() => setTutorialEnabled(false)}
+        enabled={tutorialEnabled}
+      />
+      <VideoWalkthroughModal />
+      
       <Card className="w-full max-w-2xl p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
         {/* Sample Data Toggle */}
         {selectedRole === "athlete" && step > 1 && step < 6 && !useSampleData && (
@@ -419,7 +429,7 @@ const Onboarding = () => {
             </div>
 
             <RadioGroup value={selectedRole} onValueChange={(value) => setSelectedRole(value as Role)}>
-              <div className="grid gap-4">
+              <div className="grid gap-4" data-tutorial="role-selection">
                 {roles.map((role) => {
                   const Icon = role.icon;
                   return (
@@ -484,9 +494,10 @@ const Onboarding = () => {
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Basic Info</h2>
               <p className="text-muted-foreground">Tell us about yourself</p>
+              <VideoWalkthroughButton videoId="profile-basics" />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="basic-info-form">
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name *</Label>
                 <Input
@@ -526,13 +537,16 @@ const Onboarding = () => {
         {step === 3 && (
           <>
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-black uppercase tracking-tight">Your Sport</h2>
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-3xl font-black uppercase tracking-tight">Your Sport</h2>
+              </div>
               <p className="text-muted-foreground">
                 {setupMode === "quick" ? "What do you play? (You can add more details later)" : "What do you play?"}
               </p>
+              <VideoWalkthroughButton videoId="sport-profile" />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="sport-selection">
               <div className="space-y-2">
                 <Label htmlFor="sport">Sport *</Label>
                 <Select value={sport} onValueChange={setSport}>
@@ -585,9 +599,10 @@ const Onboarding = () => {
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Physical Stats</h2>
               <p className="text-muted-foreground">Your measurements</p>
+              <VideoWalkthroughButton videoId="physical-stats" />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="measurements-form">
               <div className="space-y-2">
                 <Label>Height</Label>
                 <div className="flex gap-3">
@@ -645,9 +660,10 @@ const Onboarding = () => {
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Academics</h2>
               <p className="text-muted-foreground">Your academic profile</p>
+              <VideoWalkthroughButton videoId="academics-guide" />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="academics-form">
               <div className="space-y-2">
                 <Label htmlFor="highSchool">High School</Label>
                 <Input
@@ -733,9 +749,10 @@ const Onboarding = () => {
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Final Touches</h2>
               <p className="text-muted-foreground">Show your best work</p>
+              <VideoWalkthroughButton videoId="profile-completion" />
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4" data-tutorial="highlights-form">
               <div className="space-y-2">
                 <Label htmlFor="highlights">Highlight Video URL</Label>
                 <Input

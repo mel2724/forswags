@@ -1890,6 +1890,8 @@ export type Database = {
           state: string | null
           terms_accepted: boolean
           terms_accepted_at: string | null
+          tutorial_completed: boolean | null
+          tutorial_progress: Json | null
           updated_at: string
         }
         Insert: {
@@ -1910,6 +1912,8 @@ export type Database = {
           state?: string | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
+          tutorial_completed?: boolean | null
+          tutorial_progress?: Json | null
           updated_at?: string
         }
         Update: {
@@ -1930,6 +1934,8 @@ export type Database = {
           state?: string | null
           terms_accepted?: boolean
           terms_accepted_at?: string | null
+          tutorial_completed?: boolean | null
+          tutorial_progress?: Json | null
           updated_at?: string
         }
         Relationships: []
