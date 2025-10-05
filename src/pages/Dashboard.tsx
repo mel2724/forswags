@@ -21,18 +21,23 @@ import {
 } from "lucide-react";
 
 const Dashboard = () => {
+  // Protect against HMR errors with hooks
   let navigate;
+  let impersonationContext;
+  
   try {
     navigate = useNavigate();
+    impersonationContext = useImpersonation();
   } catch (error) {
-    // During HMR, router context might not be available
-    console.warn('Router context not available, will reload...');
+    // During HMR, contexts might not be available
+    console.warn('React context not available, reloading...');
     setTimeout(() => window.location.reload(), 500);
     return <div className="min-h-screen flex items-center justify-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>;
   }
   
+  const { isImpersonating, getEffectiveUserId } = impersonationContext;
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -42,7 +47,6 @@ const Dashboard = () => {
   const [stats, setStats] = useState<any[]>([]);
   const [membership, setMembership] = useState<any>(null);
   const [offers, setOffers] = useState<any[]>([]);
-  const { isImpersonating, getEffectiveUserId } = useImpersonation();
 
   useEffect(() => {
     const checkAuth = async () => {

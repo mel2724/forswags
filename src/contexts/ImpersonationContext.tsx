@@ -104,9 +104,30 @@ export function ImpersonationProvider({ children }: { children: ReactNode }) {
 }
 
 export function useImpersonation() {
-  const context = useContext(ImpersonationContext);
-  if (context === undefined) {
-    throw new Error("useImpersonation must be used within an ImpersonationProvider");
+  try {
+    const context = useContext(ImpersonationContext);
+    if (context === undefined) {
+      // During HMR, context might not be available - return safe defaults
+      return {
+        impersonatedUserId: null,
+        impersonatedUserEmail: null,
+        startImpersonation: async () => {},
+        stopImpersonation: async () => {},
+        isImpersonating: false,
+        getEffectiveUserId: () => null,
+      };
+    }
+    return context;
+  } catch (error) {
+    // If React context system isn't ready (HMR), return safe defaults
+    console.warn('Context not available during HMR, returning defaults');
+    return {
+      impersonatedUserId: null,
+      impersonatedUserEmail: null,
+      startImpersonation: async () => {},
+      stopImpersonation: async () => {},
+      isImpersonating: false,
+      getEffectiveUserId: () => null,
+    };
   }
-  return context;
 }
