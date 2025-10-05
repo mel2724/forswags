@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Trophy, GraduationCap, School, TrendingUp } from "lucide-react";
+import { UserActivityHeatmap } from "@/components/admin/UserActivityHeatmap";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -96,6 +97,9 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* User Activity Heatmap */}
+      <UserActivityHeatmap />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
