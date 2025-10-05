@@ -5,6 +5,14 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
 import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal, ChevronDown, Video, Brain, Sparkles, TrendingUp, Share2, BookOpen } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -24,22 +32,86 @@ const Landing = () => {
             <img src={logoFull} alt="ForSWAGs" className="h-12" />
           </div>
           
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <a href="#features" className="text-primary hover:text-primary/80 transition-colors font-bold">Features</a>
-            <a href="#pricing" className="text-primary hover:text-primary/80 transition-colors font-bold">Pricing</a>
-            <Button variant="ghost" onClick={() => navigate("/about")} className="text-primary hover:text-primary/80 font-bold">
-              About
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/players")} className="text-primary hover:text-primary/80 font-bold">
-              Athletes
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/for-recruiters")} className="text-primary hover:text-primary/80 font-bold">
-              For Recruiters
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/sponsors")} className="text-primary hover:text-primary/80 font-bold">
-              Sponsors
-            </Button>
-            <Button onClick={() => navigate("/auth")} className="btn-hero">
+          <nav className="hidden md:flex items-center space-x-4">
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <a href="#features" className="px-4 py-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+                    Features
+                  </a>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <a href="#pricing" className="px-4 py-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors">
+                    Pricing
+                  </a>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-sm font-bold">
+                    Discover
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate("/about")}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          >
+                            <div className="text-sm font-bold leading-none">About</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Learn more about ForSWAGs and our mission
+                            </p>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate("/players")}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          >
+                            <div className="text-sm font-bold leading-none">Athletes</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Browse our athlete directory
+                            </p>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate("/for-recruiters")}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          >
+                            <div className="text-sm font-bold leading-none">For Recruiters</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Tools and resources for college recruiters
+                            </p>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <button
+                            onClick={() => navigate("/sponsors")}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground w-full text-left"
+                          >
+                            <div className="text-sm font-bold leading-none">Sponsors</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              View our sponsors and partners
+                            </p>
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
+            <Button onClick={() => navigate("/auth")} className="btn-hero ml-2">
               Sign Up
             </Button>
           </nav>
