@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Contact from "./pages/Contact";
+import ForRecruiters from "./pages/ForRecruiters";
 
 // Lazy load secondary pages for code splitting
 const Sponsors = lazy(() => import("./pages/Sponsors"));
@@ -102,6 +103,7 @@ const App = () => (
             <Route path="/athlete/:username" element={<PublicProfile />} />
             <Route path="/sponsors" element={<Sponsors />} />
             <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
+            <Route path="/for-recruiters" element={<ForRecruiters />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/about" element={<About />} />
