@@ -95,13 +95,26 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ErrorBoundary>
-      <BrowserRouter>
-        <AppLayout>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+const App = () => {
+  // Force remount on HMR errors in development
+  const [routerKey, setRouterKey] = React.useState(0);
+  
+  React.useEffect(() => {
+    if (import.meta.hot) {
+      import.meta.hot.on('vite:beforeUpdate', () => {
+        // Increment key to force router remount on HMR
+        setRouterKey(prev => prev + 1);
+      });
+    }
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
+        <BrowserRouter key={routerKey}>
+          <AppLayout>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
               <Route path="/sponsors" element={<Sponsors />} />
@@ -172,8 +185,9 @@ const App = () => (
             </Suspense>
           </AppLayout>
         </BrowserRouter>
-    </ErrorBoundary>
-  </QueryClientProvider>
-);
+      </ErrorBoundary>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
