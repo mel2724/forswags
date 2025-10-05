@@ -17,7 +17,16 @@ const ImpersonationContext = createContext<ImpersonationContextType | undefined>
 export function ImpersonationProvider({ children }: { children: ReactNode }) {
   const [impersonatedUserId, setImpersonatedUserId] = useState<string | null>(null);
   const [impersonatedUserEmail, setImpersonatedUserEmail] = useState<string | null>(null);
-  const navigate = useNavigate();
+  
+  let navigate;
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    // HMR safety - if router context unavailable, reload
+    console.warn('Router not ready, reloading...');
+    setTimeout(() => window.location.reload(), 100);
+    return null;
+  }
 
   useEffect(() => {
     // Load impersonation state from database on mount
