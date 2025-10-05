@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_sessions: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          ended_at: string | null
+          expires_at: string
+          id: string
+          impersonated_user_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string
+          id?: string
+          impersonated_user_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          ended_at?: string | null
+          expires_at?: string
+          id?: string
+          impersonated_user_id?: string
+        }
+        Relationships: []
+      }
       alumni: {
         Row: {
           available_for_calls: boolean | null
@@ -229,7 +256,11 @@ export type Database = {
           committed: boolean | null
           committed_school: string | null
           community_involvement: string | null
+          consent_ip_address: unknown | null
+          consent_timestamp: string | null
+          consent_verified_by: string | null
           created_at: string
+          date_of_birth: string | null
           dominant_hand: string | null
           favorite_subject: string | null
           filled_out_by: string | null
@@ -244,6 +275,7 @@ export type Database = {
           honors_courses: string | null
           id: string
           instagram_handle: string | null
+          is_parent_verified: boolean | null
           jersey_number: string | null
           key_stats: Json | null
           leadership_roles: string | null
@@ -293,7 +325,11 @@ export type Database = {
           committed?: boolean | null
           committed_school?: string | null
           community_involvement?: string | null
+          consent_ip_address?: unknown | null
+          consent_timestamp?: string | null
+          consent_verified_by?: string | null
           created_at?: string
+          date_of_birth?: string | null
           dominant_hand?: string | null
           favorite_subject?: string | null
           filled_out_by?: string | null
@@ -308,6 +344,7 @@ export type Database = {
           honors_courses?: string | null
           id?: string
           instagram_handle?: string | null
+          is_parent_verified?: boolean | null
           jersey_number?: string | null
           key_stats?: Json | null
           leadership_roles?: string | null
@@ -357,7 +394,11 @@ export type Database = {
           committed?: boolean | null
           committed_school?: string | null
           community_involvement?: string | null
+          consent_ip_address?: unknown | null
+          consent_timestamp?: string | null
+          consent_verified_by?: string | null
           created_at?: string
+          date_of_birth?: string | null
           dominant_hand?: string | null
           favorite_subject?: string | null
           filled_out_by?: string | null
@@ -372,6 +413,7 @@ export type Database = {
           honors_courses?: string | null
           id?: string
           instagram_handle?: string | null
+          is_parent_verified?: boolean | null
           jersey_number?: string | null
           key_stats?: Json | null
           leadership_roles?: string | null
@@ -802,6 +844,8 @@ export type Database = {
           access_token: string
           account_name: string
           connected_at: string
+          encrypted_access_token: string | null
+          encrypted_refresh_token: string | null
           expires_at: string | null
           id: string
           platform: string
@@ -813,6 +857,8 @@ export type Database = {
           access_token: string
           account_name: string
           connected_at?: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
           expires_at?: string | null
           id?: string
           platform: string
@@ -824,6 +870,8 @@ export type Database = {
           access_token?: string
           account_name?: string
           connected_at?: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
           expires_at?: string | null
           id?: string
           platform?: string
@@ -2728,6 +2776,10 @@ export type Database = {
         Args: { p_athlete_id: string }
         Returns: boolean
       }
+      end_impersonation_session: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_engagement_stats: {
         Args: { p_days?: number; p_user_id: string }
         Returns: {
@@ -2744,6 +2796,10 @@ export type Database = {
       }
       get_evaluation_price: {
         Args: { p_athlete_id: string }
+        Returns: string
+      }
+      get_impersonated_user_id: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_media_version_history: {
@@ -2789,6 +2845,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_minor: {
+        Args: { p_date_of_birth: string }
+        Returns: boolean
+      }
       is_paid_recruiter: {
         Args: { p_user_id: string }
         Returns: boolean
@@ -2809,6 +2869,10 @@ export type Database = {
           p_metadata?: Json
           p_severity: string
         }
+        Returns: string
+      }
+      start_impersonation_session: {
+        Args: { p_impersonated_user_id: string }
         Returns: string
       }
       validate_promo_code: {
