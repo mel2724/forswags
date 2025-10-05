@@ -83,11 +83,11 @@ const ForRecruiters = () => {
 
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
               <div className="p-3 bg-primary/10 rounded-lg w-fit mb-6 group-hover:bg-primary/20 transition-colors">
-                <MessageSquare className="h-10 w-10 text-primary" />
+                <BarChart3 className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Direct Messaging</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Video Analysis</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Connect directly with athletes and their families through our secure messaging platform
+                Access comprehensive video highlights with frame-by-frame analysis and performance breakdowns
               </p>
             </Card>
 
