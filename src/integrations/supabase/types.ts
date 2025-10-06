@@ -256,6 +256,7 @@ export type Database = {
           committed: boolean | null
           committed_school: string | null
           community_involvement: string | null
+          consent_expires_at: string | null
           consent_ip_address: unknown | null
           consent_timestamp: string | null
           consent_verified_by: string | null
@@ -287,7 +288,10 @@ export type Database = {
           nickname: string | null
           notable_performances: string | null
           offer_schools: string[] | null
+          parent_email: string | null
           parent_id: string | null
+          parent_verification_sent_at: string | null
+          parent_verified_at: string | null
           personal_description: string | null
           position: string | null
           profile_completion_pct: number | null
@@ -325,6 +329,7 @@ export type Database = {
           committed?: boolean | null
           committed_school?: string | null
           community_involvement?: string | null
+          consent_expires_at?: string | null
           consent_ip_address?: unknown | null
           consent_timestamp?: string | null
           consent_verified_by?: string | null
@@ -356,7 +361,10 @@ export type Database = {
           nickname?: string | null
           notable_performances?: string | null
           offer_schools?: string[] | null
+          parent_email?: string | null
           parent_id?: string | null
+          parent_verification_sent_at?: string | null
+          parent_verified_at?: string | null
           personal_description?: string | null
           position?: string | null
           profile_completion_pct?: number | null
@@ -394,6 +402,7 @@ export type Database = {
           committed?: boolean | null
           committed_school?: string | null
           community_involvement?: string | null
+          consent_expires_at?: string | null
           consent_ip_address?: unknown | null
           consent_timestamp?: string | null
           consent_verified_by?: string | null
@@ -425,7 +434,10 @@ export type Database = {
           nickname?: string | null
           notable_performances?: string | null
           offer_schools?: string[] | null
+          parent_email?: string | null
           parent_id?: string | null
+          parent_verification_sent_at?: string | null
+          parent_verified_at?: string | null
           personal_description?: string | null
           position?: string | null
           profile_completion_pct?: number | null
@@ -1697,6 +1709,47 @@ export type Database = {
           },
         ]
       }
+      parent_verifications: {
+        Row: {
+          athlete_id: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown | null
+          parent_email: string
+          verification_code: string
+          verified_at: string | null
+        }
+        Insert: {
+          athlete_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          parent_email: string
+          verification_code: string
+          verified_at?: string | null
+        }
+        Update: {
+          athlete_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          parent_email?: string
+          verification_code?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_verifications_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -2809,6 +2862,10 @@ export type Database = {
       can_request_reevaluation: {
         Args: { p_athlete_id: string }
         Returns: boolean
+      }
+      check_expired_consents: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       decrypt_oauth_token: {
         Args: { encrypted_token: string }

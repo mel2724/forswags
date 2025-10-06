@@ -96,6 +96,27 @@ const Onboarding = () => {
   const [publicProfileConsent, setPublicProfileConsent] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [isParentConsenting, setIsParentConsenting] = useState(false);
+  const [parentEmail, setParentEmail] = useState("");
+  const [parentEmailVerified, setParentEmailVerified] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [showVerificationInput, setShowVerificationInput] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
+
+  // Calculate age from date of birth
+  const calculateAge = (dob: string): number | null => {
+    if (!dob) return null;
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const age = dateOfBirth ? calculateAge(dateOfBirth) : null;
+  const isUnder13 = age !== null && age < 13;
 
   // Load sample data function
   const loadSampleData = () => {
@@ -142,6 +163,62 @@ const Onboarding = () => {
       setStep(2);
     } else {
       handleNonAthleteComplete();
+    }
+  };
+
+  const sendParentVerification = async () => {
+    if (!parentEmail) {
+      toast.error("Please enter parent email address");
+      return;
+    }
+
+    setSendingVerification(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-parent-verification', {
+        body: {
+          parent_email: parentEmail,
+          child_name: fullName,
+          child_dob: dateOfBirth,
+        }
+      });
+
+      if (error) throw error;
+
+      setShowVerificationInput(true);
+      toast.success("Verification code sent to parent email");
+    } catch (error) {
+      console.error("Error sending verification:", error);
+      toast.error("Failed to send verification email");
+    } finally {
+      setSendingVerification(false);
+    }
+  };
+
+  const verifyParentCode = async () => {
+    if (!verificationCode) {
+      toast.error("Please enter verification code");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-parent-code', {
+        body: {
+          parent_email: parentEmail,
+          verification_code: verificationCode,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.valid) {
+        setParentEmailVerified(true);
+        toast.success("Parent email verified successfully");
+      } else {
+        toast.error("Invalid or expired verification code");
+      }
+    } catch (error) {
+      console.error("Error verifying code:", error);
+      toast.error("Failed to verify code");
     }
   };
 
@@ -297,7 +374,12 @@ const Onboarding = () => {
             date_of_birth: dateOfBirth || null,
             consent_timestamp: publicProfileConsent && isParentConsenting ? new Date().toISOString() : null,
             consent_ip_address: publicProfileConsent && isParentConsenting ? consentIpAddress : null,
-            is_parent_verified: isParentConsenting,
+            is_parent_verified: isUnder13 ? parentEmailVerified : isParentConsenting,
+            parent_email: isUnder13 ? parentEmail : null,
+            parent_verified_at: parentEmailVerified ? new Date().toISOString() : null,
+            consent_expires_at: isUnder13 && parentEmailVerified 
+              ? new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() 
+              : null,
           })
           .eq("user_id", userId);
 
@@ -821,27 +903,83 @@ const Onboarding = () => {
                 </div>
 
                 {/* Parent/Guardian Consent for Minors */}
-                {dateOfBirth && new Date().getFullYear() - new Date(dateOfBirth).getFullYear() < 18 && publicProfileConsent && (
-                  <div className="flex items-start space-x-3 pt-4 border-t border-border">
-                    <input
-                      type="checkbox"
-                      id="parent-consent"
-                      checked={isParentConsenting}
-                      onChange={(e) => setIsParentConsenting(e.target.checked)}
-                      className="mt-1 h-4 w-4 rounded border-gray-300"
-                    />
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="parent-consent"
-                        className="text-sm font-medium leading-none"
-                      >
-                        Parent/Guardian Consent (Required for under 18)
-                      </label>
-                      <p className="text-sm text-muted-foreground">
-                        As a parent or legal guardian, I consent to my child's athletic profile being made publicly searchable by college recruiters. 
-                        I understand that contact information will not be publicly displayed and recruiters must connect through the platform.
-                      </p>
-                    </div>
+                {dateOfBirth && age !== null && age < 18 && publicProfileConsent && (
+                  <div className="pt-4 border-t border-border space-y-4">
+                    {isUnder13 ? (
+                      <div className="space-y-4 p-4 border border-primary rounded-lg bg-muted/50">
+                        <h3 className="font-semibold text-primary">Parent Email Verification Required</h3>
+                        <div>
+                          <Label htmlFor="parentEmail">Parent/Guardian Email Address *</Label>
+                          <Input
+                            id="parentEmail"
+                            type="email"
+                            value={parentEmail}
+                            onChange={(e) => setParentEmail(e.target.value)}
+                            placeholder="parent@example.com"
+                            disabled={parentEmailVerified}
+                            required
+                          />
+                        </div>
+                        {!parentEmailVerified && !showVerificationInput && (
+                          <Button 
+                            onClick={sendParentVerification} 
+                            disabled={!parentEmail || sendingVerification}
+                            className="w-full"
+                          >
+                            {sendingVerification ? "Sending..." : "Send Verification Code"}
+                          </Button>
+                        )}
+                        {showVerificationInput && !parentEmailVerified && (
+                          <div>
+                            <Label htmlFor="verificationCode">Verification Code</Label>
+                            <Input
+                              id="verificationCode"
+                              type="text"
+                              value={verificationCode}
+                              onChange={(e) => setVerificationCode(e.target.value)}
+                              placeholder="Enter 6-digit code"
+                              maxLength={6}
+                            />
+                            <Button onClick={verifyParentCode} className="w-full mt-2">
+                              Verify Code
+                            </Button>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Code expires in 24 hours. Check parent email for verification code.
+                            </p>
+                          </div>
+                        )}
+                        {parentEmailVerified && (
+                          <div className="flex items-center space-x-2 text-green-600">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <span className="font-medium">Parent Email Verified</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-start space-x-3">
+                        <input
+                          type="checkbox"
+                          id="parent-consent"
+                          checked={isParentConsenting}
+                          onChange={(e) => setIsParentConsenting(e.target.checked)}
+                          className="mt-1 h-4 w-4 rounded border-gray-300"
+                        />
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="parent-consent"
+                            className="text-sm font-medium leading-none"
+                          >
+                            Parent/Guardian Consent (Required for ages 13-17)
+                          </label>
+                          <p className="text-sm text-muted-foreground">
+                            As a parent or legal guardian, I consent to my child's athletic profile being made publicly searchable by college recruiters. 
+                            I understand that contact information will not be publicly displayed and recruiters must connect through the platform.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -855,7 +993,7 @@ const Onboarding = () => {
               <Button 
                 onClick={handleComplete} 
                 className="flex-1 btn-hero" 
-                disabled={loading || (publicProfileConsent && dateOfBirth && new Date().getFullYear() - new Date(dateOfBirth).getFullYear() < 18 && !isParentConsenting)}
+                disabled={loading || (isUnder13 && publicProfileConsent && !parentEmailVerified) || (age !== null && age >= 13 && age < 18 && publicProfileConsent && !isParentConsenting)}
               >
                 {loading ? "Creating Profile..." : "Complete Setup"}
               </Button>
