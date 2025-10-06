@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,7 @@ import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Meda
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
-const Landing = () => {
+const Landing: React.FC = () => {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<"athlete" | "parent">("athlete");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
