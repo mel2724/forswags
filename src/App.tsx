@@ -6,7 +6,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Eager load critical pages
-import Auth from "./pages/Auth";
+const Auth = lazy(() => import("./pages/Auth"));
 import NotFound from "./pages/NotFound";
 
 // Lazy load all other pages for code splitting
