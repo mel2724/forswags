@@ -897,6 +897,7 @@ export type Database = {
         Row: {
           athlete_id: string
           created_at: string
+          email_sent_at: string | null
           expires_at: string
           id: string
           notification_type: string
@@ -906,6 +907,7 @@ export type Database = {
         Insert: {
           athlete_id: string
           created_at?: string
+          email_sent_at?: string | null
           expires_at: string
           id?: string
           notification_type: string
@@ -915,6 +917,7 @@ export type Database = {
         Update: {
           athlete_id?: string
           created_at?: string
+          email_sent_at?: string | null
           expires_at?: string
           id?: string
           notification_type?: string
