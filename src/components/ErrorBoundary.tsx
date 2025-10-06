@@ -19,31 +19,11 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    // Immediately reload on React dispatcher errors - don't even show error UI
-    if (error.message?.includes('dispatcher is null') || 
-        error.message?.includes('useContext') ||
-        error.message?.includes('useState') ||
-        error.message?.includes('useEffect') ||
-        error.message?.includes('useReducer')) {
-      // Force immediate reload without delay
-      setTimeout(() => window.location.reload(), 0);
-    }
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
-    // Auto-reload on React dispatcher errors during development
-    if (error.message?.includes('dispatcher is null') || 
-        error.message?.includes('useContext') ||
-        error.message?.includes('useState') ||
-        error.message?.includes('useEffect') ||
-        error.message?.includes('useReducer')) {
-      console.log('React HMR error detected - reloading immediately...');
-      // Immediate reload
-      window.location.reload();
-    }
   }
 
   private handleReset = () => {

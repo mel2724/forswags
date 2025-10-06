@@ -96,8 +96,8 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ErrorBoundary>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AppLayout>
           <Suspense fallback={<PageLoader />}>
@@ -172,8 +172,8 @@ const App = () => (
             </Suspense>
           </AppLayout>
         </BrowserRouter>
-      </ErrorBoundary>
     </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
