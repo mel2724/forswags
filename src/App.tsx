@@ -100,8 +100,8 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
-          <AppLayout>
+        <AppLayout>
+          <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
@@ -170,8 +170,8 @@ const App = () => (
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </AppLayout>
-        </Suspense>
+          </Suspense>
+        </AppLayout>
       </BrowserRouter>
     </QueryClientProvider>
   </ErrorBoundary>
