@@ -893,6 +893,44 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_renewal_notifications: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          notification_type: string
+          parent_email: string
+          sent_at: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          notification_type: string
+          parent_email: string
+          sent_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          notification_type?: string
+          parent_email?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_renewal_notifications_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_bookmarks: {
         Row: {
           content: string
@@ -2969,6 +3007,10 @@ export type Database = {
           p_severity: string
         }
         Returns: string
+      }
+      notify_expiring_consents: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       start_impersonation_session: {
         Args: { p_impersonated_user_id: string }
