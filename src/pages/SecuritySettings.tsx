@@ -7,6 +7,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function SecuritySettings() {
+  // NOTE: This client-side role check is for UX only (hiding/showing tabs)
+  // Real security is enforced server-side via RLS policies on underlying tables
+  // Even if a user manipulates the UI to show the admin tab, they cannot access
+  // admin-protected data without proper server-side authorization
   const { data: userRoles } = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {

@@ -29,7 +29,7 @@ const verifyPayPalSignature = async (
   }
 
   try {
-    // Calculate SHA-256 hash of the body using Web Crypto API
+    // Calculate SHA-256 hash of the body
     const encoder = new TextEncoder();
     const data = encoder.encode(body);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -39,28 +39,52 @@ const verifyPayPalSignature = async (
     // Construct the message to verify
     const message = `${transmissionId}|${transmissionTime}|${webhookId}|${bodyHash}`;
     
-    // Fetch the certificate (PayPal provides this)
+    // Fetch the certificate from PayPal
     const certResponse = await fetch(certUrl);
     if (!certResponse.ok) {
       logStep("Failed to fetch certificate", { status: certResponse.status });
       return false;
     }
     
-    // Note: Full signature verification requires importing the certificate
-    // and using it to verify the signature with the Web Crypto API
-    // This is a simplified check that validates the presence of all required headers
-    logStep("Signature verification attempted", { 
+    const certText = await certResponse.text();
+    
+    // Import the certificate as a public key
+    const pemHeader = "-----BEGIN CERTIFICATE-----";
+    const pemFooter = "-----END CERTIFICATE-----";
+    const pemContents = certText.substring(
+      certText.indexOf(pemHeader) + pemHeader.length,
+      certText.indexOf(pemFooter)
+    );
+    const binaryDer = Uint8Array.from(atob(pemContents.replace(/\s/g, '')), c => c.charCodeAt(0));
+    
+    const publicKey = await crypto.subtle.importKey(
+      'spki',
+      binaryDer,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    
+    // Verify the signature
+    const signatureBytes = Uint8Array.from(atob(transmissionSig), c => c.charCodeAt(0));
+    const messageBytes = encoder.encode(message);
+    
+    const isValid = await crypto.subtle.verify(
+      'RSASSA-PKCS1-v1_5',
+      publicKey,
+      signatureBytes,
+      messageBytes
+    );
+    
+    logStep("Signature verification completed", { 
       transmissionId, 
       webhookId: webhookId.substring(0, 8) + "...",
-      hasAllHeaders: true 
+      isValid 
     });
     
-    // In production, implement full PayPal signature verification
-    // For now, we validate that all required headers are present
-    // This prevents completely unsigned requests
-    return true;
+    return isValid;
   } catch (error) {
-    logStep("Signature verification failed", { error: error.message });
+    logStep("Signature verification failed", { error: error instanceof Error ? error.message : String(error) });
     return false;
   }
 };

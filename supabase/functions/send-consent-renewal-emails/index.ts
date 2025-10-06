@@ -50,8 +50,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     for (const notification of notifications || []) {
       try {
-        const athlete = notification.athletes;
-        const athleteName = athlete.profiles.full_name || 'Athlete';
+        const athleteData = notification.athletes as any;
+        const athleteName = athleteData?.profiles?.full_name || 'Athlete';
         const expirationDate = new Date(notification.expires_at).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'long',
@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
         emailResults.push({
           notification_id: notification.id,
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         });
       }
     }
