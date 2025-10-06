@@ -8,6 +8,7 @@ import { Mail, MapPin, MessageSquare, HelpCircle, Send, Loader2 } from "lucide-r
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { SEO } from "@/components/SEO";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -84,6 +85,11 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-background py-12">
+      <SEO 
+        title="Contact Us - Get Help & Support"
+        description="Have questions about ForSWAGs? Contact our support team for help with athlete profiles, evaluations, college matching, and training courses. We're here to help you succeed."
+        keywords="contact forswags, athlete support, student athlete help, college recruitment support, sports platform contact"
+      />
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">

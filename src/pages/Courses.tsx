@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { Search, BookOpen, GraduationCap, ArrowLeft } from "lucide-react";
 import { CourseCard } from "@/components/CourseCard";
+import { SEO } from "@/components/SEO";
 
 interface Course {
   id: string;
@@ -62,6 +63,11 @@ const Courses = () => {
 
   return (
     <div className="min-h-screen bg-background sports-pattern">
+      <SEO 
+        title="Playbook for Life - Life Skills Training Courses"
+        description="Master life skills with our comprehensive training courses for student-athletes. Learn leadership, character development, and essential skills beyond athletics."
+        keywords="athlete training courses, life skills, leadership development, character training, student athlete education, sports development courses"
+      />
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>

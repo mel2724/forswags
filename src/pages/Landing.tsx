@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal, ChevronDown, Video, Brain, Sparkles, TrendingUp, Share2, BookOpen } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +16,39 @@ const Landing: React.FC = () => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "ForSWAGs",
+    "description": "Student athlete development and college matching platform",
+    "url": "https://forswags.org",
+    "logo": "https://forswags.org/src/assets/forswags-logo.png",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Pro Monthly",
+        "price": "14.99",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      {
+        "@type": "Offer",
+        "name": "Championship Yearly",
+        "price": "97.00",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Student Athlete Development & College Recruitment Platform"
+        description="Get professional coach evaluations, expert college matching, life skills training, and social media tools. Build your profile and connect with college recruiters nationwide."
+        keywords="student athlete platform, college recruitment, coach evaluations, athlete training, college matching, sports scholarships, athlete development, recruiting profile"
+        structuredData={structuredData}
+      />
       <Header />
 
       {/* Hero Section */}

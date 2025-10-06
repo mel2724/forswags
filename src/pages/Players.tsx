@@ -12,6 +12,7 @@ import {
   Search, Trophy, MapPin, Calendar, GraduationCap, 
   Ruler, Weight, BarChart3, Video, Filter 
 } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 interface Athlete {
   id: string;
@@ -126,6 +127,11 @@ const Players = () => {
 
   return (
     <div className="min-h-screen bg-background sports-pattern">
+      <SEO 
+        title="Athlete Directory - Discover Student Athletes"
+        description="Browse profiles of talented student-athletes across all sports. View stats, highlights, and connect with players seeking college recruitment opportunities."
+        keywords="athlete directory, student athletes, sports recruitment, athlete profiles, college recruiting, player search, high school athletes"
+      />
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
