@@ -225,3 +225,5 @@ export const SocialAccountsManager = () => {
     </Card>
   );
 };
+
+export default SocialAccountsManager;

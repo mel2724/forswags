@@ -1,7 +1,8 @@
+import React from "react";
 import logoFull from "@/assets/forswags-logo.png";
 import { Link } from "react-router-dom";
 
-export function Footer() {
+export const Footer = React.memo(() => {
   return (
     <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
       <div className="container mx-auto px-4">
@@ -34,4 +35,8 @@ export function Footer() {
       </div>
     </footer>
   );
-}
+});
+
+Footer.displayName = "Footer";
+
+export default Footer;
