@@ -6,14 +6,14 @@ import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Eager load critical pages
-import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
-import Contact from "./pages/Contact";
-import ForRecruiters from "./pages/ForRecruiters";
 
-// Lazy load secondary pages for code splitting
+// Lazy load all other pages for code splitting
+const Landing = lazy(() => import("./pages/Landing"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Contact = lazy(() => import("./pages/Contact"));
+const ForRecruiters = lazy(() => import("./pages/ForRecruiters"));
 const Sponsors = lazy(() => import("./pages/Sponsors"));
 const SponsorShowcase = lazy(() => import("./pages/SponsorShowcase"));
 const SchoolSearch = lazy(() => import("./pages/SchoolSearch"));
