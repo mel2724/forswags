@@ -2361,16 +2361,24 @@ export type Database = {
           avg_act: number | null
           avg_gpa: number | null
           avg_sat: number | null
+          coach_email: string | null
+          coach_name: string | null
           conference: string | null
           contact_email: string | null
           created_at: string
           division: string | null
+          email_verified_source_url: string | null
           enrollment: number | null
           id: string
           location_city: string | null
           location_state: string | null
+          majors: string | null
+          min_gpa: number | null
           name: string
-          roster_needs: Json | null
+          roster_needs: string | null
+          school_size: string | null
+          social_links: string | null
+          staff_directory_url: string | null
           tuition: number | null
           tuition_estimate: number | null
           updated_at: string
@@ -2382,16 +2390,24 @@ export type Database = {
           avg_act?: number | null
           avg_gpa?: number | null
           avg_sat?: number | null
+          coach_email?: string | null
+          coach_name?: string | null
           conference?: string | null
           contact_email?: string | null
           created_at?: string
           division?: string | null
+          email_verified_source_url?: string | null
           enrollment?: number | null
           id?: string
           location_city?: string | null
           location_state?: string | null
+          majors?: string | null
+          min_gpa?: number | null
           name: string
-          roster_needs?: Json | null
+          roster_needs?: string | null
+          school_size?: string | null
+          social_links?: string | null
+          staff_directory_url?: string | null
           tuition?: number | null
           tuition_estimate?: number | null
           updated_at?: string
@@ -2403,16 +2419,24 @@ export type Database = {
           avg_act?: number | null
           avg_gpa?: number | null
           avg_sat?: number | null
+          coach_email?: string | null
+          coach_name?: string | null
           conference?: string | null
           contact_email?: string | null
           created_at?: string
           division?: string | null
+          email_verified_source_url?: string | null
           enrollment?: number | null
           id?: string
           location_city?: string | null
           location_state?: string | null
+          majors?: string | null
+          min_gpa?: number | null
           name?: string
-          roster_needs?: Json | null
+          roster_needs?: string | null
+          school_size?: string | null
+          social_links?: string | null
+          staff_directory_url?: string | null
           tuition?: number | null
           tuition_estimate?: number | null
           updated_at?: string
