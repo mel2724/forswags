@@ -23,6 +23,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const ProfileComprehensive = lazy(() => import("./pages/ProfileComprehensive"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const PrimeDime = lazy(() => import("./pages/PrimeDime"));
+const CollegeFit = lazy(() => import("./pages/CollegeFit"));
 const OfferTracker = lazy(() => import("./pages/OfferTracker"));
 const StatsManager = lazy(() => import("./pages/StatsManager"));
 const CollegePreferences = lazy(() => import("./pages/CollegePreferences"));
@@ -99,8 +100,8 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AppLayout>
-          <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<PageLoader />}>
+          <AppLayout>
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
@@ -122,6 +123,7 @@ const App = () => (
               <Route path="/stats" element={<StatsManager />} />
               <Route path="/preferences" element={<CollegePreferences />} />
               <Route path="/college-matches" element={<CollegeMatching />} />
+              <Route path="/college-fit" element={<CollegeFit />} />
               <Route path="/alumni-network" element={<AlumniNetwork />} />
               <Route path="/media" element={<MediaGallery />} />
               <Route path="/rankings" element={<Rankings />} />
@@ -131,12 +133,12 @@ const App = () => (
               <Route path="/courses/:courseId" element={<CourseDetail />} />
               <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
               <Route path="/badges" element={<Badges />} />
-            <Route path="/evaluations" element={<Evaluations />} />
-            <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
-            <Route path="/evaluations/progress" element={<EvaluationProgress />} />
-            <Route path="/membership" element={<Membership />} />
-            <Route path="/membership/athlete" element={<MembershipAthlete />} />
-            <Route path="/membership/recruiter" element={<MembershipRecruiter />} />
+              <Route path="/evaluations" element={<Evaluations />} />
+              <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
+              <Route path="/evaluations/progress" element={<EvaluationProgress />} />
+              <Route path="/membership" element={<Membership />} />
+              <Route path="/membership/athlete" element={<MembershipAthlete />} />
+              <Route path="/membership/recruiter" element={<MembershipRecruiter />} />
               <Route path="/social" element={<SocialMedia />} />
               <Route path="/security" element={<SecuritySettings />} />
               <Route path="/recruiter/dashboard" element={<RecruiterDashboard />} />
@@ -145,12 +147,12 @@ const App = () => (
               <Route path="/recruiter/analytics" element={<RecruiterAnalyticsPage />} />
               <Route path="/parent/dashboard" element={<ParentDashboard />} />
               <Route path="/coach/apply" element={<CoachApplication />} />
-            <Route path="/coach/dashboard" element={<CoachDashboard />} />
-            <Route path="/coach/profile" element={<CoachProfile />} />
-            <Route path="/coach/view/:id" element={<CoachProfileView />} />
-            <Route path="/coaches" element={<CoachDirectory />} />
-            <Route path="/coach/available" element={<AvailableEvaluations />} />
-            <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
+              <Route path="/coach/dashboard" element={<CoachDashboard />} />
+              <Route path="/coach/profile" element={<CoachProfile />} />
+              <Route path="/coach/view/:id" element={<CoachProfileView />} />
+              <Route path="/coaches" element={<CoachDirectory />} />
+              <Route path="/coach/available" element={<AvailableEvaluations />} />
+              <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsers />} />
@@ -166,12 +168,11 @@ const App = () => (
                 <Route path="sponsors" element={<AdminSponsors />} />
                 <Route path="paypal-setup" element={<AdminPayPalSetup />} />
               </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </AppLayout>
-        </BrowserRouter>
+        </Suspense>
+      </BrowserRouter>
     </QueryClientProvider>
   </ErrorBoundary>
 );
