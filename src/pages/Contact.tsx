@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, MapPin, MessageSquare, HelpCircle, Send, Loader2 } from "lucide-react";
+import { Mail, MapPin, MessageSquare, HelpCircle, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -209,30 +209,26 @@ export default function Contact() {
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold">Email</p>
+                    <p className="font-semibold">Email Support</p>
                     <a href="mailto:support@forswags.org" className="text-muted-foreground hover:text-primary transition-colors">
                       support@forswags.org
                     </a>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      We typically respond within 24 hours
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-secondary/10 rounded-lg">
-                    <Phone className="h-5 w-5 text-secondary" />
+                    <MapPin className="h-5 w-5 text-secondary" />
                   </div>
                   <div>
-                    <p className="font-semibold">Phone</p>
-                    <p className="text-muted-foreground">Coming Soon</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <MapPin className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">Location</p>
-                    <p className="text-muted-foreground">Nationwide Service</p>
+                    <p className="font-semibold">Service Area</p>
+                    <p className="text-muted-foreground">Nationwide Coverage</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Supporting student-athletes across the United States
+                    </p>
                   </div>
                 </div>
               </CardContent>
