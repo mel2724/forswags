@@ -56,3 +56,21 @@ verify_jwt = false
 
 [functions.send-contact-email]
 verify_jwt = false
+
+[functions.twitter-oauth-start]
+verify_jwt = true
+
+[functions.twitter-oauth-callback]
+verify_jwt = true
+
+[functions.twitter-post]
+verify_jwt = true
+
+[functions.instagram-oauth-start]
+verify_jwt = true
+
+[functions.instagram-oauth-callback]
+verify_jwt = true
+
+[functions.instagram-post]
+verify_jwt = true

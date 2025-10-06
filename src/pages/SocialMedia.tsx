@@ -127,15 +127,31 @@ export default function SocialMedia() {
     return `${content}\n\n${handle} ${FORSWAGS_TAG}`;
   };
 
-  const shareToTwitter = () => {
+  const shareToTwitter = async () => {
     if (!postContent.trim()) {
       toast.error("Please enter some content to share");
       return;
     }
-    const formattedContent = formatPostContent(postContent);
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(formattedContent)}`;
-    window.open(url, "_blank");
-    toast.success("Opening Twitter to share your post!");
+    
+    try {
+      const formattedContent = formatPostContent(postContent);
+      
+      const { data, error } = await supabase.functions.invoke('twitter-post', {
+        body: { text: formattedContent }
+      });
+
+      if (error) throw error;
+
+      toast.success("Posted to Twitter successfully!");
+      setPostContent("");
+    } catch (error: any) {
+      console.error('Twitter post error:', error);
+      // Fallback to Twitter intent
+      const formattedContent = formatPostContent(postContent);
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(formattedContent)}`;
+      window.open(url, "_blank");
+      toast.info("Please connect your Twitter account in the Accounts tab for direct posting");
+    }
   };
 
   const shareToFacebook = () => {
@@ -149,15 +165,17 @@ export default function SocialMedia() {
     toast.success("Opening Facebook to share your post!");
   };
 
-  const shareToInstagram = () => {
+  const shareToInstagram = async () => {
     if (!postContent.trim()) {
       toast.error("Please enter some content to share");
       return;
     }
+    
+    // Instagram requires an image, so we'll copy to clipboard for now
     const formattedContent = formatPostContent(postContent);
     navigator.clipboard.writeText(formattedContent);
     toast.success("Content copied! Open Instagram and paste your post", {
-      description: "The caption has been copied to your clipboard with ForSWAGs branding"
+      description: "The caption has been copied to your clipboard with ForSWAGs branding. To post directly, use the Graphics tab to create an image first."
     });
   };
 

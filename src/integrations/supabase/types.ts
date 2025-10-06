@@ -1709,6 +1709,30 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_state: {
+        Row: {
+          code_verifier: string
+          created_at: string
+          id: string
+          platform: string
+          user_id: string
+        }
+        Insert: {
+          code_verifier: string
+          created_at?: string
+          id?: string
+          platform: string
+          user_id: string
+        }
+        Update: {
+          code_verifier?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       parent_guardians: {
         Row: {
           athlete_id: string

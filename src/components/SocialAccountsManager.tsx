@@ -1,165 +1,122 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, Star, Users, Twitter, Facebook, Instagram, Linkedin } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Trash2, Twitter, Instagram, Link as LinkIcon, Users } from "lucide-react";
 
 interface SocialAccount {
   id: string;
   platform: string;
-  username: string;
-  is_primary: boolean;
-  follower_count: number;
+  account_name: string;
   connected_at: string;
 }
 
 export const SocialAccountsManager = () => {
   const queryClient = useQueryClient();
-  const [isOpen, setIsOpen] = useState(false);
-  const [platform, setPlatform] = useState("");
-  const [username, setUsername] = useState("");
+  const [isConnecting, setIsConnecting] = useState(false);
 
+  // Fetch connected accounts
   const { data: accounts, isLoading } = useQuery({
-    queryKey: ['social-accounts'],
+    queryKey: ["connected-accounts"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('social_accounts')
-        .select('*')
-        .order('is_primary', { ascending: false });
-      
+        .from("connected_accounts")
+        .select("id, platform, account_name, connected_at")
+        .order("connected_at", { ascending: false });
+
       if (error) throw error;
       return data as SocialAccount[];
     },
   });
 
-  const addAccountMutation = useMutation({
-    mutationFn: async (accountData: any) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  // Handle OAuth callback
+  useEffect(() => {
+    const handleCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const platform = sessionStorage.getItem('oauth_platform');
 
-      // If tokens are provided, encrypt them (for future OAuth integration)
-      let insertData: any = {
-        user_id: user.id,
-        ...accountData,
-      };
+      if (code && platform) {
+        try {
+          const redirectUri = `${window.location.origin}${window.location.pathname}`;
+          const functionName = platform === 'twitter' ? 'twitter-oauth-callback' : 'instagram-oauth-callback';
+          
+          const { data, error } = await supabase.functions.invoke(functionName, {
+            body: { code, redirectUri }
+          });
 
-      // Remove plain tokens and add encrypted ones if tokens exist
-      if (accountData.access_token || accountData.refresh_token) {
-        const { data: encryptedAccess, error: encryptError } = await supabase.rpc(
-          'encrypt_oauth_token',
-          { token: accountData.access_token || '' }
-        );
-        
-        const { data: encryptedRefresh, error: refreshError } = await supabase.rpc(
-          'encrypt_oauth_token',
-          { token: accountData.refresh_token || '' }
-        );
+          if (error) throw error;
 
-        if (encryptError || refreshError) {
-          throw new Error('Failed to encrypt tokens');
+          toast.success(`Connected to ${platform} as @${data.username || data.accountId}`);
+          queryClient.invalidateQueries({ queryKey: ["connected-accounts"] });
+          sessionStorage.removeItem('oauth_platform');
+          
+          // Clean URL
+          window.history.replaceState({}, '', window.location.pathname);
+        } catch (error) {
+          console.error('OAuth callback error:', error);
+          toast.error("Failed to complete OAuth flow");
         }
-
-        // Remove plain text tokens and add encrypted ones
-        const { access_token, refresh_token, ...rest } = insertData;
-        insertData = {
-          ...rest,
-          encrypted_access_token: encryptedAccess,
-          encrypted_refresh_token: encryptedRefresh,
-        };
       }
+    };
 
-      const { error } = await supabase
-        .from('connected_accounts')
-        .insert([insertData]);
+    handleCallback();
+  }, [queryClient]);
+
+  // Start OAuth flow
+  const startOAuthFlow = async (platform: 'twitter' | 'instagram') => {
+    try {
+      setIsConnecting(true);
+      sessionStorage.setItem('oauth_platform', platform);
       
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
-      toast.success('Account connected successfully!');
-      resetForm();
-      setIsOpen(false);
-    },
-    onError: (error) => {
-      toast.error('Failed to connect account: ' + error.message);
-    },
-  });
-
-  const deleteAccountMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('social_accounts')
-        .delete()
-        .eq('id', id);
+      const redirectUri = `${window.location.origin}${window.location.pathname}`;
+      const functionName = platform === 'twitter' ? 'twitter-oauth-start' : 'instagram-oauth-start';
       
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { redirectUri }
+      });
+
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
-      toast.success('Account disconnected');
-    },
-    onError: (error) => {
-      toast.error('Failed to disconnect account: ' + error.message);
-    },
-  });
 
-  const setPrimaryMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      // First, unset all primary accounts
-      await supabase
-        .from('social_accounts')
-        .update({ is_primary: false })
-        .eq('user_id', user.id);
-
-      // Then set the new primary
-      const { error } = await supabase
-        .from('social_accounts')
-        .update({ is_primary: true })
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['social-accounts'] });
-      toast.success('Primary account updated');
-    },
-  });
-
-  const resetForm = () => {
-    setPlatform("");
-    setUsername("");
-  };
-
-  const handleAddAccount = () => {
-    if (!platform || !username.trim()) {
-      toast.error('Please fill in all fields');
-      return;
+      // Redirect to OAuth provider
+      window.location.href = data.authUrl;
+    } catch (error) {
+      console.error('OAuth start error:', error);
+      toast.error("Failed to start OAuth flow");
+      setIsConnecting(false);
     }
-
-    addAccountMutation.mutate({
-      platform,
-      username: username.trim(),
-      is_primary: !accounts || accounts.length === 0,
-    });
   };
+
+  // Delete account mutation
+  const deleteAccountMutation = useMutation({
+    mutationFn: async (accountId: string) => {
+      const { error } = await supabase
+        .from("connected_accounts")
+        .delete()
+        .eq("id", accountId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connected-accounts"] });
+      toast.success("Account disconnected");
+    },
+    onError: (error) => {
+      toast.error("Disconnection failed: " + error.message);
+    },
+  });
 
   const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case 'twitter': return <Twitter className="h-4 w-4" />;
-      case 'facebook': return <Facebook className="h-4 w-4" />;
-      case 'instagram': return <Instagram className="h-4 w-4" />;
-      case 'linkedin': return <Linkedin className="h-4 w-4" />;
-      default: return <Users className="h-4 w-4" />;
+    switch (platform.toLowerCase()) {
+      case "twitter":
+        return <Twitter className="h-4 w-4" />;
+      case "instagram":
+        return <Instagram className="h-4 w-4" />;
+      default:
+        return <Users className="h-4 w-4" />;
     }
   };
 
@@ -170,73 +127,37 @@ export const SocialAccountsManager = () => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Connected Accounts</CardTitle>
-            <CardDescription>Manage your social media accounts for posting</CardDescription>
-          </div>
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="mr-2 h-4 w-4" />
-                Connect Account
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Connect Social Account</DialogTitle>
-                <DialogDescription>
-                  Add a social media account to manage posts
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="platform">Platform</Label>
-                  <Select value={platform} onValueChange={setPlatform}>
-                    <SelectTrigger id="platform">
-                      <SelectValue placeholder="Select platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="twitter">Twitter/X</SelectItem>
-                      <SelectItem value="facebook">Facebook</SelectItem>
-                      <SelectItem value="instagram">Instagram</SelectItem>
-                      <SelectItem value="tiktok">TikTok</SelectItem>
-                      <SelectItem value="linkedin">LinkedIn</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username/Handle</Label>
-                  <Input
-                    id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="@yourusername"
-                  />
-                </div>
-
-                <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
-                  <p>⚠️ Note: Full platform integration coming soon. For now, this tracks your accounts for reference.</p>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddAccount} disabled={addAccountMutation.isPending}>
-                    Connect
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <CardTitle>Connected Accounts</CardTitle>
+        <CardDescription>
+          Connect your social media accounts using OAuth for seamless posting
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {accounts && accounts.length > 0 ? (
-            accounts.map((account) => (
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Button
+            onClick={() => startOAuthFlow('twitter')}
+            disabled={isConnecting}
+            variant="outline"
+            className="w-full"
+          >
+            <Twitter className="h-4 w-4 mr-2" />
+            {isConnecting ? "Connecting..." : "Connect Twitter"}
+          </Button>
+          <Button
+            onClick={() => startOAuthFlow('instagram')}
+            disabled={isConnecting}
+            variant="outline"
+            className="w-full"
+          >
+            <Instagram className="h-4 w-4 mr-2" />
+            {isConnecting ? "Connecting..." : "Connect Instagram"}
+          </Button>
+        </div>
+
+        {accounts && accounts.length > 0 ? (
+          <div className="space-y-3 mt-6">
+            <h3 className="text-sm font-medium">Connected Accounts</h3>
+            {accounts.map((account) => (
               <Card key={account.id}>
                 <CardContent className="pt-4">
                   <div className="flex items-center justify-between">
@@ -246,49 +167,37 @@ export const SocialAccountsManager = () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">{account.username}</p>
-                          {account.is_primary && (
-                            <Badge variant="secondary" className="text-xs">
-                              <Star className="mr-1 h-3 w-3" />
-                              Primary
-                            </Badge>
-                          )}
+                          <p className="font-medium">@{account.account_name}</p>
+                          <Badge variant="secondary" className="text-xs">
+                            <LinkIcon className="mr-1 h-3 w-3" />
+                            Connected
+                          </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground capitalize">
-                          {account.platform} • {account.follower_count.toLocaleString()} followers
+                          {account.platform}
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      {!account.is_primary && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setPrimaryMutation.mutate(account.id)}
-                        >
-                          <Star className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteAccountMutation.mutate(account.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteAccountMutation.mutate(account.id)}
+                      disabled={deleteAccountMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
-            ))
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No accounts connected yet</p>
-              <p className="text-xs mt-1">Connect your social media accounts to manage posts</p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No accounts connected yet</p>
+            <p className="text-xs mt-1">Connect your first account to get started!</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
