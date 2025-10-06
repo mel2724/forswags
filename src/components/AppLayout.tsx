@@ -1,8 +1,15 @@
-// Temporarily simplified to force cache rebuild
+import React from "react";
+
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-1">
+        {children}
+      </main>
+    </div>
+  );
 }
