@@ -2,12 +2,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Eye, Lock, Users } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function Privacy() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO 
+        title="Privacy Policy"
+        description="ForSWAGs privacy policy. Learn how we protect your data, create public athletic profiles while keeping contact information private, and secure student-athlete information."
+        keywords="privacy policy, data protection, athletic profile privacy, student athlete privacy, contact information security, ForSWAGs privacy"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Privacy Policy",
+          "description": "ForSWAGs privacy policy explaining how we handle athletic profiles and protect personal information",
+          "url": "https://forswags.org/privacy"
+        }}
+      />
+      <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Button
           variant="ghost"
@@ -336,5 +350,6 @@ export default function Privacy() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

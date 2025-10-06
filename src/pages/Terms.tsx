@@ -2,12 +2,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function Terms() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO 
+        title="Terms and Conditions"
+        description="ForSWAGs terms of service. Review our user agreement, membership terms, evaluation services, content policies, and legal terms for student-athletes and recruiters."
+        keywords="terms of service, terms and conditions, user agreement, membership terms, legal terms, ForSWAGs terms, student athlete agreement"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Terms and Conditions",
+          "description": "ForSWAGs terms and conditions outlining user agreements and service policies",
+          "url": "https://forswags.org/terms"
+        }}
+      />
+      <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Button
           variant="ghost"
@@ -170,5 +184,6 @@ export default function Terms() {
         </Card>
       </div>
     </div>
+    </>
   );
 }
