@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
 import {
   NavigationMenu,
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/navigation-menu";
 
 export function Header() {
-  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -99,16 +98,13 @@ export function Header() {
             </NavigationMenuList>
           </NavigationMenu>
 
-          <Button onClick={() => navigate("/auth")} className="btn-hero ml-2">
-            Sign Up
+          <Button asChild className="btn-hero ml-2">
+            <Link to="/auth">Sign Up</Link>
           </Button>
         </nav>
 
-        <Button 
-          className="md:hidden btn-hero" 
-          onClick={() => navigate("/auth")}
-        >
-          Sign Up
+        <Button asChild className="md:hidden btn-hero">
+          <Link to="/auth">Sign Up</Link>
         </Button>
       </div>
     </header>

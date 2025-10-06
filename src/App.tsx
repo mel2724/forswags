@@ -7,10 +7,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Eager load critical pages
 const Auth = lazy(() => import("./pages/Auth"));
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
-
-// Lazy load all other pages for code splitting
-const Landing = lazy(() => import("./pages/Landing"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Contact = lazy(() => import("./pages/Contact"));
 const ForRecruiters = lazy(() => import("./pages/ForRecruiters"));
