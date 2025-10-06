@@ -3052,7 +3052,12 @@ export type Database = {
       app_role: "athlete" | "parent" | "coach" | "recruiter" | "admin"
       evaluation_status: "pending" | "in_progress" | "completed"
       payment_status: "pending" | "completed" | "failed" | "refunded"
-      subscription_plan: "free" | "annual" | "monthly"
+      subscription_plan:
+        | "free"
+        | "annual"
+        | "monthly"
+        | "pro_monthly"
+        | "championship_yearly"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3183,7 +3188,13 @@ export const Constants = {
       app_role: ["athlete", "parent", "coach", "recruiter", "admin"],
       evaluation_status: ["pending", "in_progress", "completed"],
       payment_status: ["pending", "completed", "failed", "refunded"],
-      subscription_plan: ["free", "annual", "monthly"],
+      subscription_plan: [
+        "free",
+        "annual",
+        "monthly",
+        "pro_monthly",
+        "championship_yearly",
+      ],
     },
   },
 } as const

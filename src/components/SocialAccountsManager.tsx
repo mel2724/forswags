@@ -19,7 +19,7 @@ export const SocialAccountsManager = () => {
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Fetch connected accounts
-  const { data: accounts, isLoading } = useQuery({
+  const { data: accounts, isLoading, error: queryError } = useQuery({
     queryKey: ["connected-accounts"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -121,7 +121,30 @@ export const SocialAccountsManager = () => {
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center p-8">Loading accounts...</div>;
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="flex items-center justify-center">
+            <p className="text-muted-foreground">Loading accounts...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (queryError) {
+    return (
+      <Card>
+        <CardContent className="p-8">
+          <div className="text-center space-y-4">
+            <p className="text-destructive">Failed to load accounts</p>
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["connected-accounts"] })}>
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
