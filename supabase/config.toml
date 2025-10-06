@@ -53,3 +53,6 @@ verify_jwt = true
 
 [functions.send-consent-renewal-emails]
 verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
