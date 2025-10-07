@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 interface SEOProps {
   title: string;
@@ -18,10 +17,10 @@ export function SEO({
   canonical,
   structuredData 
 }: SEOProps) {
-  const location = useLocation();
+  // Use window.location directly instead of useLocation hook to avoid Router context dependency
   const fullTitle = `${title} | ForSWAGs`;
   const baseUrl = window.location.origin;
-  const currentUrl = `${baseUrl}${location.pathname}`;
+  const currentUrl = `${baseUrl}${window.location.pathname}`;
   const canonicalUrl = canonical || currentUrl;
 
   useEffect(() => {
