@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useImpersonation } from "@/contexts/ImpersonationContext";
 import AthleteAnalytics from "@/components/AthleteAnalytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +22,11 @@ import {
 const Dashboard = () => {
   // Hooks MUST be called unconditionally at the top level
   const navigate = useNavigate();
-  const { isImpersonating, getEffectiveUserId } = useImpersonation();
+  
+  // Safe defaults for impersonation (feature temporarily disabled)
+  const isImpersonating = false;
+  const getEffectiveUserId = () => null;
+  
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);

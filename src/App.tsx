@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 
 // Lazy load all pages for optimal performance
 const Auth = lazy(() => import("./pages/Auth"));
@@ -99,10 +98,9 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ImpersonationProvider>
-          <AppLayout>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
+        <AppLayout>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
               <Route path="/sponsors" element={<Sponsors />} />
@@ -169,10 +167,9 @@ const App = () => (
                 <Route path="paypal-setup" element={<AdminPayPalSetup />} />
               </Route>
               <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </AppLayout>
-        </ImpersonationProvider>
+            </Routes>
+          </Suspense>
+        </AppLayout>
       </BrowserRouter>
     </QueryClientProvider>
   </ErrorBoundary>
