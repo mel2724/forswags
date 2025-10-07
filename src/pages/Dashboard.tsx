@@ -373,13 +373,15 @@ const Dashboard = () => {
 
             {/* Upgrade Nudge for Free Users */}
             {membership?.plan === "free" && (
-              <UpgradeNudge
-                title="Unlock Your Full Athletic Potential"
-                description="Get unlimited evaluations, advanced analytics, AI-powered content, and priority access to college recruiters"
-                variant="full"
-                highlight="Pro members get 3x more profile views from recruiters"
-                dismissible={true}
-              />
+              <>
+                <UpgradeNudge
+                  title="🚀 Take Your Recruiting to the Next Level"
+                  description="Premium athletes get 3x more profile views, unlimited videos, and AI-powered tools"
+                  variant="full"
+                  highlight="Join 1,000+ athletes who upgraded and got recruited faster"
+                  dismissible={false}
+                />
+              </>
             )}
 
             {/* Main Content Grid */}

@@ -17,34 +17,37 @@ interface UpgradePromptDialogProps {
 
 const DEFAULT_BENEFITS = {
   general: [
-    "Unlimited evaluations and assessments",
-    "Advanced analytics and insights",
-    "Priority coach connections",
-    "AI-powered content generation",
-    "Unlimited media storage",
-    "College matching algorithm",
-    "Professional press releases",
+    "🎥 Unlimited video uploads - showcase every highlight",
+    "📊 Advanced analytics - track profile views and engagement",
+    "🎯 AI-powered college matching - find your perfect fit",
+    "✨ Premium profile features - stand out to recruiters",
+    "🏆 Priority support - get help when you need it",
+    "📱 Social media tools - build your personal brand",
+    "📈 3x more profile views from college recruiters",
   ],
   limit: [
-    "Remove all usage limits",
-    "Unlimited evaluations per month",
-    "Unlimited media uploads",
-    "Unlimited AI generations",
-    "Priority support",
+    "🚀 Unlimited video uploads - no more 1-video restriction",
+    "📹 Showcase your full athletic journey",
+    "💪 Complete profile access - all premium fields unlocked",
+    "🎯 Advanced analytics to track your recruiting progress",
+    "⚡ Priority support from our team",
+    "📊 Get 3x more exposure to college recruiters",
   ],
   feature: [
-    "Access all premium features",
-    "Advanced analytics dashboard",
-    "AI-powered tools",
-    "Priority listing in search",
-    "Professional development resources",
+    "🔓 Unlock all premium profile fields",
+    "📈 Advanced analytics dashboard with recruiter insights",
+    "🤖 AI-powered content generation tools",
+    "⭐ Priority listing in athlete search results",
+    "🎓 Professional development resources and webinars",
+    "💼 Direct messaging with college coaches",
   ],
   analytics: [
-    "Detailed performance metrics",
-    "Recruiter engagement tracking",
-    "Profile view analytics",
-    "Comparison insights",
-    "Export reports (PDF/Excel)",
+    "📊 Detailed performance metrics and trends",
+    "👀 Recruiter engagement tracking - see who's viewing",
+    "📈 Profile view analytics with geographic data",
+    "🔍 Comparison insights vs similar athletes",
+    "📄 Export professional reports (PDF/Excel)",
+    "🎯 Conversion tracking for offers and contacts",
   ],
 };
 
@@ -110,10 +113,19 @@ export function UpgradePromptDialog({
             </ul>
           </div>
 
+          <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 mt-4">
+            <p className="text-sm font-semibold text-center mb-2">
+              🎁 Limited Time: Save 46% with Annual Plan
+            </p>
+            <p className="text-xs text-center text-muted-foreground">
+              Join 1,000+ athletes already using ForSWAGs Premium
+            </p>
+          </div>
+
           <div className="pt-4 space-y-3">
             <Button onClick={handleUpgrade} className="w-full" size="lg">
               <Crown className="mr-2 h-4 w-4" />
-              View Membership Plans
+              Unlock Premium Features
             </Button>
             <Button
               onClick={() => onOpenChange(false)}
@@ -124,9 +136,20 @@ export function UpgradePromptDialog({
             </Button>
           </div>
 
-          <p className="text-xs text-center text-muted-foreground">
-            30-day money-back guarantee • Cancel anytime
-          </p>
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground pt-2">
+            <span className="flex items-center gap-1">
+              <Check className="h-3 w-3 text-primary" />
+              30-day guarantee
+            </span>
+            <span className="flex items-center gap-1">
+              <Check className="h-3 w-3 text-primary" />
+              Cancel anytime
+            </span>
+            <span className="flex items-center gap-1">
+              <Check className="h-3 w-3 text-primary" />
+              Instant access
+            </span>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -188,10 +188,29 @@ export default function Membership() {
         </Button>
 
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Choose Your Membership</h1>
-          <p className="text-muted-foreground text-lg">
-            Unlock premium features and maximize your recruiting potential
+          <Badge variant="secondary" className="mb-4 text-sm px-4 py-2">
+            🔥 LIMITED TIME: Save 46% on Annual Plans
+          </Badge>
+          <h1 className="text-5xl font-black mb-4">
+            Unlock Your Full Potential
+          </h1>
+          <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
+            Join 1,000+ athletes using ForSWAGs Premium to get recruited faster
           </p>
+          <div className="flex items-center justify-center gap-8 mt-6 text-sm">
+            <span className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-primary" />
+              3x More Profile Views
+            </span>
+            <span className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-primary" />
+              Unlimited Videos
+            </span>
+            <span className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-primary" />
+              AI-Powered Tools
+            </span>
+          </div>
         </div>
 
         {checkingStatus ? (
@@ -296,39 +315,59 @@ export default function Membership() {
 
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {/* Monthly Plan */}
-              <Card className={currentTier?.role === "athlete" && currentTier?.tier === "monthly" ? "border-primary" : ""}>
+              <Card className={currentTier?.role === "athlete" && currentTier?.tier === "monthly" ? "border-primary shadow-lg" : "border-2"}>
                 <CardHeader>
                   {currentTier?.role === "athlete" && currentTier?.tier === "monthly" && (
-                    <Badge className="w-fit mb-2">Current Plan</Badge>
+                    <Badge className="w-fit mb-2 bg-primary">✓ Current Plan</Badge>
                   )}
-                  <CardTitle className="text-2xl">{STRIPE_PRODUCTS.membership.athlete.monthly.name}</CardTitle>
-                  <div className="text-3xl font-bold">
+                  <CardTitle className="text-2xl font-black">{STRIPE_PRODUCTS.membership.athlete.monthly.name}</CardTitle>
+                  <div className="text-4xl font-black">
                     {formatPrice(STRIPE_PRODUCTS.membership.athlete.monthly.price)}
-                    <span className="text-base font-normal text-muted-foreground">/month</span>
+                    <span className="text-lg font-normal text-muted-foreground">/month</span>
                   </div>
-                  <CardDescription>Billed monthly</CardDescription>
+                  <CardDescription className="text-base">Billed monthly • Cancel anytime</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3 mb-6">
+                  <ul className="space-y-4 mb-6">
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Unlimited course access</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">Unlimited Videos</span>
+                        <p className="text-xs text-muted-foreground">Upload all your highlights</p>
+                      </div>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Priority support</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">Premium Profile</span>
+                        <p className="text-xs text-muted-foreground">All fields unlocked</p>
+                      </div>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>College matching tools</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">3x Profile Views</span>
+                        <p className="text-xs text-muted-foreground">From college recruiters</p>
+                      </div>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Advanced analytics</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">AI Tools</span>
+                        <p className="text-xs text-muted-foreground">Content & press releases</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">Priority Support</span>
+                        <p className="text-xs text-muted-foreground">24/7 assistance</p>
+                      </div>
                     </li>
                   </ul>
                   <Button
-                    className="w-full"
+                    className="w-full font-bold"
+                    size="lg"
                     onClick={() => handleSubscribe(
                       STRIPE_PRODUCTS.membership.athlete.monthly.price_id,
                       STRIPE_PRODUCTS.membership.athlete.monthly.name,
@@ -337,48 +376,75 @@ export default function Membership() {
                     )}
                     disabled={loading || (currentTier?.role === "athlete" && currentTier?.tier === "monthly")}
                   >
-                    {currentTier?.role === "athlete" && currentTier?.tier === "monthly" ? "Current Plan" : "Subscribe Monthly"}
+                    {currentTier?.role === "athlete" && currentTier?.tier === "monthly" ? "✓ Current Plan" : "Start Monthly Plan"}
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Yearly Plan */}
-              <Card className={currentTier?.role === "athlete" && currentTier?.tier === "yearly" ? "border-primary" : ""}>
+              <Card className={currentTier?.role === "athlete" && currentTier?.tier === "yearly" ? "border-primary shadow-lg" : "border-primary border-2 shadow-lg relative"}>
+                {!(currentTier?.role === "athlete" && currentTier?.tier === "yearly") && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-primary text-white font-bold px-4 py-1 text-sm">
+                      🔥 BEST VALUE
+                    </Badge>
+                  </div>
+                )}
                 <CardHeader>
                   {currentTier?.role === "athlete" && currentTier?.tier === "yearly" && (
-                    <Badge className="w-fit mb-2">Current Plan</Badge>
+                    <Badge className="w-fit mb-2 bg-primary">✓ Current Plan</Badge>
                   )}
-                  <Badge variant="secondary" className="w-fit mb-2">Save 46%</Badge>
-                  <CardTitle className="text-2xl">{STRIPE_PRODUCTS.membership.athlete.yearly.name}</CardTitle>
-                  <div className="text-3xl font-bold">
+                  <Badge variant="secondary" className="w-fit mb-2 font-bold">💰 Save 46% = 2 Months FREE</Badge>
+                  <CardTitle className="text-2xl font-black">{STRIPE_PRODUCTS.membership.athlete.yearly.name}</CardTitle>
+                  <div className="text-4xl font-black">
                     {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price)}
-                    <span className="text-base font-normal text-muted-foreground">/year</span>
+                    <span className="text-lg font-normal text-muted-foreground">/year</span>
                   </div>
-                  <CardDescription>
-                    {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price / 12)}/month when paid annually
+                  <CardDescription className="text-base font-semibold">
+                    Just {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price / 12)}/month • Best deal!
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3 mb-6">
+                  <ul className="space-y-4 mb-6">
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Everything in Monthly</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">Everything in Monthly</span>
+                        <p className="text-xs text-muted-foreground">All premium features included</p>
+                      </div>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>2 months free</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">2 Months FREE</span>
+                        <p className="text-xs text-muted-foreground">$80 value included</p>
+                      </div>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Exclusive yearly webinars</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">Exclusive Webinars</span>
+                        <p className="text-xs text-muted-foreground">Monthly recruiting insights</p>
+                      </div>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Priority feature access</span>
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">Early Access</span>
+                        <p className="text-xs text-muted-foreground">New features first</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold">VIP Support</span>
+                        <p className="text-xs text-muted-foreground">Dedicated account manager</p>
+                      </div>
                     </li>
                   </ul>
                   <Button
-                    className="w-full"
+                    className="w-full font-bold"
+                    size="lg"
                     onClick={() => handleSubscribe(
                       STRIPE_PRODUCTS.membership.athlete.yearly.price_id,
                       STRIPE_PRODUCTS.membership.athlete.yearly.name,
@@ -387,11 +453,74 @@ export default function Membership() {
                     )}
                     disabled={loading || (currentTier?.role === "athlete" && currentTier?.tier === "yearly")}
                   >
-                    {currentTier?.role === "athlete" && currentTier?.tier === "yearly" ? "Current Plan" : "Subscribe Yearly"}
+                    {currentTier?.role === "athlete" && currentTier?.tier === "yearly" ? "✓ Current Plan" : "Save 46% - Start Yearly Plan"}
                   </Button>
+                  {!(currentTier?.role === "athlete" && currentTier?.tier === "yearly") && (
+                    <p className="text-xs text-center text-muted-foreground mt-3">
+                      ⚡ Most popular choice among athletes
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>
+
+            {/* Feature Comparison Table */}
+            <Card className="max-w-4xl mx-auto mt-12">
+              <CardHeader>
+                <CardTitle className="text-center text-2xl">Feature Comparison</CardTitle>
+                <CardDescription className="text-center">See what's included in each plan</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Feature</th>
+                        <th className="text-center py-3 px-4">Free</th>
+                        <th className="text-center py-3 px-4 bg-primary/5">Pro</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">Video Uploads</td>
+                        <td className="text-center py-3 px-4">1</td>
+                        <td className="text-center py-3 px-4 bg-primary/5 font-bold">Unlimited</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">Profile Fields</td>
+                        <td className="text-center py-3 px-4">Basic</td>
+                        <td className="text-center py-3 px-4 bg-primary/5 font-bold">All Premium</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">Profile Views</td>
+                        <td className="text-center py-3 px-4">Standard</td>
+                        <td className="text-center py-3 px-4 bg-primary/5 font-bold">3x More</td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">AI Content Tools</td>
+                        <td className="text-center py-3 px-4">-</td>
+                        <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">Analytics Dashboard</td>
+                        <td className="text-center py-3 px-4">Basic</td>
+                        <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-3 px-4">Priority Support</td>
+                        <td className="text-center py-3 px-4">-</td>
+                        <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
+                      </tr>
+                      <tr>
+                        <td className="py-3 px-4">College Matching</td>
+                        <td className="text-center py-3 px-4">Basic</td>
+                        <td className="text-center py-3 px-4 bg-primary/5 font-bold">Advanced AI</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>
