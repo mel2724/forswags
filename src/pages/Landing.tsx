@@ -7,7 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 
-const Landing: React.FC = () => {
+export default function Landing() {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<"athlete" | "parent">("athlete");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -446,4 +446,3 @@ const Landing: React.FC = () => {
   );
 };
 
-export default Landing;
