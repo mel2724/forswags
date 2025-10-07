@@ -24,6 +24,8 @@ export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const { startImpersonation } = useImpersonation();
+  
+  // Note: Impersonation feature temporarily disabled for stability
 
   useEffect(() => {
     fetchUsers();
