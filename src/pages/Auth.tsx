@@ -23,8 +23,14 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [isStaffSignup, setIsStaffSignup] = useState(false);
 
   useEffect(() => {
+    // Check if this is a college staff signup
+    const params = new URLSearchParams(window.location.search);
+    setIsStaffSignup(params.get('type') === 'staff');
+    
+    // Rest of the existing code
     // Check for password recovery tokens in URL
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
@@ -61,6 +67,12 @@ const Auth = () => {
     
     if (!privacyAccepted) {
       toast.error("Please accept the Privacy Policy to continue");
+      return;
+    }
+    
+    // Validate .edu email for college staff signups
+    if (isStaffSignup && !email.toLowerCase().endsWith('.edu')) {
+      toast.error("College staff must sign up with a valid .edu email address");
       return;
     }
     
@@ -205,7 +217,12 @@ const Auth = () => {
               {isResettingPassword ? "Reset Password" : "Join the Team"}
             </h1>
             <p className="text-muted-foreground uppercase text-sm tracking-wider">
-              {isResettingPassword ? "Enter your new password" : "For Students With Athletic Goals"}
+              {isResettingPassword 
+                ? "Enter your new password" 
+                : isStaffSignup 
+                  ? "For Verified College Coaching Staff" 
+                  : "For Students With Athletic Goals"
+              }
             </p>
           </div>
 
@@ -338,15 +355,22 @@ const Auth = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
+                <Label htmlFor="signup-email">
+                  Email {isStaffSignup && <span className="text-primary">(.edu required)</span>}
+                </Label>
                 <Input
                   id="signup-email"
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder={isStaffSignup ? "yourname@college.edu" : "your@email.com"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
+                {isStaffSignup && (
+                  <p className="text-xs text-muted-foreground">
+                    Must use your official college/university .edu email address
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

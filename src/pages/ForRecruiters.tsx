@@ -22,26 +22,17 @@ const ForRecruiters = () => {
           </h1>
           
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-foreground/80 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-            Access the nation's most comprehensive database of student-athletes with verified stats, video highlights, and holistic life skills rankings
+            For verified college coaching staff: Access the nation's most comprehensive database of student-athletes with verified stats, video highlights, and holistic life skills rankings
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             <Button 
               size="lg" 
               className="btn-accent text-lg px-10 py-7 font-bold uppercase tracking-wide"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/auth?type=staff")}
             >
               <Target className="mr-2 h-5 w-5" />
-              Start Recruiting
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-2 border-primary/50 bg-card/50 backdrop-blur text-foreground hover:bg-primary hover:text-primary-foreground text-lg px-10 py-7 font-bold uppercase tracking-wide"
-              onClick={() => navigate("/players")}
-            >
-              <Search className="mr-2 h-5 w-5" />
-              Browse Athletes
+              Get Started
             </Button>
           </div>
         </div>
@@ -53,10 +44,10 @@ const ForRecruiters = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
-              <span className="text-gradient-primary">Powerful Tools</span> for Recruiters
+              <span className="text-gradient-primary">Powerful Tools</span> for College Staff
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to find and connect with top talent
+              Everything your coaching staff needs to find and evaluate top talent
             </p>
           </div>
           
@@ -139,7 +130,7 @@ const ForRecruiters = () => {
             <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/30 hover:border-primary/50 transition-all duration-300">
               <div className="text-center mb-6">
                 <Target className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Recruiter Monthly</h3>
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">College Staff Monthly</h3>
                 <div className="mb-6">
                   <div className="text-5xl font-black mb-2">
                     $97
@@ -158,7 +149,7 @@ const ForRecruiters = () => {
                 </li>
                 <li className="flex items-center gap-3">
                   <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Direct messaging to athletes</span>
+                  <span className="font-semibold">Contact athlete information</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Zap className="h-5 w-5 text-primary flex-shrink-0" />
@@ -169,8 +160,8 @@ const ForRecruiters = () => {
                   <span className="font-semibold">Analytics & insights</span>
                 </li>
               </ul>
-              <Button className="w-full btn-hero" onClick={() => navigate("/auth")}>
-                Start Recruiting
+              <Button className="w-full btn-hero" onClick={() => navigate("/auth?type=staff")}>
+                Get Started
               </Button>
             </Card>
 
@@ -180,7 +171,7 @@ const ForRecruiters = () => {
               </div>
               <div className="text-center mb-6">
                 <Star className="h-12 w-12 text-secondary mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-secondary">Recruiter Yearly</h3>
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-secondary">College Staff Yearly</h3>
                 <div className="mb-6">
                   <div className="text-5xl font-black mb-2 text-gradient-accent">
                     $997
@@ -210,7 +201,7 @@ const ForRecruiters = () => {
                   <span className="font-semibold">Custom reporting tools</span>
                 </li>
               </ul>
-              <Button className="w-full btn-accent" onClick={() => navigate("/auth")}>
+              <Button className="w-full btn-accent" onClick={() => navigate("/auth?type=staff")}>
                 Go Yearly
               </Button>
             </Card>
@@ -226,12 +217,12 @@ const ForRecruiters = () => {
             Ready to Find Your <span className="text-gradient-accent">Next Star?</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join hundreds of college coaches and recruiters already using ForSWAGs to discover top talent
+            Join hundreds of college coaching staff already using ForSWAGs to discover top talent
           </p>
           <Button 
             size="lg" 
             className="btn-accent text-lg px-10 py-7 font-bold uppercase tracking-wide"
-            onClick={() => navigate("/auth")}
+            onClick={() => navigate("/auth?type=staff")}
           >
             Get Started Today
           </Button>
