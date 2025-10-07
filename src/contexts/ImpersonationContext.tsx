@@ -22,6 +22,7 @@ const defaultContext: ImpersonationContextType = {
 const ImpersonationContext = createContext<ImpersonationContextType>(defaultContext);
 
 // Simplified provider that doesn't use hooks - prevents HMR crashes
+// Last updated: 2025-10-07 - Stability fix
 export function ImpersonationProvider({ children }: { children: ReactNode }) {
   return (
     <ImpersonationContext.Provider value={defaultContext}>

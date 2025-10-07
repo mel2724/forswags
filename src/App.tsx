@@ -94,6 +94,8 @@ const queryClient = new QueryClient({
   },
 });
 
+// Main Application Component
+// Build: 2025-10-07-v2
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
