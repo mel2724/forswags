@@ -2926,6 +2926,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      check_profile_upload_rate_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       decrypt_oauth_token: {
         Args: { encrypted_token: string }
         Returns: string
