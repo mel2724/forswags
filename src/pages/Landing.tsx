@@ -1,15 +1,17 @@
-// Landing Page - Build 2025-01-07-001
+// Landing Page - Build 2025-01-07-002
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
 import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Medal, ChevronDown, Video, Brain, Sparkles, TrendingUp, Share2, BookOpen } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 
 export default function Landing() {
-  const navigate = useNavigate();
+  // Use direct navigation to avoid Router context dependency
+  const navigateTo = (path: string) => {
+    window.location.href = path;
+  };
   const [selectedRole, setSelectedRole] = useState<"athlete" | "parent">("athlete");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -72,7 +74,7 @@ export default function Landing() {
             <Button 
               size="lg" 
               className="btn-accent text-lg px-10 py-7 text-base font-bold uppercase tracking-wide"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigateTo("/auth")}
             >
               <Zap className="mr-2 h-5 w-5" />
               Start Your Journey
@@ -81,7 +83,7 @@ export default function Landing() {
               size="lg" 
               variant="outline" 
               className="border-2 border-primary/50 bg-card/50 backdrop-blur text-foreground hover:bg-primary hover:text-primary-foreground text-lg px-10 py-7 font-bold uppercase tracking-wide"
-              onClick={() => navigate("/players")}
+              onClick={() => navigateTo("/players")}
             >
               <Users className="mr-2 h-5 w-5" />
               Scout Athletes
@@ -225,7 +227,7 @@ export default function Landing() {
                     <span>Access to 3 training courses</span>
                   </li>
                 </ul>
-                <Button className="w-full" variant="outline" onClick={() => navigate("/auth")}>
+                <Button className="w-full" variant="outline" onClick={() => navigateTo("/auth")}>
                   Get Started
                 </Button>
               </Card>
@@ -267,7 +269,7 @@ export default function Landing() {
                     <span className="font-semibold">Free parent account included</span>
                   </li>
                 </ul>
-                <Button className="w-full btn-hero" onClick={() => navigate("/auth")}>
+                <Button className="w-full btn-hero" onClick={() => navigateTo("/auth")}>
                   Start Training
                 </Button>
               </Card>
@@ -306,7 +308,7 @@ export default function Landing() {
                     <span className="font-semibold">Free parent account included</span>
                   </li>
                 </ul>
-                <Button className="w-full btn-accent" onClick={() => navigate("/auth")}>
+                <Button className="w-full btn-accent" onClick={() => navigateTo("/auth")}>
                   Go Championship
                 </Button>
               </Card>
@@ -352,7 +354,7 @@ export default function Landing() {
                     Parent accounts are automatically included with any paid athlete membership (Pro Monthly or Championship Yearly)
                   </p>
                 </div>
-                <Button className="w-full btn-hero text-lg py-6" onClick={() => navigate("/auth")}>
+                <Button className="w-full btn-hero text-lg py-6" onClick={() => navigateTo("/auth")}>
                   Create Parent Account
                 </Button>
               </Card>

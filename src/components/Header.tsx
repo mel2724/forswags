@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import logoFull from "@/assets/forswags-logo.png";
 import {
   NavigationMenu,
@@ -15,9 +14,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2">
+        <a href="/" className="flex items-center space-x-2">
           <img src={logoFull} alt="ForSWAGs" className="h-12" />
-        </Link>
+        </a>
         
         <nav className="hidden md:flex items-center space-x-4">
           <NavigationMenu>
@@ -42,54 +41,54 @@ export function Header() {
                   <ul className="grid w-[400px] gap-3 p-4">
                     <li>
                       <NavigationMenuLink asChild>
-                        <Link
-                          to="/about"
+                        <a
+                          href="/about"
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                           <div className="text-sm font-bold leading-none">About</div>
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                             Learn more about ForSWAGs and our mission
                           </p>
-                        </Link>
+                        </a>
                       </NavigationMenuLink>
                     </li>
                     <li>
                       <NavigationMenuLink asChild>
-                        <Link
-                          to="/players"
+                        <a
+                          href="/players"
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                           <div className="text-sm font-bold leading-none">Athletes</div>
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                             Browse our athlete directory
                           </p>
-                        </Link>
+                        </a>
                       </NavigationMenuLink>
                     </li>
                     <li>
                       <NavigationMenuLink asChild>
-                        <Link
-                          to="/for-recruiters"
+                        <a
+                          href="/for-recruiters"
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                           <div className="text-sm font-bold leading-none">For Recruiters</div>
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                             Tools and resources for college recruiters
                           </p>
-                        </Link>
+                        </a>
                       </NavigationMenuLink>
                     </li>
                     <li>
                       <NavigationMenuLink asChild>
-                        <Link
-                          to="/sponsors"
+                        <a
+                          href="/sponsors"
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                           <div className="text-sm font-bold leading-none">Sponsors</div>
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                             View our sponsors and partners
                           </p>
-                        </Link>
+                        </a>
                       </NavigationMenuLink>
                     </li>
                   </ul>
@@ -99,12 +98,12 @@ export function Header() {
           </NavigationMenu>
 
           <Button asChild className="btn-hero ml-2">
-            <Link to="/auth">Sign Up</Link>
+            <a href="/auth">Sign Up</a>
           </Button>
         </nav>
 
         <Button asChild className="md:hidden btn-hero">
-          <Link to="/auth">Sign Up</Link>
+          <a href="/auth">Sign Up</a>
         </Button>
       </div>
     </header>
