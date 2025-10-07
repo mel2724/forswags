@@ -1,4 +1,4 @@
-// Main Application Entry Point - Updated 2025-10-07
+// Main Application Entry Point - COMPLETE REBUILD v5
 import * as React from "react";
 import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -96,7 +96,7 @@ const queryClient = new QueryClient({
 });
 
 // Main Application Component
-// Build: 2025-10-07-v2
+// Build: FORCED-REBUILD-v5
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
