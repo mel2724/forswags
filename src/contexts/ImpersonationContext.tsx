@@ -1,3 +1,5 @@
+// Stub context - Impersonation feature disabled for stability
+// DO NOT ADD REACT HOOKS TO THIS FILE
 import { createContext, useContext, ReactNode } from "react";
 
 interface ImpersonationContextType {
@@ -9,29 +11,21 @@ interface ImpersonationContextType {
   getEffectiveUserId: () => string | null;
 }
 
-// Default safe values for when provider is not available
-const defaultContext: ImpersonationContextType = {
+const STUB_CONTEXT: ImpersonationContextType = {
   impersonatedUserId: null,
   impersonatedUserEmail: null,
-  startImpersonation: async () => {},
-  stopImpersonation: async () => {},
+  startImpersonation: async () => { console.log('Impersonation disabled'); },
+  stopImpersonation: async () => { console.log('Impersonation disabled'); },
   isImpersonating: false,
   getEffectiveUserId: () => null,
 };
 
-const ImpersonationContext = createContext<ImpersonationContextType>(defaultContext);
+const ImpersonationContext = createContext<ImpersonationContextType>(STUB_CONTEXT);
 
-// Simplified provider that doesn't use hooks - prevents HMR crashes
-// Last updated: 2025-10-07 - Stability fix
-export function ImpersonationProvider({ children }: { children: ReactNode }) {
-  return (
-    <ImpersonationContext.Provider value={defaultContext}>
-      {children}
-    </ImpersonationContext.Provider>
-  );
-}
+export const ImpersonationProvider = ({ children }: { children: ReactNode }) => (
+  <ImpersonationContext.Provider value={STUB_CONTEXT}>
+    {children}
+  </ImpersonationContext.Provider>
+);
 
-export function useImpersonation() {
-  const context = useContext(ImpersonationContext);
-  return context || defaultContext;
-}
+export const useImpersonation = () => useContext(ImpersonationContext) || STUB_CONTEXT;

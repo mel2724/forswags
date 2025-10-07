@@ -1,3 +1,4 @@
+// Main Application Entry Point - Updated 2025-10-07
 import * as React from "react";
 import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
