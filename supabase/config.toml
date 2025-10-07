@@ -74,3 +74,6 @@ verify_jwt = true
 
 [functions.instagram-post]
 verify_jwt = true
+
+[functions.send-renewal-reminders]
+verify_jwt = false
