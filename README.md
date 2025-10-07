@@ -1,8 +1,67 @@
-# Welcome to your Lovable project
+# ForSWAGs - Student Athlete Recruiting Platform
+
+## Project Overview
+
+ForSWAGs is a comprehensive platform designed to help student athletes showcase their talents, connect with college recruiters, and manage their recruiting journey. The platform features a tiered membership system with both free and premium offerings.
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/c14147b9-3ab1-40f2-b185-b0228437210e
+
+## Key Features
+
+### 🎯 For Athletes
+- **Profile Management**: Create comprehensive athlete profiles with stats, achievements, and media
+- **Video Showcase**: Upload highlight reels and game footage (1 video on free tier, unlimited on premium)
+- **College Matching**: AI-powered college matching based on academic and athletic profiles
+- **Offer Tracking**: Manage and compare college offers
+- **Analytics Dashboard**: Track profile views and recruiter engagement (premium feature)
+- **AI Tools**: Generate social media content and press releases (premium feature)
+
+### 🏆 For Recruiters
+- **Athlete Search**: Advanced search and filtering capabilities
+- **Profile Analytics**: View detailed athlete profiles and performance metrics
+- **Contact Management**: Direct communication with athletes
+- **Saved Searches**: Save and manage recruitment searches
+
+### 👨‍👩‍👧 For Parents
+- **Parental Consent**: Manage consent for minors (COPPA compliant)
+- **Dashboard Access**: View athlete progress and offers
+- **Communication**: Stay informed about recruiting activities
+
+## Membership Tiers
+
+### Free Tier
+- ✅ Basic profile with essential fields only
+- ✅ 1 video upload
+- ✅ GPA only (no SAT/ACT scores)
+- ✅ Access to Playbook educational content
+- ✅ 200-character bio limit
+- ✅ Basic college matching
+
+### Premium Tiers
+
+**Pro Monthly ($40/month)**
+- ✅ Everything in Free
+- ✅ Unlimited video uploads
+- ✅ Complete profile access (SAT/ACT, athletic stats, awards)
+- ✅ 1,000-character bio
+- ✅ Advanced analytics dashboard
+- ✅ AI-powered content generation
+- ✅ Priority support
+- ✅ 3x more profile views from recruiters
+- ✅ Social media integration
+
+**Championship Yearly ($260/year - Save 46%)**
+- ✅ Everything in Pro Monthly
+- ✅ 2 months FREE ($80 value)
+- ✅ Exclusive yearly webinars
+- ✅ Priority feature access
+- ✅ VIP support with dedicated account manager
+
+## Getting Started
+
+### For Development
 
 ## How can I edit this code?
 
@@ -54,11 +113,78 @@ npm run dev
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Frontend
+- **Vite** - Build tool and dev server
+- **TypeScript** - Type-safe JavaScript
+- **React** - UI framework
+- **shadcn-ui** - Component library
+- **Tailwind CSS** - Utility-first CSS
+- **React Query** - Data fetching and caching
+- **React Router** - Client-side routing
+
+### Backend (Lovable Cloud/Supabase)
+- **PostgreSQL** - Database
+- **Row Level Security (RLS)** - Data access control
+- **Edge Functions** - Serverless backend logic
+- **Authentication** - Built-in auth system
+- **Storage** - File storage for media assets
+
+### Payment Processing
+- **Stripe** - Subscription and payment management
+- **PayPal** - Alternative payment option
+
+### AI Integration
+- **Lovable AI** - Content generation (captions, press releases)
+
+## System Architecture
+
+### Database Schema
+- `profiles` - User profile information
+- `user_roles` - Role management (athlete, recruiter, parent, coach, admin)
+- `athletes` - Athlete-specific data
+- `memberships` - Subscription and tier management
+- `media_assets` - Video and image storage
+- `college_matches` - AI-powered college recommendations
+- `college_offers` - Offer tracking
+- `evaluations` - Coach evaluations
+- `courses` - Educational content (Playbook)
+
+### Key Edge Functions
+- `create-checkout` - Stripe subscription checkout
+- `check-subscription` - Verify membership status
+- `customer-portal` - Stripe customer portal access
+- `send-renewal-reminders` - Automated renewal emails (runs daily at 9 AM UTC)
+- `generate-social-caption` - AI content generation
+- `generate-press-release` - AI press release generation
+
+### Membership Management
+The platform enforces tier-based access control:
+- **Free Tier**: Limited to 1 video, basic profile fields
+- **Premium Tiers**: Full feature access
+- **Login Blocking**: Expired/failed memberships cannot access the platform
+- **Renewal Reminders**: Automated emails at 30, 7, and 1 day before expiration
+
+## Security Features
+
+### Authentication & Authorization
+- Email/password authentication
+- Role-based access control (RBAC)
+- Row Level Security (RLS) policies on all tables
+- JWT-based session management
+
+### Data Protection
+- **Minor Protection**: Enhanced privacy for athletes under 18
+  - Parental consent required for public profiles
+  - Social handles hidden for minors (even to paid recruiters)
+  - Consent expiration tracking with renewal notifications
+- **Contact Info Masking**: Only paid recruiters can view adult athlete contact details
+- **Encrypted Tokens**: OAuth tokens encrypted at rest
+- **Audit Logging**: All sensitive actions logged
+
+### Compliance
+- **COPPA Compliant**: Parental consent for minors
+- **GDPR Ready**: Data export functionality
+- **Secure File Storage**: Private buckets for sensitive documents
 
 ## How can I deploy this project?
 
@@ -71,3 +197,23 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Additional Documentation
+
+- **QUICK_START.md** - 60-second testing guide
+- **TESTING_GUIDE.md** - Comprehensive testing documentation
+- **SECURITY.md** - Security features and best practices
+- **ACCESSIBILITY.md** - Accessibility guidelines
+- **MOBILE.md** - Mobile optimization details
+- **PAYPAL_SETUP.md** - PayPal integration guide
+
+## Support & Resources
+
+- **Stripe Dashboard**: [https://dashboard.stripe.com](https://dashboard.stripe.com)
+- **Documentation**: See individual .md files in repository
+- **Issue Tracker**: Use GitHub issues for bug reports
+- **Feature Requests**: Submit via GitHub discussions
+
+## License
+
+This project is proprietary software. All rights reserved.

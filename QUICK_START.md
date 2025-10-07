@@ -12,27 +12,36 @@
 6. Click "Sign Up"
 ```
 
+**Note**: New accounts start on the FREE tier with:
+- ✅ 1 video upload limit
+- ✅ Basic profile fields only
+- ✅ Access to Playbook content
+
 ### Step 2: Complete Onboarding (20 sec)
 ```
 1. Select "Athlete"
-2. Fill basic info
-3. Select sport
-4. Skip optional fields
+2. Fill basic info (name, sport)
+3. Select sport and position
+4. Skip optional fields (premium only)
 5. Accept consent
 6. Click "Complete"
 ```
 
-### Step 3: Test Payment (20 sec)
+### Step 3: Test Premium Upgrade (20 sec)
 ```
-1. Go to /membership
-2. Click "Subscribe Monthly"
-3. Card: 4242 4242 4242 4242
-4. Expiry: 12/25
-5. CVC: 123
-6. Click "Subscribe"
+1. See upgrade prompt on dashboard
+2. Go to /membership
+3. Click "Subscribe Monthly" or "Subscribe Yearly"
+4. Card: 4242 4242 4242 4242
+5. Expiry: 12/25
+6. CVC: 123
+7. Click "Subscribe"
 ```
 
-**Done!** You now have a fully working test account with active subscription.
+**Done!** You now have:
+- ✅ Free tier account (default)
+- ✅ Optional premium subscription (if upgraded)
+- ✅ Full access to test all features
 
 ---
 
@@ -72,22 +81,41 @@ Parent:    test.parent@test.com    / TestParent123!
 
 ## 🎯 Critical Features to Test
 
-### Must Test ✅
-- [ ] User signup
+### Free Tier Features ✅
+- [ ] User signup (starts on free tier)
 - [ ] User login
-- [ ] Subscription purchase
+- [ ] Basic profile editing (limited fields)
+- [ ] 1 video upload (should block 2nd upload)
+- [ ] Playbook access
+- [ ] View upgrade prompts
+
+### Premium Features 📝
+- [ ] Subscription purchase (monthly/yearly)
 - [ ] Subscription status check
+- [ ] Unlimited video uploads
+- [ ] Full profile access (SAT/ACT, stats, etc.)
+- [ ] Analytics dashboard
+- [ ] AI content generation
+- [ ] Customer portal access
+
+### Membership Management 🔐
+- [ ] Membership renewal reminders (30/7/1 days)
+- [ ] Login blocking for expired memberships
+- [ ] Upgrade prompts display correctly
+- [ ] Feature comparison table on /membership
 
 ### Should Test 📝
 - [ ] Password reset
 - [ ] Promo codes
 - [ ] Evaluation purchase
-- [ ] Customer portal
+- [ ] Parent consent flow
+- [ ] Coach evaluations
 
 ### Nice to Have 🌟
 - [ ] Mobile responsive
 - [ ] Multiple browsers
 - [ ] Edge cases
+- [ ] Social media integrations
 
 ---
 
