@@ -130,7 +130,7 @@ export default function MembershipRecruiter() {
             {subscriptionStatus?.subscribed && isRecruiter && (
               <div className="mb-8 text-center">
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  Current Plan: {currentTier?.tier === "monthly" ? "Recruiter Monthly" : "Recruiter Yearly"}
+                  Current Plan: Recruiter Yearly
                 </Badge>
                 {subscriptionStatus.subscription_end && (
                   <p className="text-sm text-muted-foreground mt-2">
@@ -149,56 +149,7 @@ export default function MembershipRecruiter() {
               </div>
             )}
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {/* Monthly Plan */}
-              <Card className={currentTier?.tier === "monthly" ? "border-primary" : ""}>
-                <CardHeader>
-                  {currentTier?.tier === "monthly" && (
-                    <Badge className="w-fit mb-2">Current Plan</Badge>
-                  )}
-                  <div className="flex justify-center mb-4">
-                    <Target className="h-12 w-12 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl text-center">{STRIPE_PRODUCTS.membership.recruiter.monthly.name}</CardTitle>
-                  <div className="text-3xl font-bold text-center">
-                    {formatPrice(STRIPE_PRODUCTS.membership.recruiter.monthly.price)}
-                    <span className="text-base font-normal text-muted-foreground">/month</span>
-                  </div>
-                  <CardDescription className="text-center">Billed monthly</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Full athlete database access</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Advanced search & filters</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Direct messaging to athletes</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Save & organize prospects</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Analytics & insights</span>
-                    </li>
-                  </ul>
-                  <Button
-                    className="w-full"
-                    onClick={() => handleSubscribe(STRIPE_PRODUCTS.membership.recruiter.monthly.price_id)}
-                    disabled={loading || currentTier?.tier === "monthly"}
-                  >
-                    {currentTier?.tier === "monthly" ? "Current Plan" : "Subscribe Monthly"}
-                  </Button>
-                </CardContent>
-              </Card>
-
+            <div className="max-w-md mx-auto">
               {/* Yearly Plan */}
               <Card className={currentTier?.tier === "yearly" ? "border-secondary" : "border-secondary/30"}>
                 <CardHeader>
@@ -223,11 +174,15 @@ export default function MembershipRecruiter() {
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Everything in Monthly</span>
+                      <span>Full athlete database access</span>
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Save $167 per year</span>
+                      <span>Advanced search & filters</span>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
+                      <span>Direct messaging to athletes</span>
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
@@ -239,7 +194,7 @@ export default function MembershipRecruiter() {
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Early access to new athletes</span>
+                      <span>Analytics & insights</span>
                     </li>
                   </ul>
                   <Button
