@@ -79,15 +79,6 @@ export default function Landing() {
               <Zap className="mr-2 h-5 w-5" />
               Start Your Journey
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-2 border-primary/50 bg-card/50 backdrop-blur text-foreground hover:bg-primary hover:text-primary-foreground text-lg px-10 py-7 font-bold uppercase tracking-wide"
-              onClick={() => navigateTo("/players")}
-            >
-              <Users className="mr-2 h-5 w-5" />
-              Scout Athletes
-            </Button>
           </div>
         </div>
       </section>
