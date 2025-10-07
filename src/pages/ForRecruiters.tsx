@@ -121,50 +121,12 @@ const ForRecruiters = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
-              Choose Your <span className="text-gradient-accent">Plan</span>
+              <span className="text-gradient-accent">College Staff Plan</span>
             </h2>
-            <p className="text-xl text-muted-foreground">Select the option that fits your recruiting needs</p>
+            <p className="text-xl text-muted-foreground">Annual subscription for full platform access</p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/30 hover:border-primary/50 transition-all duration-300">
-              <div className="text-center mb-6">
-                <Target className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">College Staff Monthly</h3>
-                <div className="mb-6">
-                  <div className="text-5xl font-black mb-2">
-                    $97
-                  </div>
-                  <div className="text-sm text-muted-foreground uppercase">Per Month</div>
-                </div>
-              </div>
-              <ul className="space-y-4 mb-8 text-sm">
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Full athlete database access</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Advanced search & filters</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Contact athlete information</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Save & organize prospects</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span className="font-semibold">Analytics & insights</span>
-                </li>
-              </ul>
-              <Button className="w-full btn-hero" onClick={() => navigate("/auth?type=staff")}>
-                Get Started
-              </Button>
-            </Card>
-
+          <div className="max-w-md mx-auto">
             <Card className="p-8 bg-gradient-to-b from-secondary/10 to-card/50 backdrop-blur border-4 border-secondary relative shadow-2xl">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary-glow text-white px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
                 💎 Best Value
@@ -176,13 +138,29 @@ const ForRecruiters = () => {
                   <div className="text-5xl font-black mb-2 text-gradient-accent">
                     $997
                   </div>
-                  <div className="text-sm text-secondary uppercase font-bold">Per Year · Save $167!</div>
+                  <div className="text-sm text-secondary uppercase font-bold">Per Year</div>
                 </div>
               </div>
               <ul className="space-y-4 mb-8 text-sm">
                 <li className="flex items-center gap-3">
                   <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Everything in Monthly</span>
+                  <span className="font-semibold">Full athlete database access</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-semibold">Advanced search & filters</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-semibold">Contact athlete information</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-semibold">Save & organize prospects</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-semibold">Analytics & insights</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Award className="h-5 w-5 text-secondary flex-shrink-0" />
@@ -202,7 +180,7 @@ const ForRecruiters = () => {
                 </li>
               </ul>
               <Button className="w-full btn-accent" onClick={() => navigate("/auth?type=staff")}>
-                Go Yearly
+                Get Started
               </Button>
             </Card>
           </div>
