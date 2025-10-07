@@ -28,9 +28,22 @@ export const Footer = React.memo(() => {
             <Link to="/contact" className="hover:text-primary transition-colors">Contact</Link>
           </div>
           
-          <p className="text-xs text-muted-foreground/60 uppercase tracking-wider">
-            © 2025 ForSWAGs · For Students With Athletic Goals
-          </p>
+          <div className="border-t border-border pt-6 space-y-3">
+            <p className="text-xs text-muted-foreground/80 max-w-4xl mx-auto leading-relaxed">
+              © 2025 ForSWAGs™ (For Students With Athletic Goals). All Rights Reserved Worldwide.
+            </p>
+            <p className="text-xs text-muted-foreground/70 max-w-4xl mx-auto leading-relaxed">
+              ForSWAGs®, the ForSWAGs logo, Playbook for Life®, and all associated trademarks, service marks, 
+              trade names, proprietary methodologies, evaluation systems, ranking algorithms, college matching technology, 
+              and platform features are the exclusive intellectual property of ForSWAGs and are protected by U.S. and 
+              international copyright, trademark, patent, trade secret, and other intellectual property laws.
+            </p>
+            <p className="text-xs text-muted-foreground/60 max-w-4xl mx-auto">
+              Unauthorized reproduction, distribution, modification, reverse engineering, or commercial exploitation 
+              of any ForSWAGs content, technology, methodology, or platform features is strictly prohibited and may 
+              result in severe civil and criminal penalties.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

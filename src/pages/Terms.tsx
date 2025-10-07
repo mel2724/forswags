@@ -169,11 +169,92 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">9. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">9. Intellectual Property Rights and Protections</h2>
+              
+              <h3 className="text-xl font-semibold mt-4 mb-3">9.1 Proprietary Rights</h3>
               <p>
-                All content on ForSwags, including text, graphics, logos, images, and software, is the property of 
-                ForSwags or its content suppliers and is protected by copyright and intellectual property laws.
+                ForSwags™ (For Students With Athletic Goals) and all associated intellectual property are owned exclusively 
+                by ForSwags and are protected by United States and international copyright, trademark, patent, trade secret, 
+                and other intellectual property or proprietary rights laws.
               </p>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">9.2 Protected Intellectual Property</h3>
+              <p className="font-semibold mb-2">The following are proprietary to ForSwags and protected by law:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Trademarks & Service Marks:</strong> ForSWAGs®, the ForSwAGs logo, "For Students With Athletic Goals," Playbook for Life®, and all related marks</li>
+                <li><strong>Proprietary Methodologies:</strong> Our holistic athlete ranking system, life skills evaluation framework, and character assessment algorithms</li>
+                <li><strong>Technology & Systems:</strong> College matching algorithms, AI-powered evaluation tools, social media generation technology, and platform architecture</li>
+                <li><strong>Educational Content:</strong> All Playbook for Life curriculum, training courses, lesson materials, quizzes, and educational frameworks</li>
+                <li><strong>Visual Design:</strong> User interface design, graphics, logos, color schemes, layout patterns, and visual branding elements</li>
+                <li><strong>Business Processes:</strong> Evaluation workflows, coach assignment systems, recruiter matching processes, and membership structures</li>
+                <li><strong>Data & Analytics:</strong> Performance metrics, ranking formulas, statistical analysis methods, and predictive algorithms</li>
+                <li><strong>Content & Media:</strong> All text, images, videos, audio, graphics, code, databases, and data compilations</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">9.3 Unique Platform Concepts</h3>
+              <p className="font-semibold mb-2">ForSwags&apos; innovative approach includes several unique concepts that are protected intellectual property:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Holistic Athlete Development Model:</strong> Integration of athletic performance, academic achievement, and life skills training in a unified platform</li>
+                <li><strong>Non-Star-Rating System:</strong> Our proprietary ranking methodology that evaluates character, leadership, and life skills alongside athletic ability</li>
+                <li><strong>Playbook for Life®:</strong> Comprehensive life skills curriculum designed specifically for student-athletes</li>
+                <li><strong>Expert-Led College Matching:</strong> Human expert review combined with AI technology for personalized college recommendations</li>
+                <li><strong>Integrated Media Management:</strong> AI-powered social media content generation and press release tools for athlete branding</li>
+                <li><strong>Three-Tiered Access Model:</strong> Our specific membership structure and feature distribution across Starter, Pro, and Championship tiers</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">9.4 Prohibited Activities</h3>
+              <p>You expressly agree that you will NOT:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Copy, reproduce, duplicate, or replicate any portion of the ForSwags platform, methodology, or content</li>
+                <li>Reverse engineer, decompile, disassemble, or attempt to derive source code from the platform</li>
+                <li>Create derivative works based on ForSwags&apos; intellectual property</li>
+                <li>Use our proprietary methodologies, algorithms, or evaluation systems in competing services</li>
+                <li>Replicate our business model, membership structure, or service offerings</li>
+                <li>Extract, scrape, or systematically collect data from the platform</li>
+                <li>Use ForSwags concepts, branding, or methodologies to create a similar or competing service</li>
+                <li>Remove, alter, or obscure any copyright, trademark, or proprietary notices</li>
+                <li>Claim ownership or authorship of ForSwags&apos; intellectual property</li>
+                <li>Use our trademarks, logos, or branding without explicit written permission</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">9.5 User-Generated Content</h3>
+              <p>
+                When you upload or submit content to ForSwags (photos, videos, statistics, achievements):
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>You retain ownership of your original content</li>
+                <li>You grant ForSwags a worldwide, non-exclusive, royalty-free license to use, display, reproduce, and distribute your content for platform operations</li>
+                <li>You represent that you have all necessary rights to the content you submit</li>
+                <li>You acknowledge that your content may be displayed publicly as part of your athlete profile</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">9.6 DMCA and Copyright Infringement</h3>
+              <p>
+                ForSwags respects intellectual property rights and expects users to do the same. If you believe your 
+                copyright has been infringed, contact us immediately with detailed information. We will investigate and 
+                take appropriate action, including removing infringing content and terminating repeat infringers.
+              </p>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">9.7 Enforcement</h3>
+              <p>
+                ForSwags actively monitors and enforces its intellectual property rights. Unauthorized use may result in:
+              </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Immediate termination of your account and access</li>
+                <li>Civil lawsuits for damages, including statutory damages and attorney fees</li>
+                <li>Criminal prosecution where applicable</li>
+                <li>Injunctive relief to prevent ongoing infringement</li>
+                <li>Pursuit of maximum penalties under applicable laws</li>
+              </ul>
+
+              <div className="mt-4 p-4 bg-destructive/10 border-l-4 border-destructive rounded-r-lg">
+                <p className="font-bold text-sm">⚠️ WARNING: INTELLECTUAL PROPERTY THEFT IS A SERIOUS CRIME</p>
+                <p className="text-sm mt-2">
+                  Violations of ForSwags&apos; intellectual property rights are prosecuted to the fullest extent of the law. 
+                  This includes both civil and criminal remedies. If you are considering copying, replicating, or adapting 
+                  any ForSwags concepts, technology, or content, be aware that you may face substantial legal liability.
+                </p>
+              </div>
             </section>
 
             <section>
@@ -215,11 +296,29 @@ export default function Terms() {
                 If you have any questions about these Terms, please contact us through the contact information 
                 provided on our website.
               </p>
+              <p className="mt-4 text-sm">
+                For intellectual property inquiries, trademark licensing, or to report infringement, 
+                please use the subject line "IP/Legal Inquiry" in your communication.
+              </p>
             </section>
+
+            <div className="mt-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border-2 border-primary/20">
+              <p className="font-bold text-center mb-3">COMPREHENSIVE COPYRIGHT NOTICE</p>
+              <p className="text-sm text-center leading-relaxed">
+                © 2025 ForSWAGs™ (For Students With Athletic Goals). All Rights Reserved Worldwide.<br/>
+                This platform, including all content, features, functionality, technology, methodologies, and intellectual 
+                property embodied herein, is owned by ForSWAGs and protected by United States and international copyright, 
+                trademark, patent, trade secret, and other intellectual property laws.<br/>
+                <span className="font-semibold mt-2 block">
+                  Unauthorized reproduction, duplication, or use is strictly prohibited and will be prosecuted.
+                </span>
+              </p>
+            </div>
 
             <div className="mt-8 p-4 bg-muted rounded-lg">
               <p className="text-sm">
-                By using ForSwags, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
+                By using ForSwags, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions, 
+                including all intellectual property protections and restrictions outlined herein.
               </p>
             </div>
           </CardContent>

@@ -1,8 +1,11 @@
-# ForSWAGs - Student Athlete Recruiting Platform
+# ForSWAGs™ - Student Athlete Recruiting Platform
+## © 2025 ForSWAGs. All Rights Reserved.
+
+> **PROPRIETARY AND CONFIDENTIAL** - This platform and all associated intellectual property are protected by copyright, trademark, patent, and trade secret laws. See [COPYRIGHT.md](COPYRIGHT.md) for full details.
 
 ## Project Overview
 
-ForSWAGs is a comprehensive platform designed to help student athletes showcase their talents, connect with college recruiters, and manage their recruiting journey. The platform features a tiered membership system with both free and premium offerings.
+ForSWAGs (For Students With Athletic Goals) is a comprehensive, proprietary platform designed to help student athletes showcase their talents, connect with college recruiters, and manage their recruiting journey. The platform features innovative holistic evaluation methodologies and a tiered membership system.
 
 ## Project info
 
@@ -200,9 +203,11 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/c
 
 ## Additional Documentation
 
+- **COPYRIGHT.md** - Comprehensive intellectual property notice and protections
 - **QUICK_START.md** - 60-second testing guide
 - **TESTING_GUIDE.md** - Comprehensive testing documentation
 - **SECURITY.md** - Security features and best practices
+- **MEMBERSHIP_GUIDE.md** - Membership system details
 - **ACCESSIBILITY.md** - Accessibility guidelines
 - **MOBILE.md** - Mobile optimization details
 - **PAYPAL_SETUP.md** - PayPal integration guide
@@ -214,6 +219,43 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/c
 - **Issue Tracker**: Use GitHub issues for bug reports
 - **Feature Requests**: Submit via GitHub discussions
 
+## Legal & Intellectual Property
+
+### Copyright Notice
+© 2025 ForSWAGs™ (For Students With Athletic Goals). All Rights Reserved Worldwide.
+
+This platform and all associated intellectual property, including but not limited to:
+- Proprietary ranking and evaluation methodologies
+- Playbook for Life® curriculum
+- AI-powered college matching algorithms
+- Social media generation technology
+- Platform architecture and design
+- All trademarks, service marks, and branding
+
+...are protected by United States and international copyright, trademark, patent, and trade secret laws.
+
+**UNAUTHORIZED USE IS STRICTLY PROHIBITED.**
+
+### Enforcement Notice
+ForSWAGs actively protects its intellectual property. Violations will result in civil and criminal prosecution to the fullest extent of the law, including but not limited to:
+- Immediate legal action
+- Statutory damages up to $150,000 per infringement
+- Criminal penalties including fines and imprisonment
+- Injunctive relief and attorney fee recovery
+
+### Full Legal Notice
+For complete copyright, trademark, and intellectual property information, see [COPYRIGHT.md](COPYRIGHT.md).
+
+For IP inquiries, licensing, or to report infringement, contact our legal team with subject line "IP/Legal Inquiry".
+
 ## License
 
-This project is proprietary software. All rights reserved.
+**PROPRIETARY SOFTWARE - ALL RIGHTS RESERVED**
+
+This project is proprietary and confidential. No license is granted for use, reproduction, modification, or distribution except as expressly provided in writing by ForSWAGs. 
+
+See [COPYRIGHT.md](COPYRIGHT.md) for full terms.
+
+---
+
+⚠️ **WARNING TO COMPETITORS**: Creating a service that replicates ForSWAGs' unique concepts, methodologies, or features constitutes intellectual property theft and will be prosecuted aggressively.
