@@ -853,41 +853,35 @@ export type Database = {
       }
       connected_accounts: {
         Row: {
-          access_token: string
           account_name: string
           connected_at: string
-          encrypted_access_token: string | null
+          encrypted_access_token: string
           encrypted_refresh_token: string | null
           expires_at: string | null
           id: string
           platform: string
-          refresh_token: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          access_token: string
           account_name: string
           connected_at?: string
-          encrypted_access_token?: string | null
+          encrypted_access_token: string
           encrypted_refresh_token?: string | null
           expires_at?: string | null
           id?: string
           platform: string
-          refresh_token?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          access_token?: string
           account_name?: string
           connected_at?: string
-          encrypted_access_token?: string | null
+          encrypted_access_token?: string
           encrypted_refresh_token?: string | null
           expires_at?: string | null
           id?: string
           platform?: string
-          refresh_token?: string | null
           updated_at?: string
           user_id?: string
         }

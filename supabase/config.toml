@@ -34,7 +34,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.create-refund]
-verify_jwt = false
+verify_jwt = true  # SECURITY FIX: Enable JWT validation for defense-in-depth
 
 [functions.generate-social-caption]
 verify_jwt = true

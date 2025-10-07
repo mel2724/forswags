@@ -99,7 +99,15 @@ serve(async (req) => {
       }
     }
 
-    // Store tokens in connected_accounts
+    // Encrypt and store tokens in connected_accounts (SECURITY FIX)
+    const { data: encryptedAccess, error: encryptError } = await supabaseClient
+      .rpc('encrypt_oauth_token', { token: longLivedTokens.access_token });
+
+    if (encryptError) {
+      console.error('Encryption error:', encryptError);
+      throw new Error('Failed to encrypt token');
+    }
+
     const expiresAt = new Date(Date.now() + (longLivedTokens.expires_in || 5184000) * 1000);
     
     const { error: insertError } = await supabaseClient
@@ -108,7 +116,8 @@ serve(async (req) => {
         user_id: user.id,
         platform: 'instagram',
         account_name: username,
-        access_token: longLivedTokens.access_token,
+        encrypted_access_token: encryptedAccess,
+        encrypted_refresh_token: null,
         expires_at: expiresAt.toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -131,9 +140,9 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Instagram OAuth callback error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    // Return generic error to client (SECURITY FIX: don't expose internal details)
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: 'Failed to connect Instagram account. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -41,10 +41,10 @@ serve(async (req) => {
       throw new Error('Invalid user');
     }
 
-    // Get Twitter access token
+    // Get encrypted Twitter tokens (SECURITY FIX: using encrypted storage)
     const { data: account, error: accountError } = await supabaseClient
       .from('connected_accounts')
-      .select('access_token, refresh_token, expires_at')
+      .select('encrypted_access_token, encrypted_refresh_token, expires_at')
       .eq('user_id', user.id)
       .eq('platform', 'twitter')
       .single();
@@ -53,19 +53,40 @@ serve(async (req) => {
       throw new Error('Twitter account not connected');
     }
 
+    // Decrypt access token
+    const { data: decryptedAccess, error: decryptError } = await supabaseClient
+      .rpc('decrypt_oauth_token', { encrypted_token: account.encrypted_access_token });
+
+    if (decryptError || !decryptedAccess) {
+      console.error('Decryption error:', decryptError);
+      throw new Error('Failed to decrypt token');
+    }
+
     // Check if token needs refresh
-    let accessToken = account.access_token;
+    let accessToken = decryptedAccess;
     if (new Date(account.expires_at) <= new Date()) {
-      // Token expired, refresh it
-      const refreshResponse = await refreshTwitterToken(account.refresh_token);
+      // Token expired, decrypt refresh token and refresh it
+      const { data: decryptedRefresh, error: refreshDecryptError } = await supabaseClient
+        .rpc('decrypt_oauth_token', { encrypted_token: account.encrypted_refresh_token });
+
+      if (refreshDecryptError || !decryptedRefresh) {
+        throw new Error('Failed to decrypt refresh token');
+      }
+
+      const refreshResponse = await refreshTwitterToken(decryptedRefresh);
       accessToken = refreshResponse.access_token;
       
-      // Update stored tokens
+      // Encrypt and update stored tokens
+      const { data: newEncryptedAccess } = await supabaseClient
+        .rpc('encrypt_oauth_token', { token: refreshResponse.access_token });
+      const { data: newEncryptedRefresh } = await supabaseClient
+        .rpc('encrypt_oauth_token', { token: refreshResponse.refresh_token });
+
       await supabaseClient
         .from('connected_accounts')
         .update({
-          access_token: refreshResponse.access_token,
-          refresh_token: refreshResponse.refresh_token,
+          encrypted_access_token: newEncryptedAccess,
+          encrypted_refresh_token: newEncryptedRefresh,
           expires_at: new Date(Date.now() + refreshResponse.expires_in * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -97,9 +118,9 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Twitter post error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    // Return generic error to client (SECURITY FIX: don't expose internal details)
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: 'Failed to post tweet. Please try again or reconnect your account.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

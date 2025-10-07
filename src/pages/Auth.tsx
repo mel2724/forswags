@@ -155,8 +155,8 @@ const Auth = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
 
@@ -212,7 +212,7 @@ const Auth = () => {
         {isResettingPassword ? (
           <form onSubmit={handleUpdatePassword} className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <Label htmlFor="new-password">New Password (min 8 characters)</Label>
               <Input
                 id="new-password"
                 type="password"
@@ -220,7 +220,7 @@ const Auth = () => {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
             </div>
 
@@ -233,7 +233,7 @@ const Auth = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
             </div>
 
@@ -350,7 +350,7 @@ const Auth = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
+                <Label htmlFor="signup-password">Password (min 8 characters)</Label>
                 <Input
                   id="signup-password"
                   type="password"
@@ -358,8 +358,11 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Use 8+ characters with a mix of letters, numbers & symbols
+                </p>
               </div>
 
               <div className="space-y-3">

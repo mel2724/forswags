@@ -87,15 +87,27 @@ serve(async (req) => {
     const userInfo = await userInfoResponse.json();
     const username = userInfo.data?.username || 'Unknown';
 
-    // Store tokens in connected_accounts
+    // Encrypt and store tokens in connected_accounts (SECURITY FIX)
+    const { data: encryptedAccess, error: encryptError1 } = await supabaseClient
+      .rpc('encrypt_oauth_token', { token: tokens.access_token });
+    
+    const { data: encryptedRefresh, error: encryptError2 } = tokens.refresh_token
+      ? await supabaseClient.rpc('encrypt_oauth_token', { token: tokens.refresh_token })
+      : { data: null, error: null };
+
+    if (encryptError1 || encryptError2) {
+      console.error('Encryption error:', encryptError1 || encryptError2);
+      throw new Error('Failed to encrypt tokens');
+    }
+
     const { error: insertError } = await supabaseClient
       .from('connected_accounts')
       .upsert({
         user_id: user.id,
         platform: 'twitter',
         account_name: username,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
+        encrypted_access_token: encryptedAccess,
+        encrypted_refresh_token: encryptedRefresh,
         expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -118,9 +130,9 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Twitter OAuth callback error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    // Return generic error to client (SECURITY FIX: don't expose internal details)
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: 'Failed to connect Twitter account. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
