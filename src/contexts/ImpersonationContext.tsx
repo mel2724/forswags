@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -17,7 +16,6 @@ const ImpersonationContext = createContext<ImpersonationContextType | undefined>
 export function ImpersonationProvider({ children }: { children: ReactNode }) {
   const [impersonatedUserId, setImpersonatedUserId] = useState<string | null>(null);
   const [impersonatedUserEmail, setImpersonatedUserEmail] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Load impersonation state from database on mount
@@ -57,7 +55,7 @@ export function ImpersonationProvider({ children }: { children: ReactNode }) {
       setImpersonatedUserId(userId);
       setImpersonatedUserEmail(userEmail);
       toast.success(`Now impersonating ${userEmail}`);
-      navigate("/dashboard");
+      window.location.href = "/dashboard";
     } catch (error: any) {
       console.error('Error starting impersonation:', error);
       toast.error(error.message || 'Failed to start impersonation');
@@ -73,7 +71,7 @@ export function ImpersonationProvider({ children }: { children: ReactNode }) {
       setImpersonatedUserId(null);
       setImpersonatedUserEmail(null);
       toast.success('Impersonation ended');
-      navigate("/admin");
+      window.location.href = "/admin";
     } catch (error: any) {
       console.error('Error stopping impersonation:', error);
       toast.error(error.message || 'Failed to stop impersonation');
