@@ -88,6 +88,11 @@ export default function PublicProfile() {
         return;
       }
 
+      // SECURITY: Check if athlete is a minor and hide social media handles
+      const isMinor = athleteData.date_of_birth 
+        ? new Date().getFullYear() - new Date(athleteData.date_of_birth).getFullYear() < 18
+        : false;
+
       // Combine athlete and profile data
       const combinedProfile: AthleteProfile = {
         id: athleteData.id,
@@ -95,6 +100,10 @@ export default function PublicProfile() {
         city: (athleteData.user as any)?.city,
         state: (athleteData.user as any)?.state,
         ...athleteData,
+        // SECURITY: Always hide social media handles for minors to prevent direct contact
+        twitter_handle: isMinor ? undefined : athleteData.twitter_handle,
+        instagram_handle: isMinor ? undefined : athleteData.instagram_handle,
+        tiktok_handle: isMinor ? undefined : athleteData.tiktok_handle,
       };
 
       setProfile(combinedProfile);

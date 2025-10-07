@@ -23,6 +23,15 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY FIX: Verify authentication (JWT enabled in config.toml)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const { evaluation_id, is_reevaluation = false, coach_id }: NotificationRequest = await req.json();
 
     if (!evaluation_id) {

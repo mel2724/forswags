@@ -4,16 +4,16 @@ project_id = "fejnevxardxejdvjbipc"
 verify_jwt = true
 
 [functions.send-notification-email]
-verify_jwt = false
+verify_jwt = true  # SECURITY FIX: Require JWT to prevent email spam/phishing
 
 [functions.notify-evaluation-complete]
-verify_jwt = false
+verify_jwt = true  # SECURITY FIX: Internal system function should require auth
 
 [functions.notify-coaches-new-evaluation]
-verify_jwt = false
+verify_jwt = true  # SECURITY FIX: Internal system function should require auth
 
 [functions.recalculate-rankings]
-verify_jwt = false
+verify_jwt = true  # SECURITY FIX: Prevent DoS from unauthorized ranking recalculations
 
 [functions.create-checkout]
 verify_jwt = true

@@ -21,6 +21,15 @@ serve(async (req) => {
   }
 
   try {
+    // SECURITY FIX: Verify authentication (JWT enabled in config.toml)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const { evaluationId }: NotificationRequest = await req.json();
 
     if (!evaluationId) {

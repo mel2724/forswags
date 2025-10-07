@@ -69,9 +69,22 @@ export default function AthleteSearch() {
   const handleSearch = async () => {
     setLoading(true);
     try {
+      // SECURITY: Select only safe fields, excluding social media handles for minors
       let query: any = supabase
         .from("athletes")
-        .select("*")
+        .select(`
+          id,
+          position,
+          city,
+          state,
+          graduation_year,
+          gpa,
+          height_in,
+          weight_lb,
+          bio,
+          sport,
+          date_of_birth
+        `)
         .eq("visibility", "public");
 
       if (filters.position) {
