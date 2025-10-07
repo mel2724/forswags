@@ -1,13 +1,12 @@
-// Main Application Entry Point - COMPLETE REBUILD v7
+// Main Application Entry Point - COMPLETE REBUILD v8
 import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-// Import Landing directly to avoid hook context issues
-import Landing from "./pages/Landing";
 
-// Lazy load all other pages
+// Lazy load all pages including Landing
+const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -96,7 +95,7 @@ const queryClient = new QueryClient({
 });
 
 // Main Application Component
-// Build: FORCED-REBUILD-v7
+// Build: FORCED-REBUILD-v8
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
