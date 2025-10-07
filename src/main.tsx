@@ -1,4 +1,4 @@
-// Application Entry Point - REBUILD v4
+// Application Entry Point - REBUILD v5
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
