@@ -245,16 +245,113 @@ export default function Privacy() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">6. Children&apos;s Privacy</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">6. Children&apos;s Privacy and COPPA Compliance</h2>
+              
+              <div className="bg-amber-500/10 border-l-4 border-amber-500 p-4 rounded-r-lg my-4">
+                <h3 className="font-bold text-lg mb-2">COPPA Compliance Notice</h3>
+                <p className="text-sm">
+                  ForSwags complies with the Children&apos;s Online Privacy Protection Act (COPPA) and implements 
+                  strict safeguards to protect the privacy of minors using our platform.
+                </p>
+              </div>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.1 Age Requirements</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Minimum Age:</strong> Users must be at least 13 years old to create an account</li>
+                <li><strong>Age Verification:</strong> We may request date of birth verification during registration</li>
+                <li><strong>Under 13:</strong> We do not knowingly collect personal information from children under 13 without verifiable parental consent</li>
+                <li><strong>Minors (13-17):</strong> Users under 18 receive enhanced privacy protections and we strongly encourage parental involvement</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.2 Parental Consent and Verification</h3>
+              <p>For users under 18, we implement the following parental safeguards:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Parental Notification:</strong> We encourage minors to inform parents/guardians before creating an account</li>
+                <li><strong>Guardian Accounts:</strong> Parents can create linked accounts to monitor their child&apos;s activity and profile</li>
+                <li><strong>Consent Verification:</strong> For certain features or data collection, we may require verifiable parental consent</li>
+                <li><strong>Consent Methods:</strong> We use email verification, signed consent forms, or other FTC-approved methods</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.3 Limited Data Collection for Minors</h3>
+              <p>We strictly limit the information we collect from minor users:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Essential Information Only:</strong> We collect only information necessary to provide athletic recruiting services</li>
+                <li><strong>No Behavioral Advertising:</strong> We do not engage in behavioral advertising or marketing to users under 18</li>
+                <li><strong>No Third-Party Tracking:</strong> We do not allow third-party advertisers to collect information from minor users</li>
+                <li><strong>Minimal Personal Data:</strong> Contact information collection is limited to essential communication purposes</li>
+                <li><strong>Public Profile Restrictions:</strong> Contact details for minors are never publicly displayed</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.4 Enhanced Minor Privacy Protections</h3>
+              <p>Additional safeguards for users under 18 include:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Private Contact Information:</strong> Email, phone number, address, and social media handles are kept strictly private</li>
+                <li><strong>Restricted Access:</strong> Only verified, paid recruiters can access minor contact information</li>
+                <li><strong>Access Logging:</strong> We maintain detailed audit logs of who accesses minor athlete profiles</li>
+                <li><strong>Recruiter Verification:</strong> All recruiters must undergo identity verification before accessing minor data</li>
+                <li><strong>Communication Controls:</strong> Parents can control who can contact their child through the platform</li>
+                <li><strong>Profile Privacy Settings:</strong> Minors can set profiles to "private" to limit visibility</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.5 Parental Rights and Control</h3>
+              <p>Parents and legal guardians have comprehensive rights regarding their child&apos;s information:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Right to Review:</strong> Request access to all personal information we have collected about your child</li>
+                <li><strong>Right to Correct:</strong> Request correction of inaccurate or incomplete information</li>
+                <li><strong>Right to Delete:</strong> Request deletion of your child&apos;s personal information at any time</li>
+                <li><strong>Right to Refuse:</strong> Refuse to allow further collection or use of your child&apos;s information</li>
+                <li><strong>Right to Know:</strong> Request details about our data collection, use, and sharing practices</li>
+                <li><strong>Right to Control:</strong> Manage privacy settings, profile visibility, and communication preferences</li>
+                <li><strong>Right to Export:</strong> Request a complete copy of your child&apos;s data in portable format</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.6 How to Exercise Parental Rights</h3>
+              <p>Parents can exercise these rights by:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Creating a parent/guardian account linked to the minor&apos;s profile</li>
+                <li>Contacting our support team with verification of parental relationship</li>
+                <li>Using the data management tools in account settings</li>
+                <li>Submitting a formal request through our contact page</li>
+              </ul>
+              <p className="mt-3 text-sm italic">
+                Note: We may require verification of parental relationship before granting access to or modifying a minor&apos;s information.
+              </p>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.7 FERPA Compliance (Educational Records)</h3>
               <p>
-                ForSwags is designed for student-athletes aged 13 and older. For users under 18:
+                ForSwags respects the Family Educational Rights and Privacy Act (FERPA) regarding educational records:
               </p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>We recommend parental involvement in account creation and management</li>
-                <li>We offer parent accounts with oversight capabilities</li>
-                <li>Parents can request to review or delete their child&apos;s information</li>
-                <li>We comply with applicable child privacy protection laws</li>
+                <li>Academic information shared on athletic profiles is provided voluntarily by users</li>
+                <li>We do not collect official educational records directly from schools without consent</li>
+                <li>Parents have the right to review and request changes to educational information displayed</li>
               </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.8 What We Do Not Do with Minor Data</h3>
+              <p className="font-semibold mb-2">We explicitly commit to NOT:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Sell or rent minor personal information to third parties</li>
+                <li>Use minor data for targeted advertising or marketing</li>
+                <li>Share minor contact information without strict access controls</li>
+                <li>Publicly display any contact information for users under 18</li>
+                <li>Collect more information than necessary for providing our services</li>
+                <li>Retain minor data longer than necessary for service provision</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.9 Data Retention for Minors</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Minor data is subject to shorter retention periods than adult data</li>
+                <li>Inactive minor accounts are automatically flagged for review after 12 months</li>
+                <li>Upon account deletion request, minor data is permanently removed within 30 days</li>
+                <li>Parents can request immediate data deletion at any time</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">6.10 Contact Information for COPPA Inquiries</h3>
+              <p>
+                For questions or concerns specifically regarding children&apos;s privacy, COPPA compliance, or to exercise 
+                parental rights, please contact us through the information provided on our website with "COPPA Inquiry" 
+                in the subject line.
+              </p>
             </section>
 
             <section>

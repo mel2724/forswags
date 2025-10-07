@@ -77,7 +77,49 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">4. Content and Conduct</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">4. Minor Privacy and COPPA Compliance</h2>
+              <p>
+                ForSwags is committed to protecting the privacy of minors and complying with the Children's Online Privacy 
+                Protection Act (COPPA) and similar child protection laws.
+              </p>
+              
+              <h3 className="text-xl font-semibold mt-4 mb-3">4.1 Age Requirements and Verification</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Users must be at least 13 years of age to create an account</li>
+                <li>We may request age verification to ensure compliance</li>
+                <li>Users under 18 are considered minors and receive additional privacy protections</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">4.2 Parental Consent</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>For users between 13-17 years old, we strongly encourage parental involvement and oversight</li>
+                <li>Parents may create linked guardian accounts to monitor their child's activity</li>
+                <li>Parents have the right to review, modify, or request deletion of their child's information</li>
+                <li>We will verify parental consent before collecting additional personal information from users under 13 where required by law</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">4.3 Enhanced Minor Protections</h3>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Contact information for minors (email, phone, address) is never publicly displayed</li>
+                <li>Only verified, paid recruiters can access minor contact information, and only for legitimate recruitment purposes</li>
+                <li>We do not knowingly engage in behavioral advertising targeted to users under 18</li>
+                <li>Minors' data is subject to stricter retention and deletion policies</li>
+                <li>We maintain detailed audit logs of who accesses minor athlete profiles</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-4 mb-3">4.4 Parental Rights</h3>
+              <p>Parents and legal guardians of minor users have the right to:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Review all personal information collected about their child</li>
+                <li>Request correction or deletion of their child's personal information</li>
+                <li>Refuse to allow further collection or use of their child's information</li>
+                <li>Request details about our data practices regarding their child's information</li>
+                <li>Receive notifications about any data breaches affecting their child's account</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">5. Content and Conduct</h2>
               <p>
                 You are solely responsible for any content you upload, post, or display on ForSwags. You agree not to:
               </p>
@@ -91,7 +133,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">5. Membership and Payments</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">6. Membership and Payments</h2>
               <p>
                 Certain features of ForSwags require a paid membership. By subscribing to a paid membership:
               </p>
@@ -105,7 +147,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">6. Evaluations and Coaching Services</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">7. Evaluations and Coaching Services</h2>
               <p>
                 Our evaluation and coaching services are provided by qualified coaches. However:
               </p>
@@ -118,7 +160,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">7. Privacy and Data Protection</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">8. Privacy and Data Protection</h2>
               <p>
                 We take your privacy seriously. Your use of ForSwags is also governed by our Privacy Policy, 
                 which can be found separately. By using our service, you consent to our collection and use of your 
@@ -127,7 +169,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">8. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">9. Intellectual Property</h2>
               <p>
                 All content on ForSwags, including text, graphics, logos, images, and software, is the property of 
                 ForSwags or its content suppliers and is protected by copyright and intellectual property laws.
@@ -135,7 +177,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">9. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">10. Limitation of Liability</h2>
               <p>
                 To the fullest extent permitted by law, ForSwags shall not be liable for any indirect, incidental, 
                 special, consequential, or punitive damages resulting from your use of or inability to use the service.
@@ -143,7 +185,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">10. Termination</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">11. Termination</h2>
               <p>
                 We reserve the right to terminate or suspend your account and access to the service at our sole 
                 discretion, without notice, for conduct that we believe violates these Terms or is harmful to other 
@@ -152,7 +194,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">11. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">12. Changes to Terms</h2>
               <p>
                 We reserve the right to modify these terms at any time. We will notify users of any material changes. 
                 Your continued use of the service after such modifications constitutes your acceptance of the updated terms.
@@ -160,7 +202,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">12. Governing Law</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">13. Governing Law</h2>
               <p>
                 These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which 
                 ForSwags operates, without regard to its conflict of law provisions.
@@ -168,7 +210,7 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mt-6 mb-4">13. Contact Information</h2>
+              <h2 className="text-2xl font-semibold mt-6 mb-4">14. Contact Information</h2>
               <p>
                 If you have any questions about these Terms, please contact us through the contact information 
                 provided on our website.
