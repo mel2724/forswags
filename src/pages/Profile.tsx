@@ -15,8 +15,9 @@ import { z } from "zod";
 import logoIcon from "@/assets/forswags-logo.png";
 import { 
   User, Trophy, GraduationCap, Video, ArrowLeft, Save, 
-  Loader2, LogOut, Ruler, Weight 
+  Loader2, LogOut, Ruler, Weight, Lock, Crown 
 } from "lucide-react";
+import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 
 const sports = [
   "Football", "Basketball", "Baseball", "Softball", "Soccer", 
@@ -91,6 +92,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [athleteId, setAthleteId] = useState<string | null>(null);
+  const { hasAccess: hasPremiumProfile } = useFeatureAccess('profile_type');
 
   // Profile fields
   const [fullName, setFullName] = useState("");
@@ -469,7 +471,7 @@ const Profile = () => {
                     id="highSchool"
                     value={highSchool}
                     onChange={(e) => setHighSchool(e.target.value)}
-                    placeholder="Lincoln High School"
+                    placeholder="Central High School"
                   />
                 </div>
 
@@ -480,9 +482,7 @@ const Profile = () => {
                     type="number"
                     value={gradYear}
                     onChange={(e) => setGradYear(e.target.value)}
-                    placeholder="2026"
-                    min="2024"
-                    max="2035"
+                    placeholder="2025"
                   />
                 </div>
               </div>
@@ -496,40 +496,54 @@ const Profile = () => {
                   value={gpa}
                   onChange={(e) => setGpa(e.target.value)}
                   placeholder="3.75"
-                  min="0"
-                  max="5"
                 />
               </div>
 
-              <Separator />
+              {hasPremiumProfile ? (
+                <>
+                  <Separator />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="satScore">SAT Score</Label>
+                      <Input
+                        id="satScore"
+                        type="number"
+                        value={satScore}
+                        onChange={(e) => setSatScore(e.target.value)}
+                        placeholder="1200"
+                      />
+                    </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sat">SAT Score</Label>
-                  <Input
-                    id="sat"
-                    type="number"
-                    value={satScore}
-                    onChange={(e) => setSatScore(e.target.value)}
-                    placeholder="1200"
-                    min="400"
-                    max="1600"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="act">ACT Score</Label>
-                  <Input
-                    id="act"
-                    type="number"
-                    value={actScore}
-                    onChange={(e) => setActScore(e.target.value)}
-                    placeholder="28"
-                    min="1"
-                    max="36"
-                  />
-                </div>
-              </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="actScore">ACT Score</Label>
+                      <Input
+                        id="actScore"
+                        type="number"
+                        value={actScore}
+                        onChange={(e) => setActScore(e.target.value)}
+                        placeholder="28"
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Separator />
+                  <div className="p-6 border-2 border-dashed rounded-lg bg-muted/50 text-center">
+                    <Lock className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+                    <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
+                      <Crown className="h-4 w-4 text-primary" />
+                      Premium Feature
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Add SAT/ACT scores and advanced academic information with a premium membership
+                    </p>
+                    <Button onClick={() => navigate('/membership')} size="sm">
+                      Upgrade to Premium
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -538,76 +552,110 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="uppercase tracking-tight flex items-center gap-2">
                 <Video className="h-5 w-5 text-secondary" />
-                Highlights & Bio
+                Media & Bio
               </CardTitle>
-              <CardDescription>Showcase your best work</CardDescription>
+              <CardDescription>Your highlights and personal story</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="highlights">Highlight Video URL</Label>
-                <Input
-                  id="highlights"
-                  type="url"
-                  value={highlightsUrl}
-                  onChange={(e) => setHighlightsUrl(e.target.value)}
-                  placeholder="https://youtube.com/..."
-                />
-                <p className="text-xs text-muted-foreground">
-                  YouTube, Hudl, or any video link
-                </p>
-              </div>
+              {hasPremiumProfile ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="highlightsUrl">Highlights Video URL</Label>
+                    <Input
+                      id="highlightsUrl"
+                      type="url"
+                      value={highlightsUrl}
+                      onChange={(e) => setHighlightsUrl(e.target.value)}
+                      placeholder="https://youtube.com/watch?v=..."
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell us about yourself, your goals, and what makes you unique..."
-                  rows={6}
-                  maxLength={1000}
-                />
-                <p className="text-xs text-muted-foreground text-right">
-                  {bio.length}/1000
-                </p>
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Tell coaches about yourself..."
+                      rows={6}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {bio.length}/1000 characters
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Bio (Basic)</Label>
+                    <Textarea
+                      id="bio"
+                      value={bio}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 200) {
+                          setBio(e.target.value);
+                        }
+                      }}
+                      placeholder="Tell coaches about yourself (200 character limit on free tier)..."
+                      rows={4}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {bio.length}/200 characters (free tier limit)
+                    </p>
+                  </div>
+
+                  <div className="p-6 border-2 border-dashed rounded-lg bg-muted/50 text-center">
+                    <Lock className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+                    <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
+                      <Crown className="h-4 w-4 text-primary" />
+                      Premium Features Locked
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Upgrade to add highlight videos, extended bio (1000 chars), and more advanced profile fields
+                    </p>
+                    <Button onClick={() => navigate('/membership')} size="sm">
+                      Upgrade to Premium
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
-          {/* Profile Sharing Actions */}
+          {/* Profile Actions */}
           {athleteId && (
-            <ProfileActions 
-              athleteId={athleteId}
-              athleteName={fullName}
-              athleteUsername={username}
-            />
+            <div className="mt-6">
+              <ProfileActions athleteId={athleteId} athleteName={fullName} athleteUsername={username} />
+            </div>
           )}
 
-          {/* Save Button */}
+          {/* Save/Cancel Buttons */}
           <div className="flex gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/dashboard")}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 btn-hero"
+              className="flex-1"
+              size="lg"
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Profile
                 </>
               )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/dashboard")}
+              disabled={saving}
+              size="lg"
+            >
+              Cancel
             </Button>
           </div>
         </div>

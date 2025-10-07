@@ -9,7 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Trash2, Video, Plus, Edit, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Upload, Trash2, Video, Plus, Edit, ExternalLink, Link as LinkIcon, Crown } from "lucide-react";
+import { useMembershipStatus } from "@/hooks/useMembershipStatus";
+import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
+import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
 
 interface MediaAsset {
   id: string;
@@ -29,6 +32,9 @@ const MediaGallery = () => {
   const [gameVideos, setGameVideos] = useState<MediaAsset[]>([]);
   const [athleteId, setAthleteId] = useState<string | null>(null);
   const [editingVideo, setEditingVideo] = useState<MediaAsset | null>(null);
+  const { isFree } = useMembershipStatus();
+  const { isOpen, config, showUpgradePrompt, closeUpgradePrompt } = useUpgradePrompt();
+  const [totalVideos, setTotalVideos] = useState(0);
 
   useEffect(() => {
     loadMediaAssets();
@@ -69,6 +75,7 @@ const MediaGallery = () => {
         setIntroVideo(media.find(m => m.media_type === "introduction_video") || null);
         setCommunityVideo(media.find(m => m.media_type === "community_video") || null);
         setGameVideos(media.filter(m => m.media_type === "game_video"));
+        setTotalVideos(media.length);
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -84,6 +91,23 @@ const MediaGallery = () => {
     description: string
   ) => {
     if (!athleteId) return;
+
+    // Check free tier limit
+    if (isFree && totalVideos >= 1) {
+      showUpgradePrompt({
+        title: "Video Upload Limit Reached",
+        description: "Free tier is limited to 1 video. Upgrade to upload unlimited videos!",
+        feature: "Unlimited Video Uploads",
+        context: "limit",
+        benefits: [
+          "Upload unlimited introduction, community, and game videos",
+          "Showcase your full athletic journey",
+          "Build a comprehensive highlight reel",
+          "Stand out to college recruiters",
+        ]
+      });
+      return;
+    }
 
     try {
       setUploading(true);
@@ -148,6 +172,23 @@ const MediaGallery = () => {
     description: string
   ) => {
     if (!athleteId) return;
+
+    // Check free tier limit
+    if (isFree && totalVideos >= 1) {
+      showUpgradePrompt({
+        title: "Video Upload Limit Reached",
+        description: "Free tier is limited to 1 video. Upgrade to add unlimited game videos!",
+        feature: "Unlimited Video Links",
+        context: "limit",
+        benefits: [
+          "Add unlimited game highlight links",
+          "Connect YouTube, Hudl, and other platforms",
+          "Build a comprehensive recruiting portfolio",
+          "Increase visibility to college coaches",
+        ]
+      });
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -475,11 +516,31 @@ const MediaGallery = () => {
         </Button>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Media Gallery</h1>
-          <p className="text-muted-foreground">
-            Manage your videos to showcase your skills and personality to college coaches
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Media Gallery</h1>
+              <p className="text-muted-foreground">
+                Manage your videos to showcase your skills and personality to college coaches
+              </p>
+            </div>
+            {isFree && (
+              <Badge variant="outline" className="flex items-center gap-2">
+                <Crown className="h-4 w-4" />
+                {totalVideos}/1 Videos
+              </Badge>
+            )}
+          </div>
         </div>
+
+        <UpgradePromptDialog
+          open={isOpen}
+          onOpenChange={closeUpgradePrompt}
+          title={config.title}
+          description={config.description}
+          feature={config.feature}
+          benefits={config.benefits}
+          context={config.context}
+        />
 
         <div className="grid gap-6">
           <VideoUploadCard
