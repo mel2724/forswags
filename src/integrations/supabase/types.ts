@@ -1527,6 +1527,41 @@ export type Database = {
           },
         ]
       }
+      membership_renewal_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          membership_id: string
+          reminder_type: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          membership_id: string
+          reminder_type: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          membership_id?: string
+          reminder_type?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membership_renewal_reminders_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memberships: {
         Row: {
           archived_data: Json | null
@@ -2922,6 +2957,10 @@ export type Database = {
         Args: { p_athlete_id: string }
         Returns: boolean
       }
+      can_user_login: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       check_expired_consents: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2973,6 +3012,10 @@ export type Database = {
           storage_path: string
           version_number: number
         }[]
+      }
+      get_membership_status: {
+        Args: { p_user_id: string }
+        Returns: Json
       }
       get_profile_view_stats: {
         Args: { p_athlete_id: string; p_days?: number }

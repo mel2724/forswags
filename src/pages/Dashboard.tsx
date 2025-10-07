@@ -13,6 +13,10 @@ import { NotificationDropdown } from "@/components/NotificationDropdown";
 import NotificationCard from "@/components/NotificationCard";
 import SponsorCard from "@/components/SponsorCard";
 import { UpgradeNudge } from "@/components/UpgradeNudge";
+import { MembershipStatusBanner } from "@/components/MembershipStatusBanner";
+import { SEO } from "@/components/SEO";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -234,6 +238,8 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <MembershipStatusBanner />
+        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-5xl font-black mb-2 uppercase tracking-tight">

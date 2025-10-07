@@ -123,12 +123,38 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
+
+      // Check if user can login (membership status)
+      if (authData.user) {
+        const { data: loginCheck, error: checkError } = await supabase.rpc('can_user_login', {
+          p_user_id: authData.user.id
+        });
+
+        if (checkError) throw checkError;
+
+        const loginStatus = loginCheck as unknown as { can_login: boolean; reason: string };
+        
+        if (!loginStatus.can_login) {
+          // Sign out user immediately
+          await supabase.auth.signOut();
+          
+          if (loginStatus.reason === 'membership_expired') {
+            toast.error('Your membership has expired. Please renew to continue accessing your account.');
+          } else if (loginStatus.reason === 'payment_failed') {
+            toast.error('Your payment has failed. Please update your payment method to continue.');
+          } else {
+            toast.error('Unable to login. Please contact support.');
+          }
+          setLoading(false);
+          return;
+        }
+      }
 
       toast.success("Welcome back!");
     } catch (error: any) {
