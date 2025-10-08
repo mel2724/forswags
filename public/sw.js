@@ -1,5 +1,5 @@
-const CACHE_NAME = 'forswags-v1';
-const RUNTIME_CACHE = 'forswags-runtime-v1';
+const CACHE_NAME = 'forswags-v10';
+const RUNTIME_CACHE = 'forswags-runtime-v10';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -36,7 +36,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
+// Fetch event - network first for everything to avoid caching issues
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -46,43 +46,43 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // API requests - network first
-  if (url.pathname.includes('/api/') || url.pathname.includes('supabase')) {
+  // NEVER cache JavaScript files - always fetch fresh
+  if (url.pathname.endsWith('.js') || url.pathname.includes('/deps/') || url.pathname.includes('/src/')) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const responseClone = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
-          return response;
-        })
-        .catch(() => {
-          return caches.match(request);
-        })
+      fetch(request, { cache: 'no-store' })
     );
     return;
   }
 
-  // Static assets - cache first
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+  // API requests - network only
+  if (url.pathname.includes('/api/') || url.pathname.includes('supabase')) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
-      return fetch(request).then((response) => {
-        // Cache successful responses
-        if (response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
+  // Static assets only (images, fonts, etc.) - cache
+  if (url.pathname.match(/\.(png|jpg|jpeg|svg|woff|woff2|ttf|eot|ico)$/)) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        return response;
-      });
-    })
-  );
+        return fetch(request).then((response) => {
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else - network first
+  event.respondWith(fetch(request));
 });
 
 // Message event for cache updates
