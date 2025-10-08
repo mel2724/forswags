@@ -52,7 +52,7 @@ const About = () => {
               </p>
               
               <p>
-                Our mission extends beyond the field—prioritizing education, character development, and leadership to help 
+                Our mission extends beyond the field, prioritizing education, character development, and leadership to help 
                 athletes navigate their personal and professional journeys. We believe that true success is not just about 
                 making it to the next level in sports, but about shaping a legacy of discipline, integrity, and resilience.
               </p>
