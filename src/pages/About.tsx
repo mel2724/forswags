@@ -45,7 +45,7 @@ const About = () => {
               </p>
               
               <p>
-                By combining expert scouting, academic mentorship, life coaching, and national exposure, we aim to guide 
+                By combining our expert scouting knowledge, academic mentorship, life coaching, and national exposure, we aim to guide 
                 athletes through the complexities of recruitment while instilling critical life skills for long-term success. 
                 Through our holistic approach, we strive to build confident, well-rounded individuals prepared for college, 
                 career, and beyond.
