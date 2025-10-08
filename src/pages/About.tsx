@@ -153,21 +153,13 @@ const About = () => {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Join thousands of student-athletes who are reaching their full potential with ForSWAGs
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button 
                 size="lg" 
                 className="btn-hero text-lg px-10 py-7 font-bold uppercase tracking-wide"
                 onClick={() => navigate("/auth")}
               >
                 Get Started Free
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-primary/50 text-lg px-10 py-7 font-bold uppercase tracking-wide"
-                onClick={() => navigate("/players")}
-              >
-                Explore Athletes
               </Button>
             </div>
           </Card>
