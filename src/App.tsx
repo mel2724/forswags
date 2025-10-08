@@ -1,4 +1,4 @@
-// Main Application Entry Point - COMPLETE REBUILD v8
+// Main Application Entry Point - COMPLETE REBUILD v9 - Cache Cleared
 import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -95,7 +95,7 @@ const queryClient = new QueryClient({
 });
 
 // Main Application Component
-// Build: FORCED-REBUILD-v8
+// Build: FORCED-REBUILD-v9-CACHE-CLEAR
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>

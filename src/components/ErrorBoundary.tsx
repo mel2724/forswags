@@ -27,7 +27,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReset = () => {
-    window.location.reload();
+    // Force hard reload to clear cache
+    window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
   };
 
   public render() {
