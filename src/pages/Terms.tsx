@@ -305,7 +305,7 @@ export default function Terms() {
             <div className="mt-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg border-2 border-primary/20">
               <p className="font-bold text-center mb-3">COMPREHENSIVE COPYRIGHT NOTICE</p>
               <p className="text-sm text-center leading-relaxed">
-                © 2025 ForSWAGs™ (For Students With Athletic Goals). All Rights Reserved Worldwide.<br/>
+                © 2019 ForSWAGs™ (For Students With Athletic Goals). All Rights Reserved Worldwide.<br/>
                 This platform, including all content, features, functionality, technology, methodologies, and intellectual 
                 property embodied herein, is owned by ForSWAGs and protected by United States and international copyright, 
                 trademark, patent, trade secret, and other intellectual property laws.<br/>

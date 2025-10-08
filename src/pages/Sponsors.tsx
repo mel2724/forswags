@@ -358,7 +358,7 @@ const Sponsors = () => {
             </div>
             
             <p className="text-xs text-muted-foreground/60 uppercase tracking-wider">
-              © 2025 ForSWAGs · For Students With Athletic Goals
+              © 2019 ForSWAGs · For Students With Athletic Goals
             </p>
           </div>
         </div>

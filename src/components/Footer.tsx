@@ -29,7 +29,7 @@ export const Footer = React.memo(() => {
           
           <div className="border-t border-border pt-6 space-y-3">
             <p className="text-xs text-muted-foreground/80 max-w-4xl mx-auto leading-relaxed">
-              © 2025 ForSWAGs™ (For Students With Athletic Goals). All Rights Reserved Worldwide.
+              © 2019 ForSWAGs™ (For Students With Athletic Goals). All Rights Reserved Worldwide.
             </p>
             <p className="text-xs text-muted-foreground/70 max-w-4xl mx-auto leading-relaxed">
               ForSWAGs®, the ForSWAGs logo, Playbook for Life®, and all associated trademarks, service marks, 
