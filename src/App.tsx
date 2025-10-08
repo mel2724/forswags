@@ -1,4 +1,4 @@
-// Main Application Entry Point - COMPLETE REBUILD v9 - Cache Cleared
+// Main Application Entry Point - CACHE-CLEAR-v10
 import { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
