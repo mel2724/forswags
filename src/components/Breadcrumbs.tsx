@@ -30,7 +30,7 @@ const routeNameMap: Record<string, string> = {
   schools: "Schools",
   sponsors: "Sponsors",
   coach: "Coach",
-  recruiter: "Recruiter",
+  recruiter: "College Scout",
   parent: "Parent",
   search: "Search",
   available: "Available",

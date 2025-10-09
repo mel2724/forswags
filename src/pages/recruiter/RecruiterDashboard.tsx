@@ -36,7 +36,7 @@ export default function RecruiterDashboard() {
       if (!isRecruiter) {
         toast({
           title: "Access Denied",
-          description: "You need recruiter access to view this page",
+          description: "You need college scout access to view this page",
           variant: "destructive",
         });
         navigate("/dashboard");
@@ -80,7 +80,7 @@ export default function RecruiterDashboard() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Recruiter Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2">College Scout Dashboard</h1>
         <p className="text-muted-foreground">
           {profile ? `Welcome, ${profile.title} at ${profile.school_name}` : "Complete your profile to get started"}
         </p>

@@ -159,7 +159,7 @@ export const ProfileActions = ({ athleteId, athleteName, athleteUsername, onGene
       <CardHeader>
         <CardTitle>Share Profile</CardTitle>
         <CardDescription>
-          Share your profile with coaches, recruiters, and scouts
+          Share your profile with coaches, college scouts, and other contacts
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -230,7 +230,7 @@ export const ProfileActions = ({ athleteId, athleteName, athleteUsername, onGene
 
         <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-3 mt-4">
           <p className="text-xs text-blue-900 dark:text-blue-100">
-            💡 <strong>Pro Tip:</strong> Print your QR code on business cards or recruiting
+            💡 <strong>Pro Tip:</strong> Print your QR code on business cards or scouting
             materials for easy profile sharing at camps and showcases!
           </p>
         </div>

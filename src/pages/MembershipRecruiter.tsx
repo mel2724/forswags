@@ -115,9 +115,9 @@ export default function MembershipRecruiter() {
         </Button>
 
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Recruiter Membership Plans</h1>
+          <h1 className="text-4xl font-bold mb-4">College Scout Membership Plans</h1>
           <p className="text-muted-foreground text-lg">
-            Get access to our complete athlete database and recruiting tools
+            Get access to our complete athlete database and scouting tools
           </p>
         </div>
 
@@ -127,10 +127,10 @@ export default function MembershipRecruiter() {
           </div>
         ) : (
           <>
-            {subscriptionStatus?.subscribed && isRecruiter && (
+              {subscriptionStatus?.subscribed && isRecruiter && (
               <div className="mb-8 text-center">
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  Current Plan: Recruiter Yearly
+                  Current Plan: College Scout Yearly
                 </Badge>
                 {subscriptionStatus.subscription_end && (
                   <p className="text-sm text-muted-foreground mt-2">
@@ -190,7 +190,7 @@ export default function MembershipRecruiter() {
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Exclusive recruiting events</span>
+                      <span>Exclusive scouting events</span>
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />

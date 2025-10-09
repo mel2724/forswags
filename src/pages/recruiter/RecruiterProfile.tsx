@@ -52,7 +52,7 @@ export default function RecruiterProfile() {
       if (!isRecruiter) {
         toast({
           title: "Access Denied",
-          description: "You need recruiter access",
+          description: "You need college scout access",
           variant: "destructive",
         });
         navigate("/dashboard");
@@ -190,8 +190,8 @@ export default function RecruiterProfile() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Recruiter Profile</h1>
-        <p className="text-muted-foreground">Manage your recruiting preferences and school information</p>
+        <h1 className="text-3xl font-bold mb-2">College Scout Profile</h1>
+        <p className="text-muted-foreground">Manage your scouting preferences and school information</p>
       </div>
 
       <Card>
@@ -247,8 +247,8 @@ export default function RecruiterProfile() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recruiting Preferences</CardTitle>
-          <CardDescription>What positions and regions do you recruit?</CardDescription>
+          <CardTitle>Scouting Preferences</CardTitle>
+          <CardDescription>What positions and regions do you scout?</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

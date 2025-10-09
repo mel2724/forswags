@@ -161,7 +161,7 @@ export function AppSidebar() {
   ];
 
   const recruiterItems = [
-    { title: "Recruiter Dashboard", url: "/recruiter/dashboard", icon: Home },
+    { title: "College Scout Dashboard", url: "/recruiter/dashboard", icon: Home },
     { title: "Athlete Search", url: "/recruiter/search", icon: Search },
     { title: "Analytics", url: "/recruiter/analytics", icon: BarChart3 },
     { title: "My Profile", url: "/recruiter/profile", icon: User },
@@ -284,7 +284,7 @@ export function AppSidebar() {
         {/* Role-based navigation */}
         {userRole === "athlete" && renderMenuGroup("Athlete", athleteItems, "athlete")}
         {userRole === "coach" && renderMenuGroup("Coach", coachItems, "coach")}
-        {userRole === "recruiter" && renderMenuGroup("Recruiter", recruiterItems, "recruiter")}
+        {userRole === "recruiter" && renderMenuGroup("College Scout", recruiterItems, "recruiter")}
         {userRole === "parent" && renderMenuGroup("Parent", parentItems, "parent")}
         {userRole === "admin" && renderMenuGroup("Admin", adminItems, "admin")}
       </SidebarContent>

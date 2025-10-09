@@ -22,7 +22,7 @@ export const onboardingTutorialSteps: Record<number, TutorialStep[]> = {
     {
       id: 'basic-info',
       title: 'Your Basic Information',
-      description: 'This information helps colleges and recruiters find and contact you.',
+      description: 'This information helps colleges and college scouts find and contact you.',
       targetElement: '[data-tutorial="basic-info-form"]',
       position: 'right',
       videoId: 'profile-basics'
@@ -42,7 +42,7 @@ export const onboardingTutorialSteps: Record<number, TutorialStep[]> = {
     {
       id: 'measurements',
       title: 'Physical Stats',
-      description: 'Accurate measurements help recruiters assess your fit for their programs.',
+      description: 'Accurate measurements help college scouts assess your fit for their programs.',
       targetElement: '[data-tutorial="measurements-form"]',
       position: 'right',
       videoId: 'physical-stats'
@@ -62,7 +62,7 @@ export const onboardingTutorialSteps: Record<number, TutorialStep[]> = {
     {
       id: 'final-touches',
       title: 'Final Touches',
-      description: 'Add highlights and complete your profile to stand out to recruiters.',
+      description: 'Add highlights and complete your profile to stand out to college scouts.',
       targetElement: '[data-tutorial="highlights-form"]',
       position: 'right',
       videoId: 'profile-completion'

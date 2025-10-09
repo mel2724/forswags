@@ -208,10 +208,10 @@ function AthleteAnalyticsContent() {
           description="Different people who viewed"
         />
         <StatCard
-          title="Recruiter Views"
+          title="College Scout Views"
           value={viewStats?.recruiter_views}
           icon={TrendingUp}
-          description="Views from recruiters"
+          description="Views from college scouts"
         />
         <StatCard
           title="Total Engagement"
@@ -348,16 +348,16 @@ function AthleteAnalyticsContent() {
             <CardHeader>
               <CardTitle>College Interest Indicators</CardTitle>
               <CardDescription>
-                Schools and recruiters showing interest in your profile
+                Schools and college scouts showing interest in your profile
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="font-medium">Recruiter Profile Views</p>
+                    <p className="font-medium">College Scout Profile Views</p>
                     <p className="text-sm text-muted-foreground">
-                      {viewStats?.recruiter_views || 0} views from college recruiters
+                      {viewStats?.recruiter_views || 0} views from college scouts
                     </p>
                   </div>
                   <Badge variant="secondary">{viewStats?.recruiter_views || 0}</Badge>

@@ -43,7 +43,7 @@ export default function AthleteSearch() {
     if (!isRecruiter) {
       toast({
         title: "Access Denied",
-        description: "You need recruiter access to search athletes",
+        description: "You need college scout access to search athletes",
         variant: "destructive",
       });
       navigate("/dashboard");

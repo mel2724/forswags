@@ -127,8 +127,8 @@ export function RecruiterAnalytics() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Recruiting Analytics</h2>
-          <p className="text-muted-foreground">Track your recruiting activity and ROI</p>
+          <h2 className="text-2xl font-bold">Scouting Analytics</h2>
+          <p className="text-muted-foreground">Track your scouting activity and ROI</p>
         </div>
         <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
           <TabsList>

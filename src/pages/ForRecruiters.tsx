@@ -18,7 +18,7 @@ const ForRecruiters = () => {
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             Find Your Next
             <br />
-            <span className="text-gradient-accent">Championship Recruit</span>
+            <span className="text-gradient-accent">Championship Athlete</span>
           </h1>
           
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-foreground/80 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
@@ -88,7 +88,7 @@ const ForRecruiters = () => {
               </div>
               <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Prospect Management</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Save searches, organize prospects into lists, and track your recruiting pipeline
+                Save searches, organize prospects into lists, and track your scouting pipeline
               </p>
             </Card>
 
@@ -168,7 +168,7 @@ const ForRecruiters = () => {
                 </li>
                 <li className="flex items-center gap-3">
                   <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Exclusive recruiting events</span>
+                  <span className="font-semibold">Exclusive scouting events</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Award className="h-5 w-5 text-secondary flex-shrink-0" />

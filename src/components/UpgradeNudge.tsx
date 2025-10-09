@@ -18,7 +18,7 @@ export function UpgradeNudge({
   description = "Get 3x more profile views, unlimited videos, and AI-powered tools",
   variant = "compact",
   dismissible = true,
-  highlight = "Premium athletes get recruited faster",
+  highlight = "Premium athletes get noticed faster",
 }: UpgradeNudgeProps) {
   const navigate = useNavigate();
   const [isDismissed, setIsDismissed] = useState(false);

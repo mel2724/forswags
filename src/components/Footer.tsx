@@ -12,8 +12,8 @@ export const Footer = React.memo(() => {
           
           <div className="max-w-3xl mx-auto">
             <p className="text-xs text-muted-foreground leading-relaxed text-center">
-              ForSWAGs is an athletic development and college recruitment promotion platform. 
-              We are not recruiters and do not guarantee college placement or scholarships. 
+              ForSWAGs is an athletic development and college scouting promotion platform. 
+              We are not college scouts and do not guarantee college placement or scholarships. 
               Results depend on individual effort, performance, and external factors beyond our control.
             </p>
           </div>

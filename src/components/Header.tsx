@@ -58,9 +58,9 @@ export function Header() {
                           href="/for-recruiters"
                           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
-                          <div className="text-sm font-bold leading-none">For Recruiters</div>
+                          <div className="text-sm font-bold leading-none">For College Scouts</div>
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                            Tools and resources for college recruiters
+                            Tools and resources for college scouts
                           </p>
                         </a>
                       </NavigationMenuLink>
