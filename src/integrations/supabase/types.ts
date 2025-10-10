@@ -261,6 +261,8 @@ export type Database = {
           bio: string | null
           camps_attended: string[] | null
           challenges_overcome: string | null
+          claim_token: string | null
+          claim_token_expires_at: string | null
           club_team_name: string | null
           committed: boolean | null
           committed_school: string | null
@@ -285,7 +287,10 @@ export type Database = {
           honors_courses: string | null
           hudl_profile_url: string | null
           id: string
+          import_batch_id: string | null
+          imported_at: string | null
           instagram_handle: string | null
+          is_imported: boolean | null
           is_parent_verified: boolean | null
           jersey_number: string | null
           key_stats: Json | null
@@ -305,6 +310,7 @@ export type Database = {
           parent_verified_at: string | null
           personal_description: string | null
           position: string | null
+          profile_claimed: boolean | null
           profile_completion_pct: number | null
           profile_photo_url: string | null
           public_profile_consent: boolean | null
@@ -336,6 +342,8 @@ export type Database = {
           bio?: string | null
           camps_attended?: string[] | null
           challenges_overcome?: string | null
+          claim_token?: string | null
+          claim_token_expires_at?: string | null
           club_team_name?: string | null
           committed?: boolean | null
           committed_school?: string | null
@@ -360,7 +368,10 @@ export type Database = {
           honors_courses?: string | null
           hudl_profile_url?: string | null
           id?: string
+          import_batch_id?: string | null
+          imported_at?: string | null
           instagram_handle?: string | null
+          is_imported?: boolean | null
           is_parent_verified?: boolean | null
           jersey_number?: string | null
           key_stats?: Json | null
@@ -380,6 +391,7 @@ export type Database = {
           parent_verified_at?: string | null
           personal_description?: string | null
           position?: string | null
+          profile_claimed?: boolean | null
           profile_completion_pct?: number | null
           profile_photo_url?: string | null
           public_profile_consent?: boolean | null
@@ -411,6 +423,8 @@ export type Database = {
           bio?: string | null
           camps_attended?: string[] | null
           challenges_overcome?: string | null
+          claim_token?: string | null
+          claim_token_expires_at?: string | null
           club_team_name?: string | null
           committed?: boolean | null
           committed_school?: string | null
@@ -435,7 +449,10 @@ export type Database = {
           honors_courses?: string | null
           hudl_profile_url?: string | null
           id?: string
+          import_batch_id?: string | null
+          imported_at?: string | null
           instagram_handle?: string | null
+          is_imported?: boolean | null
           is_parent_verified?: boolean | null
           jersey_number?: string | null
           key_stats?: Json | null
@@ -455,6 +472,7 @@ export type Database = {
           parent_verified_at?: string | null
           personal_description?: string | null
           position?: string | null
+          profile_claimed?: boolean | null
           profile_completion_pct?: number | null
           profile_photo_url?: string | null
           public_profile_consent?: boolean | null
@@ -3041,6 +3059,15 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: Json
       }
+      check_duplicate_athlete: {
+        Args: {
+          p_full_name: string
+          p_graduation_year: number
+          p_high_school?: string
+          p_sport: string
+        }
+        Returns: string
+      }
       check_expired_consents: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -3068,6 +3095,10 @@ export type Database = {
       end_impersonation_session: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      generate_claim_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_engagement_stats: {
         Args: { p_days?: number; p_user_id: string }
