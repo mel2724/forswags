@@ -24,7 +24,7 @@ type Role = "athlete" | "parent" | "recruiter";
 const roles = [
   { value: "athlete", label: "Athlete", icon: Trophy, description: "Student-athlete building their profile" },
   { value: "parent", label: "Parent", icon: Users, description: "Supporting my athlete's journey" },
-  { value: "recruiter", label: "Recruiter", icon: Search, description: "Discovering talent for college programs" },
+  { value: "recruiter", label: "College Scout", icon: Search, description: "Discovering talent for college programs" },
 ];
 
 const sports = ["Football", "Basketball", "Baseball", "Softball", "Soccer", "Track & Field", "Volleyball", "Lacrosse", "Tennis", "Swimming", "Wrestling", "Golf", "Cross Country", "Other"];
