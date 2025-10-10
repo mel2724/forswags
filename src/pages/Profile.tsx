@@ -2,28 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { ProfileActions } from "@/components/ProfileActions";
+import { PersonalInfoSection } from "@/components/profile/PersonalInfoSection";
+import { AthleticInfoSection } from "@/components/profile/AthleticInfoSection";
+import { AcademicInfoSection } from "@/components/profile/AcademicInfoSection";
+import { MediaBioSection } from "@/components/profile/MediaBioSection";
 import { toast } from "sonner";
 import { z } from "zod";
 import logoIcon from "@/assets/forswags-logo.png";
-import { 
-  User, Trophy, GraduationCap, Video, ArrowLeft, Save, 
-  Loader2, LogOut, Ruler, Weight, Lock, Crown 
-} from "lucide-react";
+import { ArrowLeft, Save, Loader2, LogOut } from "lucide-react";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 
-const sports = [
-  "Football", "Basketball", "Baseball", "Softball", "Soccer", 
-  "Track & Field", "Volleyball", "Lacrosse", "Tennis", 
-  "Swimming", "Wrestling", "Golf", "Cross Country", "Other"
-];
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -308,319 +298,52 @@ const Profile = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Personal Information */}
-          <Card className="bg-card/80 backdrop-blur border-2 border-primary/20">
-            <CardHeader>
-              <CardTitle className="uppercase tracking-tight flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                Personal Information
-              </CardTitle>
-              <CardDescription>Your basic contact details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name *</Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="John Smith"
-                  />
-                </div>
+          <PersonalInfoSection
+            fullName={fullName}
+            setFullName={setFullName}
+            email={email}
+            username={username}
+            setUsername={setUsername}
+            phone={phone}
+            setPhone={setPhone}
+            avatarUrl={avatarUrl}
+            setAvatarUrl={setAvatarUrl}
+          />
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    value={email}
-                    disabled
-                    className="bg-muted cursor-not-allowed"
-                  />
-                </div>
-              </div>
+          <AthleticInfoSection
+            sport={sport}
+            setSport={setSport}
+            position={position}
+            setPosition={setPosition}
+            heightFeet={heightFeet}
+            setHeightFeet={setHeightFeet}
+            heightInches={heightInches}
+            setHeightInches={setHeightInches}
+            weight={weight}
+            setWeight={setWeight}
+          />
 
-              <div className="space-y-2">
-                <Label htmlFor="username">Profile Username *</Label>
-                <Input
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="john-smith"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Your public profile URL: forswags.com/athlete/{username || 'your-username'}
-                </p>
-              </div>
+          <AcademicInfoSection
+            highSchool={highSchool}
+            setHighSchool={setHighSchool}
+            gradYear={gradYear}
+            setGradYear={setGradYear}
+            gpa={gpa}
+            setGpa={setGpa}
+            satScore={satScore}
+            setSatScore={setSatScore}
+            actScore={actScore}
+            setActScore={setActScore}
+            hasPremiumProfile={hasPremiumProfile}
+          />
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-
-              <ProfilePictureUpload
-                currentImageUrl={avatarUrl}
-                onImageUpdate={setAvatarUrl}
-                userInitials={fullName.split(" ").map(n => n[0]).join("").toUpperCase() || "U"}
-                size="md"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Athletic Information */}
-          <Card className="bg-card/80 backdrop-blur border-2 border-secondary/20">
-            <CardHeader>
-              <CardTitle className="uppercase tracking-tight flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-secondary" />
-                Athletic Information
-              </CardTitle>
-              <CardDescription>Your sport and position details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sport">Sport *</Label>
-                  <Select value={sport} onValueChange={setSport}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your sport" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sports.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="position">Position</Label>
-                  <Input
-                    id="position"
-                    value={position}
-                    onChange={(e) => setPosition(e.target.value)}
-                    placeholder="e.g., Quarterback, Point Guard"
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Ruler className="h-4 w-4" />
-                    Height
-                  </Label>
-                  <div className="flex gap-3">
-                    <Input
-                      type="number"
-                      value={heightFeet}
-                      onChange={(e) => setHeightFeet(e.target.value)}
-                      placeholder="Feet"
-                      min="3"
-                      max="8"
-                    />
-                    <Input
-                      type="number"
-                      value={heightInches}
-                      onChange={(e) => setHeightInches(e.target.value)}
-                      placeholder="Inches"
-                      min="0"
-                      max="11"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="weight" className="flex items-center gap-2">
-                    <Weight className="h-4 w-4" />
-                    Weight (lbs)
-                  </Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    placeholder="175"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Academic Information */}
-          <Card className="bg-card/80 backdrop-blur border-2 border-primary/20">
-            <CardHeader>
-              <CardTitle className="uppercase tracking-tight flex items-center gap-2">
-                <GraduationCap className="h-5 w-5 text-primary" />
-                Academic Information
-              </CardTitle>
-              <CardDescription>Your education and test scores</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="highSchool">High School</Label>
-                  <Input
-                    id="highSchool"
-                    value={highSchool}
-                    onChange={(e) => setHighSchool(e.target.value)}
-                    placeholder="Central High School"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="gradYear">Graduation Year</Label>
-                  <Input
-                    id="gradYear"
-                    type="number"
-                    value={gradYear}
-                    onChange={(e) => setGradYear(e.target.value)}
-                    placeholder="2025"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gpa">GPA</Label>
-                <Input
-                  id="gpa"
-                  type="number"
-                  step="0.01"
-                  value={gpa}
-                  onChange={(e) => setGpa(e.target.value)}
-                  placeholder="3.75"
-                />
-              </div>
-
-              {hasPremiumProfile ? (
-                <>
-                  <Separator />
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="satScore">SAT Score</Label>
-                      <Input
-                        id="satScore"
-                        type="number"
-                        value={satScore}
-                        onChange={(e) => setSatScore(e.target.value)}
-                        placeholder="1200"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="actScore">ACT Score</Label>
-                      <Input
-                        id="actScore"
-                        type="number"
-                        value={actScore}
-                        onChange={(e) => setActScore(e.target.value)}
-                        placeholder="28"
-                      />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Separator />
-                  <div className="p-6 border-2 border-dashed rounded-lg bg-muted/50 text-center">
-                    <Lock className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-                    <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
-                      <Crown className="h-4 w-4 text-primary" />
-                      Premium Feature
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Add SAT/ACT scores and advanced academic information with a premium membership
-                    </p>
-                    <Button onClick={() => navigate('/membership')} size="sm">
-                      Upgrade to Premium
-                    </Button>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Media & Bio */}
-          <Card className="bg-card/80 backdrop-blur border-2 border-secondary/20">
-            <CardHeader>
-              <CardTitle className="uppercase tracking-tight flex items-center gap-2">
-                <Video className="h-5 w-5 text-secondary" />
-                Media & Bio
-              </CardTitle>
-              <CardDescription>Your highlights and personal story</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {hasPremiumProfile ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="highlightsUrl">Highlights Video URL</Label>
-                    <Input
-                      id="highlightsUrl"
-                      type="url"
-                      value={highlightsUrl}
-                      onChange={(e) => setHighlightsUrl(e.target.value)}
-                      placeholder="https://youtube.com/watch?v=..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell coaches about yourself..."
-                      rows={6}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {bio.length}/1000 characters
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio (Basic)</Label>
-                    <Textarea
-                      id="bio"
-                      value={bio}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 200) {
-                          setBio(e.target.value);
-                        }
-                      }}
-                      placeholder="Tell coaches about yourself (200 character limit on free tier)..."
-                      rows={4}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {bio.length}/200 characters (free tier limit)
-                    </p>
-                  </div>
-
-                  <div className="p-6 border-2 border-dashed rounded-lg bg-muted/50 text-center">
-                    <Lock className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-                    <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
-                      <Crown className="h-4 w-4 text-primary" />
-                      Premium Features Locked
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Upgrade to add highlight videos, extended bio (1000 chars), and more advanced profile fields
-                    </p>
-                    <Button onClick={() => navigate('/membership')} size="sm">
-                      Upgrade to Premium
-                    </Button>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <MediaBioSection
+            highlightsUrl={highlightsUrl}
+            setHighlightsUrl={setHighlightsUrl}
+            bio={bio}
+            setBio={setBio}
+            hasPremiumProfile={hasPremiumProfile}
+          />
 
           {/* Profile Actions */}
           {athleteId && (

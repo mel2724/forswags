@@ -2,19 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, School, Calendar, DollarSign, User, Phone, Mail, Edit, Trash2, FileText, Upload, X } from "lucide-react";
-import { format } from "date-fns";
+import { ArrowLeft, Plus, School, Calendar } from "lucide-react";
 import OfferComparison from "@/components/OfferComparison";
 import DecisionTimeline from "@/components/DecisionTimeline";
+import { OfferForm } from "@/components/offer/OfferForm";
+import { OfferCard } from "@/components/offer/OfferCard";
 
 interface School {
   id: string;
@@ -301,22 +299,6 @@ const OfferTracker = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "accepted":
-        return "bg-green-500";
-      case "declined":
-        return "bg-red-500";
-      case "expired":
-        return "bg-gray-500";
-      default:
-        return "bg-yellow-500";
-    }
-  };
-
-  const getOfferTypeLabel = (type: string) => {
-    return type.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
-  };
 
   if (loading) {
     return (
@@ -395,195 +377,23 @@ const OfferTracker = () => {
                   {editingOffer ? "Update" : "Enter"} the details of your college offer
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>School *</Label>
-                  <Select value={formData.school_id} onValueChange={(value) => setFormData({ ...formData, school_id: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a school" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {schools.map((school) => (
-                        <SelectItem key={school.id} value={school.id}>
-                          {school.name} - {school.location_city}, {school.location_state}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Offer Date *</Label>
-                    <Input
-                      type="date"
-                      value={formData.offer_date}
-                      onChange={(e) => setFormData({ ...formData, offer_date: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Response Deadline</Label>
-                    <Input
-                      type="date"
-                      value={formData.response_deadline}
-                      onChange={(e) => setFormData({ ...formData, response_deadline: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Offer Type *</Label>
-                    <Select value={formData.offer_type} onValueChange={(value) => setFormData({ ...formData, offer_type: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="full_scholarship">Full Scholarship</SelectItem>
-                        <SelectItem value="partial_scholarship">Partial Scholarship</SelectItem>
-                        <SelectItem value="walk_on">Walk On</SelectItem>
-                        <SelectItem value="preferred_walk_on">Preferred Walk On</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Status *</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="accepted">Accepted</SelectItem>
-                        <SelectItem value="declined">Declined</SelectItem>
-                        <SelectItem value="expired">Expired</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Scholarship Amount ($)</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={formData.scholarship_amount}
-                    onChange={(e) => setFormData({ ...formData, scholarship_amount: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Contact Name</Label>
-                  <Input
-                    placeholder="Coach's name"
-                    value={formData.contact_name}
-                    onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Contact Email</Label>
-                    <Input
-                      type="email"
-                      placeholder="coach@university.edu"
-                      value={formData.contact_email}
-                      onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Contact Phone</Label>
-                    <Input
-                      type="tel"
-                      placeholder="(555) 123-4567"
-                      value={formData.contact_phone}
-                      onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Notes</Label>
-                  <Textarea
-                    placeholder="Additional details about the offer..."
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Negotiation Notes</Label>
-                  <Textarea
-                    placeholder="Track negotiation discussions, counteroffers, and strategies..."
-                    value={formData.negotiation_notes}
-                    onChange={(e) => setFormData({ ...formData, negotiation_notes: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Documents</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="file"
-                        onChange={handleFileUpload}
-                        disabled={uploadingDocument}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        disabled={uploadingDocument}
-                      >
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {documents.length > 0 && (
-                      <div className="space-y-1">
-                        {documents.map((doc, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-2 rounded border bg-muted/50"
-                          >
-                            <div className="flex items-center gap-2">
-                              <FileText className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{doc.name}</span>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemoveDocument(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => {
-                    setDialogOpen(false);
-                    resetForm();
-                  }}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">
-                    {editingOffer ? "Update" : "Add"} Offer
-                  </Button>
-                </div>
-              </form>
+              <OfferForm
+                formData={formData}
+                setFormData={setFormData}
+                schools={schools}
+                documents={documents}
+                setDocuments={setDocuments}
+                uploadingDocument={uploadingDocument}
+                onSubmit={handleSubmit}
+                onCancel={() => {
+                  setDialogOpen(false);
+                  resetForm();
+                }}
+                isEditing={!!editingOffer}
+                userId={userId}
+                onFileUpload={handleFileUpload}
+                onRemoveDocument={handleRemoveDocument}
+              />
             </DialogContent>
           </Dialog>
           </div>
@@ -612,105 +422,13 @@ const OfferTracker = () => {
           <TabsContent value="cards" className="space-y-4">
             <div className="grid gap-4">
               {offers.map((offer) => (
-              <Card key={offer.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2 mb-2">
-                        <School className="h-5 w-5" />
-                        {offer.schools.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {offer.schools.location_city}, {offer.schools.location_state} • {offer.schools.division}
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(offer.status)}>
-                        {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
-                      </Badge>
-                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(offer)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(offer.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Offer Date</p>
-                        <p className="text-sm font-medium">{format(new Date(offer.offer_date), "MMM d, yyyy")}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Type</p>
-                        <p className="text-sm font-medium">{getOfferTypeLabel(offer.offer_type)}</p>
-                      </div>
-                    </div>
-
-                    {offer.scholarship_amount && (
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Amount</p>
-                          <p className="text-sm font-medium">${offer.scholarship_amount.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {offer.response_deadline && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">Deadline</p>
-                          <p className="text-sm font-medium">{format(new Date(offer.response_deadline), "MMM d, yyyy")}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {(offer.contact_name || offer.contact_email || offer.contact_phone) && (
-                    <div className="border-t pt-4">
-                      <p className="text-sm font-medium mb-2">Contact Information</p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
-                        {offer.contact_name && (
-                          <div className="flex items-center gap-2">
-                            <User className="h-3 w-3" />
-                            {offer.contact_name}
-                          </div>
-                        )}
-                        {offer.contact_email && (
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-3 w-3" />
-                            {offer.contact_email}
-                          </div>
-                        )}
-                        {offer.contact_phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-3 w-3" />
-                            {offer.contact_phone}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {offer.notes && (
-                    <div className="border-t pt-4 mt-4">
-                      <p className="text-sm font-medium mb-2">Notes</p>
-                      <p className="text-sm text-muted-foreground">{offer.notes}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                <OfferCard
+                  key={offer.id}
+                  offer={offer}
+                  onEdit={openEditDialog}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
           </TabsContent>
 
