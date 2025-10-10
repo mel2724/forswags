@@ -81,11 +81,7 @@ export default function AdminReports() {
         gpa,
         visibility,
         created_at,
-        profiles!athletes_user_id_fkey(
-          id,
-          email,
-          full_name
-        ),
+        user_id,
         evaluations(id, status)
       `)
       .order("created_at", { ascending: false });
@@ -111,6 +107,21 @@ export default function AdminReports() {
       filteredData = filteredData.filter((a: any) => !a.evaluations || a.evaluations.length === 0);
     }
 
+    // Fetch profile data separately
+    const userIds = filteredData.map((a: any) => a.user_id).filter(Boolean);
+    if (userIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", userIds);
+
+      // Join profiles data
+      filteredData = filteredData.map((athlete: any) => ({
+        ...athlete,
+        profiles: profilesData?.find((p: any) => p.id === athlete.user_id),
+      }));
+    }
+
     setAthletesData(filteredData);
   };
 
@@ -123,12 +134,8 @@ export default function AdminReports() {
         is_reevaluation,
         purchased_at,
         completed_at,
-        athletes!inner(
-          sport,
-          graduation_year,
-          profiles!athletes_user_id_fkey(full_name, email)
-        ),
-        coach_profiles(full_name)
+        athlete_id,
+        coach_id
       `)
       .order("purchased_at", { ascending: false });
 
@@ -147,7 +154,53 @@ export default function AdminReports() {
 
     const { data, error } = await query;
     if (error) throw error;
-    setEvaluationsData(data || []);
+
+    let evaluationsData = data || [];
+
+    // Fetch related athlete and coach data
+    const athleteIds = evaluationsData.map((e: any) => e.athlete_id).filter(Boolean);
+    const coachIds = evaluationsData.map((e: any) => e.coach_id).filter(Boolean);
+
+    const [athletesRes, coachesRes] = await Promise.all([
+      athleteIds.length > 0
+        ? supabase
+            .from("athletes")
+            .select("id, sport, graduation_year, user_id")
+            .in("id", athleteIds)
+        : Promise.resolve({ data: [] }),
+      coachIds.length > 0
+        ? supabase
+            .from("coach_profiles")
+            .select("user_id, full_name")
+            .in("user_id", coachIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    // Fetch profile data for athletes
+    const userIds = athletesRes.data?.map((a: any) => a.user_id).filter(Boolean) || [];
+    const { data: profilesData } = userIds.length > 0
+      ? await supabase.from("profiles").select("id, full_name, email").in("id", userIds)
+      : { data: [] };
+
+    // Join all data
+    evaluationsData = evaluationsData.map((evaluation: any) => {
+      const athlete = athletesRes.data?.find((a: any) => a.id === evaluation.athlete_id);
+      const profile = athlete ? profilesData?.find((p: any) => p.id === athlete.user_id) : null;
+      const coach = coachesRes.data?.find((c: any) => c.user_id === evaluation.coach_id);
+
+      return {
+        ...evaluation,
+        athletes: athlete
+          ? {
+              ...athlete,
+              profiles: profile,
+            }
+          : null,
+        coach_profiles: coach,
+      };
+    });
+
+    setEvaluationsData(evaluationsData);
   };
 
   const fetchCoaches = async () => {
@@ -185,19 +238,28 @@ export default function AdminReports() {
   const fetchRecruiters = async () => {
     const { data, error } = await supabase
       .from("user_roles")
-      .select(`
-        user_id,
-        profiles!user_roles_user_id_fkey(
-          id,
-          email,
-          full_name,
-          created_at
-        )
-      `)
+      .select("user_id")
       .eq("role", "recruiter");
 
     if (error) throw error;
-    setRecruitersData(data || []);
+
+    // Fetch profile data separately
+    const userIds = data?.map((r: any) => r.user_id).filter(Boolean) || [];
+    if (userIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, email, full_name, created_at")
+        .in("id", userIds);
+
+      const recruitersWithProfiles = data?.map((recruiter: any) => ({
+        ...recruiter,
+        profiles: profilesData?.find((p: any) => p.id === recruiter.user_id),
+      }));
+
+      setRecruitersData(recruitersWithProfiles || []);
+    } else {
+      setRecruitersData([]);
+    }
   };
 
   const exportToCSV = (data: any[], filename: string, columns: string[]) => {
@@ -294,9 +356,9 @@ export default function AdminReports() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Select
-                  value={athleteFilters.sport}
+                  value={athleteFilters.sport || "all"}
                   onValueChange={(value) => {
-                    setAthleteFilters({ ...athleteFilters, sport: value });
+                    setAthleteFilters({ ...athleteFilters, sport: value === "all" ? "" : value });
                     fetchAthletes();
                   }}
                 >
@@ -304,7 +366,7 @@ export default function AdminReports() {
                     <SelectValue placeholder="Filter by Sport" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Sports</SelectItem>
+                    <SelectItem value="all">All Sports</SelectItem>
                     <SelectItem value="Basketball">Basketball</SelectItem>
                     <SelectItem value="Football">Football</SelectItem>
                     <SelectItem value="Soccer">Soccer</SelectItem>
@@ -324,9 +386,9 @@ export default function AdminReports() {
                 />
 
                 <Select
-                  value={athleteFilters.hasEvaluation}
+                  value={athleteFilters.hasEvaluation || "all"}
                   onValueChange={(value) => {
-                    setAthleteFilters({ ...athleteFilters, hasEvaluation: value });
+                    setAthleteFilters({ ...athleteFilters, hasEvaluation: value === "all" ? "" : value });
                     fetchAthletes();
                   }}
                 >
@@ -334,16 +396,16 @@ export default function AdminReports() {
                     <SelectValue placeholder="Evaluation Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="yes">Has Evaluation</SelectItem>
                     <SelectItem value="no">No Evaluation</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select
-                  value={athleteFilters.visibility}
+                  value={athleteFilters.visibility || "all"}
                   onValueChange={(value) => {
-                    setAthleteFilters({ ...athleteFilters, visibility: value });
+                    setAthleteFilters({ ...athleteFilters, visibility: value === "all" ? "" : value });
                     fetchAthletes();
                   }}
                 >
@@ -351,7 +413,7 @@ export default function AdminReports() {
                     <SelectValue placeholder="Visibility" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
                     <SelectItem value="public">Public</SelectItem>
                     <SelectItem value="private">Private</SelectItem>
                   </SelectContent>
@@ -435,9 +497,9 @@ export default function AdminReports() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Select
-                  value={evaluationFilters.status}
+                  value={evaluationFilters.status || "all"}
                   onValueChange={(value) => {
-                    setEvaluationFilters({ ...evaluationFilters, status: value });
+                    setEvaluationFilters({ ...evaluationFilters, status: value === "all" ? "" : value });
                     fetchEvaluations();
                   }}
                 >
@@ -445,7 +507,7 @@ export default function AdminReports() {
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Status</SelectItem>
+                    <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
@@ -453,9 +515,9 @@ export default function AdminReports() {
                 </Select>
 
                 <Select
-                  value={evaluationFilters.isReevaluation}
+                  value={evaluationFilters.isReevaluation || "all"}
                   onValueChange={(value) => {
-                    setEvaluationFilters({ ...evaluationFilters, isReevaluation: value });
+                    setEvaluationFilters({ ...evaluationFilters, isReevaluation: value === "all" ? "" : value });
                     fetchEvaluations();
                   }}
                 >
@@ -463,7 +525,7 @@ export default function AdminReports() {
                     <SelectValue placeholder="Evaluation Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
+                    <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="no">Initial</SelectItem>
                     <SelectItem value="yes">Re-evaluation</SelectItem>
                   </SelectContent>
@@ -577,9 +639,9 @@ export default function AdminReports() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
-                  value={coachFilters.isActive}
+                  value={coachFilters.isActive || "all"}
                   onValueChange={(value) => {
-                    setCoachFilters({ ...coachFilters, isActive: value });
+                    setCoachFilters({ ...coachFilters, isActive: value === "all" ? "" : value });
                     fetchCoaches();
                   }}
                 >
@@ -587,7 +649,7 @@ export default function AdminReports() {
                     <SelectValue placeholder="Active Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Coaches</SelectItem>
+                    <SelectItem value="all">All Coaches</SelectItem>
                     <SelectItem value="yes">Active</SelectItem>
                     <SelectItem value="no">Inactive</SelectItem>
                   </SelectContent>
