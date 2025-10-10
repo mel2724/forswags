@@ -13,7 +13,9 @@ export type EmailTemplate =
   | "ranking_updated"
   | "recruiter_daily_digest"
   | "recruiter_weekly_digest"
-  | "social_post_ready";
+  | "social_post_ready"
+  | "athlete_claim_profile"
+  | "alumni_claim_profile";
 
 interface SendEmailParams {
   to: string;

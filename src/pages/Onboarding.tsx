@@ -141,6 +141,14 @@ const Onboarding = () => {
   };
 
   useEffect(() => {
+    // Check if this is a claimed profile
+    const params = new URLSearchParams(window.location.search);
+    const isClaimed = params.get('claimed') === 'true';
+    
+    if (isClaimed) {
+      toast.success("Welcome! Please complete your profile to get started.");
+    }
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {

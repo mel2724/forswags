@@ -5,9 +5,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Lazy load all pages including Landing
+// Lazy load admin pages
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -59,6 +60,11 @@ const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications")
 const AdminEvaluations = lazy(() => import("./pages/admin/AdminEvaluations"));
 const AdminSponsors = lazy(() => import("./pages/admin/AdminSponsors"));
 const AdminPayPalSetup = lazy(() => import("./pages/admin/AdminPayPalSetup"));
+const AdminPromoCodes = lazy(() => import("./pages/admin/AdminPromoCodes"));
+const AdminRefunds = lazy(() => import("./pages/admin/AdminRefunds"));
+const AdminConsentMonitoring = lazy(() => import("./pages/admin/AdminConsentMonitoring"));
+const AdminArchivedMedia = lazy(() => import("./pages/admin/AdminArchivedMedia"));
+const AdminImportAthletes = lazy(() => import("./pages/admin/AdminImportAthletes"));
 const CoachApplication = lazy(() => import("./pages/CoachApplication"));
 const PurchaseEvaluation = lazy(() => import("./pages/PurchaseEvaluation"));
 const CoachDashboard = lazy(() => import("./pages/coach/CoachDashboard"));
@@ -105,6 +111,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/claim/:token" element={<ClaimProfile />} />
               <Route path="/sponsors" element={<Sponsors />} />
               <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
               <Route path="/for-recruiters" element={<ForRecruiters />} />
@@ -166,7 +174,12 @@ const App = () => (
                 <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="evaluations" element={<AdminEvaluations />} />
                 <Route path="sponsors" element={<AdminSponsors />} />
+                <Route path="promo-codes" element={<AdminPromoCodes />} />
+                <Route path="refunds" element={<AdminRefunds />} />
                 <Route path="paypal-setup" element={<AdminPayPalSetup />} />
+                <Route path="consent-monitoring" element={<AdminConsentMonitoring />} />
+                <Route path="archived-media" element={<AdminArchivedMedia />} />
+                <Route path="import-athletes" element={<AdminImportAthletes />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
