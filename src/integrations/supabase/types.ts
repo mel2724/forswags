@@ -283,6 +283,7 @@ export type Database = {
           high_school: string | null
           highlights_url: string | null
           honors_courses: string | null
+          hudl_profile_url: string | null
           id: string
           instagram_handle: string | null
           is_parent_verified: boolean | null
@@ -291,6 +292,7 @@ export type Database = {
           leadership_roles: string | null
           legal_situations: boolean | null
           legal_situations_explanation: string | null
+          maxpreps_profile_url: string | null
           message_to_coaches: string | null
           motivation: string | null
           ncaa_eligibility_number: string | null
@@ -356,6 +358,7 @@ export type Database = {
           high_school?: string | null
           highlights_url?: string | null
           honors_courses?: string | null
+          hudl_profile_url?: string | null
           id?: string
           instagram_handle?: string | null
           is_parent_verified?: boolean | null
@@ -364,6 +367,7 @@ export type Database = {
           leadership_roles?: string | null
           legal_situations?: boolean | null
           legal_situations_explanation?: string | null
+          maxpreps_profile_url?: string | null
           message_to_coaches?: string | null
           motivation?: string | null
           ncaa_eligibility_number?: string | null
@@ -429,6 +433,7 @@ export type Database = {
           high_school?: string | null
           highlights_url?: string | null
           honors_courses?: string | null
+          hudl_profile_url?: string | null
           id?: string
           instagram_handle?: string | null
           is_parent_verified?: boolean | null
@@ -437,6 +442,7 @@ export type Database = {
           leadership_roles?: string | null
           legal_situations?: boolean | null
           legal_situations_explanation?: string | null
+          maxpreps_profile_url?: string | null
           message_to_coaches?: string | null
           motivation?: string | null
           ncaa_eligibility_number?: string | null
@@ -2877,6 +2883,44 @@ export type Database = {
         }
         Relationships: []
       }
+      stat_update_reminders: {
+        Row: {
+          athlete_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_reminder_sent_at: string | null
+          reminder_frequency_days: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_reminder_sent_at?: string | null
+          reminder_frequency_days?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_reminder_sent_at?: string | null
+          reminder_frequency_days?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stat_update_reminders_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tier_features: {
         Row: {
           created_at: string | null
@@ -3004,6 +3048,10 @@ export type Database = {
       check_profile_upload_rate_limit: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      check_stat_update_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       clean_old_contact_submissions: {
         Args: Record<PropertyKey, never>

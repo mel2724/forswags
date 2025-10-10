@@ -231,24 +231,67 @@ const StatsManager = () => {
         throw new Error("CSV file is empty or has no data rows");
       }
 
-      // Parse header
+      // Parse header - support multiple CSV formats (ForSwags, Hudl, MaxPreps)
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-      const requiredHeaders = ['stat name', 'value', 'season'];
-      const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
       
-      if (missingHeaders.length > 0) {
-        throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`);
-      }
+      // Detect CSV format
+      const isHudlFormat = headers.some(h => h.includes('hudl') || h === 'game date');
+      const isMaxPrepsFormat = headers.some(h => h.includes('maxpreps') || h === 'opponent');
+      
+      let indices: any = {};
+      
+      if (isHudlFormat) {
+        // Hudl format: typically has columns like "Stat", "Value", "Game Date"
+        indices = {
+          name: headers.findIndex(h => h === 'stat' || h === 'statistic'),
+          value: headers.findIndex(h => h === 'value' || h === 'total'),
+          season: headers.findIndex(h => h === 'season' || h === 'year'),
+          unit: -1,
+          category: headers.findIndex(h => h === 'category' || h === 'type'),
+          highlighted: -1,
+        };
+        
+        // If no season column, use current season
+        if (indices.season < 0) {
+          indices.season = -1;
+        }
+      } else if (isMaxPrepsFormat) {
+        // MaxPreps format: typically has columns like "Stat Name", "Total", "Avg"
+        indices = {
+          name: headers.findIndex(h => h === 'stat' || h === 'stat name' || h === 'statistic'),
+          value: headers.findIndex(h => h === 'total' || h === 'value' || h === 'season total'),
+          season: headers.findIndex(h => h === 'season' || h === 'year'),
+          unit: -1,
+          category: headers.findIndex(h => h === 'category'),
+          highlighted: -1,
+        };
+        
+        if (indices.season < 0) {
+          indices.season = -1;
+        }
+      } else {
+        // ForSwags format
+        const requiredHeaders = ['stat name', 'value', 'season'];
+        const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+        
+        if (missingHeaders.length > 0) {
+          throw new Error(`Missing required columns: ${missingHeaders.join(', ')}. Expected: Stat Name, Value, Season`);
+        }
 
-      // Get column indices
-      const indices = {
-        name: headers.indexOf('stat name'),
-        value: headers.indexOf('value'),
-        season: headers.indexOf('season'),
-        unit: headers.indexOf('unit'),
-        category: headers.indexOf('category'),
-        highlighted: headers.indexOf('highlighted'),
-      };
+        indices = {
+          name: headers.indexOf('stat name'),
+          value: headers.indexOf('value'),
+          season: headers.indexOf('season'),
+          unit: headers.indexOf('unit'),
+          category: headers.indexOf('category'),
+          highlighted: headers.indexOf('highlighted'),
+        };
+      }
+      
+      // Validate that we found the essential columns
+      if (indices.name < 0 || indices.value < 0) {
+        throw new Error("Could not identify stat name and value columns. Please ensure your CSV has 'Stat Name' and 'Value' columns.");
+      }
 
       // Process each row
       for (let i = 1; i < lines.length && i <= 100; i++) { // Limit to 100 rows
@@ -263,7 +306,9 @@ const StatsManager = () => {
 
           const statName = values[indices.name];
           const statValue = parseFloat(values[indices.value]);
-          const season = values[indices.season];
+          const season = indices.season >= 0 && values[indices.season] 
+            ? values[indices.season] 
+            : new Date().getFullYear().toString(); // Default to current year if no season
           const unit = indices.unit >= 0 ? values[indices.unit] : undefined;
           const category = indices.category >= 0 ? values[indices.category] : undefined;
           const isHighlighted = indices.highlighted >= 0 

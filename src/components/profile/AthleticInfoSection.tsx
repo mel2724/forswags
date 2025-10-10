@@ -22,6 +22,10 @@ interface AthleticInfoSectionProps {
   setHeightInches: (value: string) => void;
   weight: string;
   setWeight: (value: string) => void;
+  hudlProfileUrl?: string;
+  setHudlProfileUrl?: (value: string) => void;
+  maxprepsProfileUrl?: string;
+  setMaxprepsProfileUrl?: (value: string) => void;
 }
 
 export const AthleticInfoSection = ({
@@ -35,6 +39,10 @@ export const AthleticInfoSection = ({
   setHeightInches,
   weight,
   setWeight,
+  hudlProfileUrl,
+  setHudlProfileUrl,
+  maxprepsProfileUrl,
+  setMaxprepsProfileUrl,
 }: AthleticInfoSectionProps) => {
   return (
     <Card className="bg-card/80 backdrop-blur border-2 border-secondary/20">
@@ -114,6 +122,42 @@ export const AthleticInfoSection = ({
             />
           </div>
         </div>
+
+        {setHudlProfileUrl && setMaxprepsProfileUrl && (
+          <>
+            <Separator />
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Stat Tracking Profiles</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Link your external profiles to help us remind you to sync your stats
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="hudlUrl">Hudl Profile URL (Optional)</Label>
+                <Input
+                  id="hudlUrl"
+                  type="url"
+                  value={hudlProfileUrl}
+                  onChange={(e) => setHudlProfileUrl(e.target.value)}
+                  placeholder="https://www.hudl.com/profile/..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxprepsUrl">MaxPreps Profile URL (Optional)</Label>
+                <Input
+                  id="maxprepsUrl"
+                  type="url"
+                  value={maxprepsProfileUrl}
+                  onChange={(e) => setMaxprepsProfileUrl(e.target.value)}
+                  placeholder="https://www.maxpreps.com/athlete/..."
+                />
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -52,6 +52,8 @@ export default function ProfileComprehensive() {
   const [weight, setWeight] = useState("");
   const [jerseyNumber, setJerseyNumber] = useState("");
   const [filledOutBy, setFilledOutBy] = useState("");
+  const [hudlProfileUrl, setHudlProfileUrl] = useState("");
+  const [maxprepsProfileUrl, setMaxprepsProfileUrl] = useState("");
 
   // Academic Information
   const [highSchool, setHighSchool] = useState("");
@@ -194,6 +196,8 @@ export default function ProfileComprehensive() {
       setMessageToCoaches(athleteData.message_to_coaches || "");
       setHighlightsUrl(athleteData.highlights_url || "");
       setBio(athleteData.bio || "");
+      setHudlProfileUrl(athleteData.hudl_profile_url || "");
+      setMaxprepsProfileUrl(athleteData.maxpreps_profile_url || "");
 
       if (athleteData.height_in) {
         const feet = Math.floor(athleteData.height_in / 12);
@@ -303,6 +307,8 @@ export default function ProfileComprehensive() {
           message_to_coaches: messageToCoaches || null,
           highlights_url: highlightsUrl || null,
           bio: bio || null,
+          hudl_profile_url: hudlProfileUrl || null,
+          maxpreps_profile_url: maxprepsProfileUrl || null,
         })
         .eq("id", athleteId);
 

@@ -93,6 +93,8 @@ const Onboarding = () => {
   const [actScore, setActScore] = useState("");
   const [highlightsUrl, setHighlightsUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [hudlProfileUrl, setHudlProfileUrl] = useState("");
+  const [maxprepsProfileUrl, setMaxprepsProfileUrl] = useState("");
   const [publicProfileConsent, setPublicProfileConsent] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [isParentConsenting, setIsParentConsenting] = useState(false);
@@ -380,10 +382,34 @@ const Onboarding = () => {
             consent_expires_at: isUnder13 && parentEmailVerified 
               ? new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() 
               : null,
+            hudl_profile_url: hudlProfileUrl || null,
+            maxpreps_profile_url: maxprepsProfileUrl || null,
           })
           .eq("user_id", userId);
 
         if (athleteError) throw athleteError;
+        
+        // Create stat update reminder for this athlete
+        const { data: currentAthlete } = await supabase
+          .from("athletes")
+          .select("id")
+          .eq("user_id", userId)
+          .single();
+        
+        if (currentAthlete) {
+          // Check if reminder already exists
+          const { data: existingReminder } = await supabase
+            .from("stat_update_reminders")
+            .select("id")
+            .eq("athlete_id", currentAthlete.id)
+            .maybeSingle();
+          
+          if (!existingReminder) {
+            await supabase
+              .from("stat_update_reminders")
+              .insert([{ athlete_id: currentAthlete.id }]);
+          }
+        }
       } else {
         // Insert new athlete
         const { error: athleteError } = await supabase
@@ -406,9 +432,24 @@ const Onboarding = () => {
             consent_timestamp: publicProfileConsent && isParentConsenting ? new Date().toISOString() : null,
             consent_ip_address: publicProfileConsent && isParentConsenting ? consentIpAddress : null,
             is_parent_verified: isParentConsenting,
+            hudl_profile_url: hudlProfileUrl || null,
+            maxpreps_profile_url: maxprepsProfileUrl || null,
           }]);
 
         if (athleteError) throw athleteError;
+        
+        // Get the newly created athlete ID and create stat update reminder
+        const { data: newAthlete } = await supabase
+          .from("athletes")
+          .select("id")
+          .eq("user_id", userId)
+          .single();
+        
+        if (newAthlete) {
+          await supabase
+            .from("stat_update_reminders")
+            .insert([{ athlete_id: newAthlete.id }]);
+        }
       }
 
       // Check if athlete role already exists for the user
@@ -655,6 +696,30 @@ const Onboarding = () => {
                   onChange={(e) => setPosition(e.target.value)}
                   placeholder="e.g., Quarterback, Point Guard"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hudlUrl">Hudl Profile URL (Optional)</Label>
+                <Input
+                  id="hudlUrl"
+                  type="url"
+                  value={hudlProfileUrl}
+                  onChange={(e) => setHudlProfileUrl(e.target.value)}
+                  placeholder="https://www.hudl.com/profile/..."
+                />
+                <p className="text-xs text-muted-foreground">We'll remind you to sync your stats from Hudl</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxprepsUrl">MaxPreps Profile URL (Optional)</Label>
+                <Input
+                  id="maxprepsUrl"
+                  type="url"
+                  value={maxprepsProfileUrl}
+                  onChange={(e) => setMaxprepsProfileUrl(e.target.value)}
+                  placeholder="https://www.maxpreps.com/athlete/..."
+                />
+                <p className="text-xs text-muted-foreground">We'll remind you to sync your stats from MaxPreps</p>
               </div>
 
               {setupMode === "quick" && (
