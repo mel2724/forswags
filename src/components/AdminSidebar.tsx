@@ -1,4 +1,4 @@
-import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell, FileVideo, DollarSign, UserPlus } from "lucide-react";
+import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell, FileVideo, DollarSign, UserPlus, FileBarChart } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -19,6 +19,7 @@ import logoIcon from "@/assets/forswags-logo.png";
 
 const items = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Reports", url: "/admin/reports", icon: FileBarChart },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Memberships", url: "/admin/memberships", icon: CreditCard },
   { title: "Athletes", url: "/admin/athletes", icon: Trophy },

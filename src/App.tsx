@@ -48,6 +48,7 @@ const RecruiterAnalyticsPage = lazy(() => import("./pages/recruiter/RecruiterAna
 const ParentDashboard = lazy(() => import("./pages/ParentDashboard"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminMemberships = lazy(() => import("./pages/admin/AdminMemberships"));
 const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
@@ -163,6 +164,7 @@ const App = () => (
               <Route path="/coach/evaluation/:id" element={<EvaluationDetail />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
+                <Route path="reports" element={<AdminReports />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="memberships" element={<AdminMemberships />} />
                 <Route path="courses" element={<AdminCourses />} />
