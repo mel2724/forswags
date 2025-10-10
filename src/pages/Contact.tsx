@@ -29,6 +29,8 @@ export default function Contact() {
     message: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ContactFormData, string>>>({});
+  const [honeypot, setHoneypot] = useState("");
+  const [formTimestamp] = useState(Date.now());
 
   const handleChange = (field: keyof ContactFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -59,7 +61,11 @@ export default function Contact() {
 
     try {
       const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: validation.data,
+        body: {
+          ...validation.data,
+          honeypot,
+          timestamp: formTimestamp,
+        },
       });
 
       if (error) throw error;
@@ -113,6 +119,18 @@ export default function Contact() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Honeypot field - hidden from users but visible to bots */}
+                <input
+                  type="text"
+                  name="website"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  style={{ position: "absolute", left: "-9999px" }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
+                
                 <div className="space-y-2">
                   <Label htmlFor="name">Name *</Label>
                   <Input

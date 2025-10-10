@@ -928,6 +928,33 @@ export type Database = {
           },
         ]
       }
+      contact_form_submissions: {
+        Row: {
+          email: string
+          id: string
+          ip_address: unknown
+          submitted_at: string
+          success: boolean | null
+          user_agent: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          ip_address: unknown
+          submitted_at?: string
+          success?: boolean | null
+          user_agent?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          ip_address?: unknown
+          submitted_at?: string
+          success?: boolean | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       course_bookmarks: {
         Row: {
           content: string
@@ -2968,6 +2995,10 @@ export type Database = {
       check_profile_upload_rate_limit: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      clean_old_contact_submissions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       decrypt_oauth_token: {
         Args: { encrypted_token: string }

@@ -1,7 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.4";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +19,8 @@ interface ContactEmailRequest {
   email: string;
   subject: string;
   message: string;
+  honeypot?: string;
+  timestamp?: number;
 }
 
 // HTML escape function to prevent XSS
@@ -34,7 +41,25 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, subject, message }: ContactEmailRequest = await req.json();
+    const { name, email, subject, message, honeypot, timestamp }: ContactEmailRequest = await req.json();
+
+    // Honeypot check - if filled, it's a bot
+    if (honeypot) {
+      console.log("Honeypot triggered - blocking spam");
+      return new Response(
+        JSON.stringify({ error: "Invalid submission" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Timing check - submission must take at least 3 seconds
+    if (timestamp && (Date.now() - timestamp) < 3000) {
+      console.log("Form submitted too quickly - blocking spam");
+      return new Response(
+        JSON.stringify({ error: "Please take your time filling out the form" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Validate inputs
     if (!name || name.length > 100) {
@@ -48,6 +73,31 @@ const handler = async (req: Request): Promise<Response> => {
     }
     if (!message || message.length < 10 || message.length > 2000) {
       throw new Error("Invalid message");
+    }
+
+    // Get client IP address
+    const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0] || 
+                      req.headers.get("x-real-ip") || 
+                      "unknown";
+
+    // Rate limiting check - max 5 submissions per hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { data: recentSubmissions, error: rateLimitError } = await supabase
+      .from("contact_form_submissions")
+      .select("id")
+      .eq("ip_address", ipAddress)
+      .gte("submitted_at", oneHourAgo);
+
+    if (rateLimitError) {
+      console.error("Rate limit check error:", rateLimitError);
+    }
+
+    if (recentSubmissions && recentSubmissions.length >= 5) {
+      console.log(`Rate limit exceeded for IP: ${ipAddress}`);
+      return new Response(
+        JSON.stringify({ error: "Too many submissions. Please try again later." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     // Send confirmation email to user
@@ -144,6 +194,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Confirmation email sent:", userEmail);
     console.log("Admin notification sent:", adminEmail);
+
+    // Log successful submission for rate limiting
+    await supabase.from("contact_form_submissions").insert({
+      ip_address: ipAddress,
+      email: email,
+      user_agent: req.headers.get("user-agent") || null,
+      success: true,
+    });
 
     return new Response(
       JSON.stringify({ success: true, userEmail, adminEmail }),
