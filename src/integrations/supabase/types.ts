@@ -198,37 +198,46 @@ export type Database = {
       athlete_stats: {
         Row: {
           athlete_id: string
+          category: string | null
           created_at: string
           id: string
+          is_highlighted: boolean | null
           metrics: Json | null
           season: string
           source: string | null
           stat_name: string
           stat_value: number
+          unit: string | null
           updated_at: string
           verified: boolean | null
         }
         Insert: {
           athlete_id: string
+          category?: string | null
           created_at?: string
           id?: string
+          is_highlighted?: boolean | null
           metrics?: Json | null
           season: string
           source?: string | null
           stat_name: string
           stat_value: number
+          unit?: string | null
           updated_at?: string
           verified?: boolean | null
         }
         Update: {
           athlete_id?: string
+          category?: string | null
           created_at?: string
           id?: string
+          is_highlighted?: boolean | null
           metrics?: Json | null
           season?: string
           source?: string | null
           stat_name?: string
           stat_value?: number
+          unit?: string | null
           updated_at?: string
           verified?: boolean | null
         }

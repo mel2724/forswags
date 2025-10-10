@@ -8,12 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { z } from "zod";
 import logoIcon from "@/assets/forswags-logo.png";
 import { 
   ArrowLeft, BarChart3, Plus, Pencil, Trash2, TrendingUp,
-  Calendar, Target, Award, Loader2
+  Calendar, Target, Award, Loader2, Download, Upload, Star,
+  FileSpreadsheet, LineChart, Trophy
 } from "lucide-react";
 
 interface AthleteStat {
@@ -21,8 +24,50 @@ interface AthleteStat {
   stat_name: string;
   stat_value: number;
   season: string;
+  category?: string;
+  unit?: string;
+  is_highlighted?: boolean;
   created_at: string;
 }
+
+const STAT_CATEGORIES = [
+  { value: "offensive", label: "Offensive" },
+  { value: "defensive", label: "Defensive" },
+  { value: "physical", label: "Physical" },
+  { value: "academic", label: "Academic" },
+  { value: "leadership", label: "Leadership" },
+];
+
+const STAT_TEMPLATES = {
+  football: [
+    { name: "Touchdowns", category: "offensive", unit: "count" },
+    { name: "Yards", category: "offensive", unit: "yards" },
+    { name: "Tackles", category: "defensive", unit: "count" },
+    { name: "Interceptions", category: "defensive", unit: "count" },
+    { name: "40-Yard Dash", category: "physical", unit: "seconds" },
+  ],
+  basketball: [
+    { name: "Points Per Game", category: "offensive", unit: "points" },
+    { name: "Rebounds", category: "defensive", unit: "count" },
+    { name: "Assists", category: "offensive", unit: "count" },
+    { name: "Field Goal %", category: "offensive", unit: "percentage" },
+    { name: "Steals", category: "defensive", unit: "count" },
+  ],
+  soccer: [
+    { name: "Goals", category: "offensive", unit: "count" },
+    { name: "Assists", category: "offensive", unit: "count" },
+    { name: "Saves", category: "defensive", unit: "count" },
+    { name: "Clean Sheets", category: "defensive", unit: "count" },
+    { name: "Pass Completion %", category: "offensive", unit: "percentage" },
+  ],
+  baseball: [
+    { name: "Batting Average", category: "offensive", unit: "average" },
+    { name: "Home Runs", category: "offensive", unit: "count" },
+    { name: "RBIs", category: "offensive", unit: "count" },
+    { name: "ERA", category: "defensive", unit: "average" },
+    { name: "Strikeouts", category: "defensive", unit: "count" },
+  ],
+};
 
 const currentYear = new Date().getFullYear();
 const seasons = [
@@ -36,6 +81,9 @@ const statSchema = z.object({
   stat_name: z.string().min(1, "Stat name is required").max(100),
   stat_value: z.number().min(0, "Value must be positive"),
   season: z.string().min(1, "Season is required"),
+  category: z.string().optional(),
+  unit: z.string().optional(),
+  is_highlighted: z.boolean().optional(),
 });
 
 const StatsManager = () => {
@@ -45,12 +93,17 @@ const StatsManager = () => {
   const [athleteId, setAthleteId] = useState<string | null>(null);
   const [stats, setStats] = useState<AthleteStat[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [editingStat, setEditingStat] = useState<AthleteStat | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "comparison">("grid");
 
   // Form fields
   const [statName, setStatName] = useState("");
   const [statValue, setStatValue] = useState("");
   const [season, setSeason] = useState(seasons[0]);
+  const [category, setCategory] = useState("");
+  const [unit, setUnit] = useState("");
+  const [isHighlighted, setIsHighlighted] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -100,6 +153,9 @@ const StatsManager = () => {
     setStatName("");
     setStatValue("");
     setSeason(seasons[0]);
+    setCategory("");
+    setUnit("");
+    setIsHighlighted(false);
     setEditingStat(null);
   };
 
@@ -108,7 +164,49 @@ const StatsManager = () => {
     setStatName(stat.stat_name);
     setStatValue(stat.stat_value.toString());
     setSeason(stat.season);
+    setCategory(stat.category || "");
+    setUnit(stat.unit || "");
+    setIsHighlighted(stat.is_highlighted || false);
     setIsDialogOpen(true);
+  };
+
+  const exportToCSV = () => {
+    if (stats.length === 0) {
+      toast.error("No stats to export");
+      return;
+    }
+
+    const headers = ["Stat Name", "Value", "Unit", "Category", "Season", "Highlighted"];
+    const rows = stats.map(s => [
+      s.stat_name,
+      s.stat_value,
+      s.unit || "",
+      s.category || "",
+      s.season,
+      s.is_highlighted ? "Yes" : "No"
+    ]);
+
+    const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `stats-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    toast.success("Stats exported to CSV");
+  };
+
+  const handleTemplateSelect = (sport: keyof typeof STAT_TEMPLATES) => {
+    setIsTemplateDialogOpen(false);
+    const templates = STAT_TEMPLATES[sport];
+    toast.success(`Added ${templates.length} stat templates. Fill in values for ${season}.`);
+    
+    templates.forEach(template => {
+      setStatName(template.name);
+      setCategory(template.category);
+      setUnit(template.unit);
+      setIsDialogOpen(true);
+    });
   };
 
   const handleSave = async () => {
@@ -120,6 +218,9 @@ const StatsManager = () => {
         stat_name: statName.trim(),
         stat_value: parseFloat(statValue),
         season: season,
+        category: category || null,
+        unit: unit || null,
+        is_highlighted: isHighlighted,
       });
 
       if (editingStat) {
@@ -130,6 +231,9 @@ const StatsManager = () => {
             stat_name: data.stat_name,
             stat_value: data.stat_value,
             season: data.season,
+            category: data.category,
+            unit: data.unit,
+            is_highlighted: data.is_highlighted,
           })
           .eq("id", editingStat.id);
 
@@ -137,7 +241,7 @@ const StatsManager = () => {
 
         setStats(stats.map(s => 
           s.id === editingStat.id 
-            ? { ...s, stat_name: data.stat_name, stat_value: data.stat_value, season: data.season }
+            ? { ...s, ...data }
             : s
         ));
 
@@ -151,6 +255,9 @@ const StatsManager = () => {
             stat_name: data.stat_name,
             stat_value: data.stat_value,
             season: data.season,
+            category: data.category,
+            unit: data.unit,
+            is_highlighted: data.is_highlighted,
           })
           .select()
           .single();
@@ -220,7 +327,11 @@ const StatsManager = () => {
             </div>
           </div>
           
-          <nav className="flex items-center space-x-4">
+          <nav className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" onClick={exportToCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Dashboard
@@ -240,16 +351,25 @@ const StatsManager = () => {
             </p>
           </div>
 
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button className="btn-hero">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Stat
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => setIsTemplateDialogOpen(true)}
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Templates
+            </Button>
+            
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) resetForm();
+            }}>
+              <DialogTrigger asChild>
+                <Button className="btn-hero">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Stat
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle className="uppercase tracking-tight">
@@ -285,6 +405,34 @@ const StatsManager = () => {
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STAT_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="unit">Unit</Label>
+                    <Input
+                      id="unit"
+                      value={unit}
+                      onChange={(e) => setUnit(e.target.value)}
+                      placeholder="e.g., yards, seconds"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="season">Season *</Label>
                   <Select value={season} onValueChange={setSeason}>
@@ -297,6 +445,22 @@ const StatsManager = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="highlight" className="text-sm font-medium">
+                      Highlight Stat
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Show this stat prominently on your profile
+                    </p>
+                  </div>
+                  <Switch
+                    id="highlight"
+                    checked={isHighlighted}
+                    onCheckedChange={setIsHighlighted}
+                  />
                 </div>
               </div>
 
@@ -318,6 +482,36 @@ const StatsManager = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Sport Templates Dialog */}
+          <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Choose Sport Templates</DialogTitle>
+                <DialogDescription>
+                  Quick-start with common stats for your sport
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-3 py-4">
+                {Object.keys(STAT_TEMPLATES).map((sport) => (
+                  <Button
+                    key={sport}
+                    variant="outline"
+                    className="justify-start h-auto p-4"
+                    onClick={() => handleTemplateSelect(sport as keyof typeof STAT_TEMPLATES)}
+                  >
+                    <div className="text-left">
+                      <div className="font-semibold capitalize">{sport}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {STAT_TEMPLATES[sport as keyof typeof STAT_TEMPLATES].length} common stats
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+          </div>
         </div>
 
         {stats.length === 0 ? (
@@ -336,8 +530,20 @@ const StatsManager = () => {
             </Button>
           </Card>
         ) : (
-          <div className="space-y-8">
-            {Object.entries(groupedStats).map(([seasonName, seasonStats]) => (
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="grid">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Grid View
+              </TabsTrigger>
+              <TabsTrigger value="comparison">
+                <LineChart className="h-4 w-4 mr-2" />
+                Season Comparison
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="grid" className="space-y-8">
+              {Object.entries(groupedStats).map(([seasonName, seasonStats]) => (
               <Card key={seasonName} className="border-2 border-primary/20 overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-card to-card/50 border-b-2 border-primary/20">
                   <div className="flex items-center justify-between">
@@ -362,19 +568,38 @@ const StatsManager = () => {
                     {seasonStats.map((stat) => (
                       <div 
                         key={stat.id} 
-                        className="p-4 rounded-lg border-2 border-border hover:border-primary transition-all duration-200 bg-card/50 backdrop-blur"
+                        className={`p-4 rounded-lg border-2 transition-all duration-200 bg-card/50 backdrop-blur relative ${
+                          stat.is_highlighted 
+                            ? 'border-primary shadow-lg shadow-primary/20' 
+                            : 'border-border hover:border-primary'
+                        }`}
                       >
+                        {stat.is_highlighted && (
+                          <Star className="absolute top-2 right-2 h-4 w-4 text-primary fill-primary" />
+                        )}
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
-                            <h4 className="font-bold text-sm text-muted-foreground uppercase tracking-wider mb-1">
-                              {stat.stat_name}
-                            </h4>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">
+                                {stat.stat_name}
+                              </h4>
+                              {stat.category && (
+                                <Badge variant="outline" className="text-xs capitalize">
+                                  {stat.category}
+                                </Badge>
+                              )}
+                            </div>
                             <div className="flex items-baseline space-x-2">
                               <span className="text-3xl font-black text-gradient-primary">
                                 {stat.stat_value % 1 === 0 
                                   ? stat.stat_value 
                                   : stat.stat_value.toFixed(2)}
                               </span>
+                              {stat.unit && (
+                                <span className="text-sm text-muted-foreground">
+                                  {stat.unit}
+                                </span>
+                              )}
                               <TrendingUp className="h-4 w-4 text-secondary" />
                             </div>
                           </div>
@@ -406,7 +631,75 @@ const StatsManager = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </TabsContent>
+
+            <TabsContent value="comparison" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    Season-by-Season Comparison
+                  </CardTitle>
+                  <CardDescription>
+                    Track your progress across multiple seasons
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const statNameMap = new Map<string, Map<string, number>>();
+                    stats.forEach(stat => {
+                      if (!statNameMap.has(stat.stat_name)) {
+                        statNameMap.set(stat.stat_name, new Map());
+                      }
+                      statNameMap.get(stat.stat_name)!.set(stat.season, stat.stat_value);
+                    });
+
+                    return Array.from(statNameMap.entries()).length === 0 ? (
+                      <p className="text-center py-8 text-muted-foreground">
+                        Add stats for multiple seasons to see comparisons
+                      </p>
+                    ) : (
+                      <div className="space-y-6">
+                        {Array.from(statNameMap.entries()).map(([statName, seasonValues]) => {
+                          if (seasonValues.size < 2) return null;
+                          
+                          const sortedSeasons = Array.from(seasonValues.entries()).sort();
+                          const maxValue = Math.max(...Array.from(seasonValues.values()));
+                          
+                          return (
+                            <div key={statName} className="space-y-3 p-4 border rounded-lg">
+                              <h4 className="font-bold uppercase text-sm">{statName}</h4>
+                              <div className="space-y-2">
+                                {sortedSeasons.map(([season, value]) => {
+                                  const percentage = (value / maxValue) * 100;
+                                  return (
+                                    <div key={season} className="flex items-center gap-3">
+                                      <span className="text-xs text-muted-foreground w-24">
+                                        {season}
+                                      </span>
+                                      <div className="flex-1 bg-muted rounded-full h-6 relative overflow-hidden">
+                                        <div 
+                                          className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500"
+                                          style={{ width: `${percentage}%` }}
+                                        />
+                                      </div>
+                                      <span className="text-sm font-bold w-16 text-right">
+                                        {value % 1 === 0 ? value : value.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         )}
       </main>
     </div>
