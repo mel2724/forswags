@@ -94,8 +94,14 @@ const StatsManager = () => {
   const [stats, setStats] = useState<AthleteStat[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [editingStat, setEditingStat] = useState<AthleteStat | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "comparison">("grid");
+  const [importResults, setImportResults] = useState<{
+    success: number;
+    failed: number;
+    errors: string[];
+  } | null>(null);
 
   // Form fields
   const [statName, setStatName] = useState("");
@@ -194,6 +200,164 @@ const StatsManager = () => {
     a.download = `stats-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     toast.success("Stats exported to CSV");
+  };
+
+  const handleCSVImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !athleteId) return;
+
+    // Validate file type
+    if (!file.name.endsWith('.csv')) {
+      toast.error("Please upload a CSV file");
+      return;
+    }
+
+    // Validate file size (max 1MB)
+    if (file.size > 1024 * 1024) {
+      toast.error("File size must be less than 1MB");
+      return;
+    }
+
+    setSaving(true);
+    const errors: string[] = [];
+    let successCount = 0;
+    let failedCount = 0;
+
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        throw new Error("CSV file is empty or has no data rows");
+      }
+
+      // Parse header
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const requiredHeaders = ['stat name', 'value', 'season'];
+      const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+      
+      if (missingHeaders.length > 0) {
+        throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`);
+      }
+
+      // Get column indices
+      const indices = {
+        name: headers.indexOf('stat name'),
+        value: headers.indexOf('value'),
+        season: headers.indexOf('season'),
+        unit: headers.indexOf('unit'),
+        category: headers.indexOf('category'),
+        highlighted: headers.indexOf('highlighted'),
+      };
+
+      // Process each row
+      for (let i = 1; i < lines.length && i <= 100; i++) { // Limit to 100 rows
+        try {
+          const values = lines[i].split(',').map(v => v.trim());
+          
+          if (values.length < 3) {
+            errors.push(`Row ${i + 1}: Incomplete data`);
+            failedCount++;
+            continue;
+          }
+
+          const statName = values[indices.name];
+          const statValue = parseFloat(values[indices.value]);
+          const season = values[indices.season];
+          const unit = indices.unit >= 0 ? values[indices.unit] : undefined;
+          const category = indices.category >= 0 ? values[indices.category] : undefined;
+          const isHighlighted = indices.highlighted >= 0 
+            ? values[indices.highlighted].toLowerCase() === 'yes' || values[indices.highlighted] === '1'
+            : false;
+
+          // Validate data
+          const validation = statSchema.safeParse({
+            stat_name: statName,
+            stat_value: statValue,
+            season: season,
+            category: category || undefined,
+            unit: unit || undefined,
+            is_highlighted: isHighlighted,
+          });
+
+          if (!validation.success) {
+            errors.push(`Row ${i + 1}: ${validation.error.errors[0].message}`);
+            failedCount++;
+            continue;
+          }
+
+          // Insert stat
+          const { error } = await supabase
+            .from("athlete_stats")
+            .insert({
+              athlete_id: athleteId,
+              stat_name: validation.data.stat_name,
+              stat_value: validation.data.stat_value,
+              season: validation.data.season,
+              category: validation.data.category,
+              unit: validation.data.unit,
+              is_highlighted: validation.data.is_highlighted,
+            });
+
+          if (error) {
+            errors.push(`Row ${i + 1}: ${error.message}`);
+            failedCount++;
+          } else {
+            successCount++;
+          }
+        } catch (error: any) {
+          errors.push(`Row ${i + 1}: ${error.message}`);
+          failedCount++;
+        }
+      }
+
+      // Reload stats
+      const { data: statsData } = await supabase
+        .from("athlete_stats")
+        .select("*")
+        .eq("athlete_id", athleteId)
+        .order("season", { ascending: false })
+        .order("created_at", { ascending: false });
+
+      if (statsData) {
+        setStats(statsData);
+      }
+
+      // Show results
+      setImportResults({ success: successCount, failed: failedCount, errors });
+      
+      if (successCount > 0) {
+        toast.success(`Successfully imported ${successCount} stats`);
+      }
+      if (failedCount > 0) {
+        toast.error(`Failed to import ${failedCount} stats. Check details.`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Error importing CSV");
+      setImportResults({ success: 0, failed: 0, errors: [error.message] });
+    } finally {
+      setSaving(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  const downloadSampleCSV = () => {
+    const headers = ["Stat Name", "Value", "Unit", "Category", "Season", "Highlighted"];
+    const sampleRows = [
+      ["Touchdowns", "12", "count", "offensive", seasons[0], "Yes"],
+      ["Tackles", "45", "count", "defensive", seasons[0], "No"],
+      ["40-Yard Dash", "4.5", "seconds", "physical", seasons[0], "Yes"],
+    ];
+
+    const csv = [headers, ...sampleRows].map(row => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "stats-sample.csv";
+    a.click();
+    toast.success("Sample CSV downloaded");
   };
 
   const handleTemplateSelect = (sport: keyof typeof STAT_TEMPLATES) => {
@@ -331,6 +495,14 @@ const StatsManager = () => {
             <Button variant="ghost" size="sm" onClick={exportToCSV}>
               <Download className="h-4 w-4 mr-2" />
               Export
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsImportDialogOpen(true)}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Import
             </Button>
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -509,6 +681,136 @@ const StatsManager = () => {
                   </Button>
                 ))}
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* CSV Import Dialog */}
+          <Dialog open={isImportDialogOpen} onOpenChange={(open) => {
+            setIsImportDialogOpen(open);
+            if (!open) setImportResults(null);
+          }}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="uppercase tracking-tight">
+                  Bulk Import Stats
+                </DialogTitle>
+                <DialogDescription>
+                  Upload a CSV file to import multiple stats at once
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                {!importResults ? (
+                  <>
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <Label 
+                        htmlFor="csv-upload" 
+                        className="cursor-pointer text-primary hover:underline font-semibold"
+                      >
+                        Click to upload CSV file
+                      </Label>
+                      <Input
+                        id="csv-upload"
+                        type="file"
+                        accept=".csv"
+                        onChange={handleCSVImport}
+                        disabled={saving}
+                        className="hidden"
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Max file size: 1MB | Max rows: 100
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">CSV Format Requirements</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={downloadSampleCSV}
+                        >
+                          <Download className="h-3 w-3 mr-2" />
+                          Download Sample
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-muted p-4 rounded-lg space-y-2 text-sm">
+                        <p className="font-semibold">Required Columns:</p>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+                          <li><code className="bg-background px-1 py-0.5 rounded">Stat Name</code> - Name of the statistic</li>
+                          <li><code className="bg-background px-1 py-0.5 rounded">Value</code> - Numeric value</li>
+                          <li><code className="bg-background px-1 py-0.5 rounded">Season</code> - Format: YYYY-YYYY (e.g., 2024-2025)</li>
+                        </ul>
+                        
+                        <p className="font-semibold mt-3">Optional Columns:</p>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-2">
+                          <li><code className="bg-background px-1 py-0.5 rounded">Unit</code> - yards, seconds, points, etc.</li>
+                          <li><code className="bg-background px-1 py-0.5 rounded">Category</code> - offensive, defensive, physical, academic, leadership</li>
+                          <li><code className="bg-background px-1 py-0.5 rounded">Highlighted</code> - Yes/No or 1/0</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-6 p-6 bg-muted rounded-lg">
+                      <div className="text-center">
+                        <div className="text-3xl font-black text-green-600">
+                          {importResults.success}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Imported</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-black text-destructive">
+                          {importResults.failed}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Failed</div>
+                      </div>
+                    </div>
+
+                    {importResults.errors.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-destructive">
+                          Errors ({importResults.errors.length}):
+                        </p>
+                        <div className="max-h-48 overflow-y-auto bg-destructive/10 p-3 rounded-lg space-y-1">
+                          {importResults.errors.map((error, idx) => (
+                            <p key={idx} className="text-xs text-destructive">
+                              {error}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <Button 
+                      onClick={() => {
+                        setImportResults(null);
+                        setIsImportDialogOpen(false);
+                      }}
+                      className="w-full"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {!importResults && (
+                <DialogFooter>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setIsImportDialogOpen(false);
+                      setImportResults(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </DialogFooter>
+              )}
             </DialogContent>
           </Dialog>
           </div>
