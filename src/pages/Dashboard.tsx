@@ -451,15 +451,46 @@ const Dashboard = () => {
                         </div>
                       ))}
                     </div>
+                  ) : athlete?.analysis_requested_at ? (
+                    <div className="text-center py-12">
+                      <Clock className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+                      <h4 className="font-bold mb-2">Analysis In Progress</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Our expert team is analyzing your profile. You'll receive a notification when your Prime Dime college matches are ready!
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Requested: {new Date(athlete.analysis_requested_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   ) : (
                     <div className="text-center py-12">
                       <School className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h4 className="font-bold mb-2">No Matches Yet</h4>
+                      <h4 className="font-bold mb-2">Get Your Prime Dime Matches</h4>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Complete your profile to get personalized college recommendations
+                        Let our expert team analyze your profile and find your perfect college matches
                       </p>
-                      <Button onClick={() => navigate("/profile")}>
-                        Complete Profile
+                      <Button onClick={async () => {
+                        try {
+                          const { error } = await supabase.functions.invoke("request-prime-dime-analysis");
+                          if (error) throw error;
+                          toast("Analysis Requested!", {
+                            description: "Our team will analyze your profile. You'll be notified when your matches are ready (usually within 24 hours).",
+                          });
+                          // Refresh athlete data
+                          const { data } = await supabase
+                            .from("athletes")
+                            .select("*")
+                            .eq("user_id", user.id)
+                            .single();
+                          if (data) setAthlete(data);
+                        } catch (error: any) {
+                          toast("Error", {
+                            description: error.message || "Failed to request analysis",
+                          });
+                        }
+                      }}>
+                        <Target className="mr-2 h-4 w-4" />
+                        Request Analysis
                       </Button>
                     </div>
                   )}

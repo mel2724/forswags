@@ -255,6 +255,8 @@ export type Database = {
         Row: {
           academic_achievements: string | null
           act_score: number | null
+          analysis_notified_at: string | null
+          analysis_requested_at: string | null
           athletic_awards: string[] | null
           being_recruited: boolean | null
           bench_press_max: number | null
@@ -338,6 +340,8 @@ export type Database = {
         Insert: {
           academic_achievements?: string | null
           act_score?: number | null
+          analysis_notified_at?: string | null
+          analysis_requested_at?: string | null
           athletic_awards?: string[] | null
           being_recruited?: boolean | null
           bench_press_max?: number | null
@@ -421,6 +425,8 @@ export type Database = {
         Update: {
           academic_achievements?: string | null
           act_score?: number | null
+          analysis_notified_at?: string | null
+          analysis_requested_at?: string | null
           athletic_awards?: string[] | null
           being_recruited?: boolean | null
           bench_press_max?: number | null
@@ -783,6 +789,7 @@ export type Database = {
           athletic_fit: number | null
           created_at: string
           financial_fit: number | null
+          generated_at: string | null
           id: string
           is_saved: boolean | null
           match_score: number | null
@@ -796,6 +803,7 @@ export type Database = {
           athletic_fit?: number | null
           created_at?: string
           financial_fit?: number | null
+          generated_at?: string | null
           id?: string
           is_saved?: boolean | null
           match_score?: number | null
@@ -809,6 +817,7 @@ export type Database = {
           athletic_fit?: number | null
           created_at?: string
           financial_fit?: number | null
+          generated_at?: string | null
           id?: string
           is_saved?: boolean | null
           match_score?: number | null
