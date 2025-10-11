@@ -138,7 +138,7 @@ export default function AdminAthletes() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/players`)}
+                        onClick={() => navigate(`/profile/${athlete.id}`)}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

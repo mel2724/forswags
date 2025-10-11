@@ -49,7 +49,7 @@ interface AthleteProfile {
 }
 
 export default function PublicProfile() {
-  const { username } = useParams();
+  const { username, id } = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<AthleteProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,17 +57,17 @@ export default function PublicProfile() {
 
   useEffect(() => {
     loadProfile();
-  }, [username]);
+  }, [username, id]);
 
   const loadProfile = async () => {
     try {
-      if (!username) {
+      if (!username && !id) {
         setNotFound(true);
         return;
       }
 
-      // Fetch athlete data with profile data
-      const { data: athleteData, error: athleteError } = await supabase
+      // Build query based on whether we have username or id
+      let query = supabase
         .from('athletes')
         .select(`
           *,
@@ -77,9 +77,16 @@ export default function PublicProfile() {
             state
           )
         `)
-        .eq('username', username)
-        .eq('visibility', 'public')
-        .maybeSingle();
+        .eq('visibility', 'public');
+
+      // Filter by username or id
+      if (username) {
+        query = query.eq('username', username);
+      } else if (id) {
+        query = query.eq('id', id);
+      }
+
+      const { data: athleteData, error: athleteError } = await query.maybeSingle();
 
       if (athleteError) throw athleteError;
 

@@ -113,6 +113,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
+              <Route path="/profile/:id" element={<PublicProfile />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/claim/:token" element={<ClaimProfile />} />
               <Route path="/sponsors" element={<Sponsors />} />
