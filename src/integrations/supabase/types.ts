@@ -501,7 +501,15 @@ export type Database = {
           visibility?: string | null
           weight_lb?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "athletes_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
