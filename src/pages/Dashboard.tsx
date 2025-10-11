@@ -474,7 +474,7 @@ const Dashboard = () => {
                           <Target className="h-5 w-5 text-primary" />
                           The Prime Dime College Matching
                         </CardTitle>
-                        <CardDescription>AI-powered college recommendations</CardDescription>
+                        <CardDescription>Expert college recommendations</CardDescription>
                       </div>
                       <Badge variant="secondary">Pro Feature</Badge>
                     </div>
@@ -484,7 +484,7 @@ const Dashboard = () => {
                       <School className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                       <h4 className="font-bold text-xl mb-2">Unlock The Prime Dime</h4>
                       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                        Get AI-powered college recommendations tailored to your academic, athletic, and financial profile with a Pro membership.
+                        Get expert college recommendations from our team, tailored to your academic, athletic, and financial profile with a Pro membership.
                       </p>
                       <Button onClick={() => navigate("/membership")} size="lg">
                         <Trophy className="h-4 w-4 mr-2" />

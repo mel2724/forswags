@@ -121,7 +121,7 @@ function CollegeMatchingPage() {
         <div>
           <h1 className="text-3xl font-bold mb-2">College Matching</h1>
           <p className="text-muted-foreground">
-            AI-powered recommendations based on your academic and athletic profile
+            Expert recommendations from our team based on your academic and athletic profile
           </p>
         </div>
         <div className="flex gap-2">
@@ -156,7 +156,7 @@ function CollegeMatchingPage() {
           <CardHeader>
             <CardTitle>No Matches Yet</CardTitle>
             <CardDescription>
-              Click "Analyze Matches" to get AI-powered college recommendations based on your profile.
+              Click "Analyze Matches" to get expert college recommendations from our team based on your profile.
             </CardDescription>
           </CardHeader>
           <CardContent>

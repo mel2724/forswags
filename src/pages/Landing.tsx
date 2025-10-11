@@ -249,7 +249,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="font-semibold">AI college matching</span>
+                    <span className="font-semibold">Expert college matching</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />

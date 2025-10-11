@@ -189,7 +189,7 @@ const PrimeDime = () => {
               The Prime Dime is a Pro Feature
             </h2>
             <p className="text-muted-foreground text-lg mb-6 max-w-md mx-auto">
-              Get AI-powered college recommendations tailored to your academic, athletic, and financial profile. 
+              Get expert college recommendations from our team, tailored to your academic, athletic, and financial profile. 
               Upgrade to Pro to unlock The Prime Dime and find your perfect college fit.
             </p>
             <div className="space-y-4 text-left max-w-md mx-auto mb-8">
@@ -203,7 +203,7 @@ const PrimeDime = () => {
               <div className="flex items-start gap-3">
                 <TrendingUp className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">AI-Powered Analysis</p>
+                  <p className="font-semibold">Expert Team Analysis</p>
                   <p className="text-sm text-muted-foreground">Academic, athletic, and financial fit scores</p>
                 </div>
               </div>
