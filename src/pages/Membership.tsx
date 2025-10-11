@@ -461,6 +461,11 @@ export default function Membership() {
                     </thead>
                     <tbody>
                       <tr className="border-b">
+                        <td className="py-3 px-4">The Playbook for Life</td>
+                        <td className="text-center py-3 px-4"><Check className="h-5 w-5 text-primary mx-auto" /></td>
+                        <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
+                      </tr>
+                      <tr className="border-b">
                         <td className="py-3 px-4">Video Uploads</td>
                         <td className="text-center py-3 px-4">1</td>
                         <td className="text-center py-3 px-4 bg-primary/5 font-bold">Unlimited</td>
