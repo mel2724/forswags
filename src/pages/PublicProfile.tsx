@@ -136,18 +136,26 @@ export default function PublicProfile() {
           text: `Check out ${profile?.full_name}'s athlete profile on ForSWAGs`,
           url,
         });
-      } catch (error) {
-        // User cancelled share or error occurred
-        copyToClipboard(url);
+        toast.success('Profile shared successfully!');
+      } catch (error: any) {
+        // Only copy to clipboard if user didn't cancel
+        if (error.name !== 'AbortError') {
+          await copyToClipboard(url);
+        }
       }
     } else {
-      copyToClipboard(url);
+      await copyToClipboard(url);
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Profile link copied to clipboard!');
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Profile link copied to clipboard!');
+    } catch (error) {
+      // Fallback if clipboard API fails
+      toast.error('Failed to copy link. Please copy manually: ' + text);
+    }
   };
 
   const formatHeight = (inches?: number) => {
