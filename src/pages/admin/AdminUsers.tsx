@@ -71,27 +71,20 @@ export default function AdminUsers() {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      // Check if user already has a role
-      const { data: existingRole } = await supabase
+      // First, delete all existing roles for this user
+      const { error: deleteError } = await supabase
         .from("user_roles")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
+        .delete()
+        .eq("user_id", userId);
 
-      if (existingRole) {
-        const { error } = await supabase
-          .from("user_roles")
-          .update({ role: newRole as any })
-          .eq("user_id", userId);
+      if (deleteError) throw deleteError;
 
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("user_roles")
-          .insert([{ user_id: userId, role: newRole as any }]);
+      // Then insert the new role
+      const { error: insertError } = await supabase
+        .from("user_roles")
+        .insert([{ user_id: userId, role: newRole as any }]);
 
-        if (error) throw error;
-      }
+      if (insertError) throw insertError;
 
       toast({
         title: "Success",
