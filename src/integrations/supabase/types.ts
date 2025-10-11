@@ -271,6 +271,8 @@ export type Database = {
           consent_ip_address: unknown | null
           consent_timestamp: string | null
           consent_verified_by: string | null
+          converted_at: string | null
+          converted_to_alumni: boolean | null
           created_at: string
           date_of_birth: string | null
           dominant_hand: string | null
@@ -352,6 +354,8 @@ export type Database = {
           consent_ip_address?: unknown | null
           consent_timestamp?: string | null
           consent_verified_by?: string | null
+          converted_at?: string | null
+          converted_to_alumni?: boolean | null
           created_at?: string
           date_of_birth?: string | null
           dominant_hand?: string | null
@@ -433,6 +437,8 @@ export type Database = {
           consent_ip_address?: unknown | null
           consent_timestamp?: string | null
           consent_verified_by?: string | null
+          converted_at?: string | null
+          converted_to_alumni?: boolean | null
           created_at?: string
           date_of_birth?: string | null
           dominant_hand?: string | null
@@ -3209,7 +3215,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "athlete" | "parent" | "coach" | "recruiter" | "admin"
+      app_role:
+        | "athlete"
+        | "parent"
+        | "coach"
+        | "recruiter"
+        | "admin"
+        | "alumni"
       evaluation_status: "pending" | "in_progress" | "completed"
       payment_status: "pending" | "completed" | "failed" | "refunded"
       subscription_plan:
@@ -3345,7 +3357,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["athlete", "parent", "coach", "recruiter", "admin"],
+      app_role: ["athlete", "parent", "coach", "recruiter", "admin", "alumni"],
       evaluation_status: ["pending", "in_progress", "completed"],
       payment_status: ["pending", "completed", "failed", "refunded"],
       subscription_plan: [

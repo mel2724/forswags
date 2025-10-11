@@ -28,6 +28,7 @@ const StatsManager = lazy(() => import("./pages/StatsManager"));
 const CollegePreferences = lazy(() => import("./pages/CollegePreferences"));
 const CollegeMatching = lazy(() => import("./pages/CollegeMatching"));
 const AlumniNetwork = lazy(() => import("./pages/AlumniNetwork"));
+const AlumniDashboard = lazy(() => import("./pages/AlumniDashboard"));
 const MediaGallery = lazy(() => import("./pages/MediaGallery"));
 const Rankings = lazy(() => import("./pages/Rankings"));
 const Notifications = lazy(() => import("./pages/Notifications"));
@@ -134,6 +135,7 @@ const App = () => (
               <Route path="/college-matches" element={<CollegeMatching />} />
               <Route path="/college-fit" element={<CollegeFit />} />
               <Route path="/alumni-network" element={<AlumniNetwork />} />
+              <Route path="/alumni/dashboard" element={<AlumniDashboard />} />
               <Route path="/media" element={<MediaGallery />} />
               <Route path="/rankings" element={<Rankings />} />
               <Route path="/schools" element={<SchoolSearch />} />
