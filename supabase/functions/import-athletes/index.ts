@@ -117,22 +117,28 @@ serve(async (req) => {
 
         if (isAlumni) {
           // Create alumni profile
+          console.log(`Creating alumni profile for ${row.full_name}, grad year: ${gradYear}`);
+          const alumniData = {
+            user_id: authData.user.id,
+            school_id: null,
+            sport: row.sport,
+            position: row.position || null,
+            graduation_year: gradYear,
+            bio: `Imported profile for ${row.full_name}`,
+          };
+          console.log('Alumni data:', JSON.stringify(alumniData));
+          
           const { error: alumniError } = await supabaseClient
             .from("alumni")
-            .insert({
-              user_id: authData.user.id,
-              school_id: null, // TODO: Match school if available
-              sport: row.sport,
-              position: row.position || null,
-              graduation_year: gradYear,
-              bio: `Imported profile for ${row.full_name}`,
-            });
+            .insert(alumniData);
 
           if (alumniError) {
+            console.error('Alumni insert error:', alumniError);
             result.errors.push(`Row ${i + 1}: Failed to create alumni - ${alumniError.message}`);
             continue;
           }
 
+          console.log(`Successfully created alumni profile for ${row.full_name}`);
           result.alumni++;
         } else {
           // Create athlete profile
