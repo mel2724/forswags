@@ -52,7 +52,7 @@ export type Database = {
           linkedin_url: string | null
           position: string | null
           professional_role: string | null
-          school_id: string
+          school_id: string | null
           sport: string
           updated_at: string
           user_id: string
@@ -68,7 +68,7 @@ export type Database = {
           linkedin_url?: string | null
           position?: string | null
           professional_role?: string | null
-          school_id: string
+          school_id?: string | null
           sport: string
           updated_at?: string
           user_id: string
@@ -84,7 +84,7 @@ export type Database = {
           linkedin_url?: string | null
           position?: string | null
           professional_role?: string | null
-          school_id?: string
+          school_id?: string | null
           sport?: string
           updated_at?: string
           user_id?: string
