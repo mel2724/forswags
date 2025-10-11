@@ -8,10 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { 
   User, MapPin, Calendar, Trophy, GraduationCap, 
-  Video, Target, Heart, ArrowLeft, Share2, Download
+  Video, Target, Heart, Share2, Download, Home
 } from "lucide-react";
-import logoFull from "@/assets/logo-full.jpeg";
 import { toast } from "sonner";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 interface AthleteProfile {
   id: string;
@@ -191,7 +192,7 @@ export default function PublicProfile() {
               </p>
             </div>
             <Button onClick={() => navigate('/')} className="w-full">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <Home className="mr-2 h-4 w-4" />
               Go to Homepage
             </Button>
           </CardContent>
@@ -201,25 +202,20 @@ export default function PublicProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b sticky top-0 bg-background z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <img src={logoFull} alt="ForSWAGs" className="h-10" />
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleShare}>
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/')}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Home
-              </Button>
-            </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      
+      {/* Share Button Bar */}
+      <div className="border-b bg-muted/30">
+        <div className="container mx-auto px-6 py-3">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={handleShare}>
+              <Share2 className="mr-2 h-4 w-4" />
+              Share Profile
+            </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Profile Content */}
       <div className="container mx-auto px-6 py-8 max-w-6xl">
@@ -529,13 +525,9 @@ export default function PublicProfile() {
             )}
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="mt-12 pt-6 border-t text-center text-sm text-muted-foreground">
-          <p>Powered by <span className="font-semibold text-primary">ForSWAGs</span></p>
-          <p className="mt-1">Building Champions, One Profile at a Time</p>
-        </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }
