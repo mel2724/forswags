@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,7 +58,7 @@ serve(async (req) => {
         // Get user profile for additional info
         const { data: profile } = await supabaseClient
           .from("profiles")
-          .select("full_name")
+          .select("full_name, email")
           .eq("id", athlete.user_id)
           .single();
 
@@ -118,6 +121,17 @@ serve(async (req) => {
             });
         }
 
+        // Cancel their membership subscription (set to inactive)
+        await supabaseClient
+          .from("memberships")
+          .update({ 
+            status: 'cancelled',
+            end_date: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", athlete.user_id)
+          .in("status", ['active', 'trialing']);
+
         // Send notification to user
         await supabaseClient
           .from("notifications")
@@ -128,6 +142,39 @@ serve(async (req) => {
             type: "success",
             link: "/alumni/dashboard"
           });
+
+        // Send email notification
+        if (profile?.email) {
+          try {
+            // Get email template
+            const { data: template } = await supabaseClient
+              .from("email_templates")
+              .select("subject, content")
+              .eq("template_key", "alumni_transition")
+              .single();
+
+            if (template) {
+              // Replace variables in template
+              let emailContent = template.content
+                .replace(/{{athlete_name}}/g, profile.full_name || 'Athlete')
+                .replace(/{{graduation_year}}/g, athlete.graduation_year.toString())
+                .replace(/{{dashboard_url}}/g, `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || ''}/alumni/dashboard`);
+
+              // Send email via Resend
+              await resend.emails.send({
+                from: "ForSwags <onboarding@resend.dev>",
+                to: [profile.email],
+                subject: template.subject,
+                html: emailContent,
+              });
+
+              console.log(`Email sent to ${profile.email} for athlete ${athlete.id}`);
+            }
+          } catch (emailError) {
+            console.error(`Failed to send email for athlete ${athlete.id}:`, emailError);
+            // Don't fail the entire transition if email fails
+          }
+        }
 
         transitioned++;
         console.log(`Successfully transitioned athlete ${athlete.id} to alumni`);
