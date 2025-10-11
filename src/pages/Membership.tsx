@@ -491,9 +491,9 @@ export default function Membership() {
                         <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-4">College Matching</td>
-                        <td className="text-center py-3 px-4">Basic</td>
-                        <td className="text-center py-3 px-4 bg-primary/5 font-bold">Advanced AI</td>
+                        <td className="py-3 px-4">The Prime Dime College Matching</td>
+                        <td className="text-center py-3 px-4">-</td>
+                        <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
                       </tr>
                     </tbody>
                   </table>

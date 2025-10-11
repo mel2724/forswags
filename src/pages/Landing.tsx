@@ -383,7 +383,7 @@ export default function Landing() {
               },
               {
                 question: "What's the difference between Starter, Pro, and Championship?",
-                answer: "Starter (Free): Limited profile features, 3 training courses, browse athlete directory. Pro Monthly ($14.99): Full profile, unlimited courses, coach evaluations, college matching, analytics, free parent account. Championship Yearly ($97): Everything in Pro, plus priority support, advanced analytics, exclusive content, direct recruiter messaging, and you save $82 per year."
+                answer: "Starter (Free): Limited profile features, 3 training courses, browse athlete directory. Pro Monthly ($14.99): Full profile, unlimited courses, coach evaluations, The Prime Dime college matching, analytics, free parent account. Championship Yearly ($97): Everything in Pro, plus priority support, advanced analytics, exclusive content, direct recruiter messaging, and you save $82 per year."
               },
               {
                 question: "What services can I add on to my membership?",

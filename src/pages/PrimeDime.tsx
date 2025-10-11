@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import logoIcon from "@/assets/forswags-logo.png";
+import { useMembershipStatus } from "@/hooks/useMembershipStatus";
 import { 
   ArrowLeft, 
   Trophy, 
@@ -17,7 +18,8 @@ import {
   MapPin,
   Users,
   Award,
-  Star
+  Star,
+  Lock
 } from "lucide-react";
 
 interface School {
@@ -49,6 +51,7 @@ const PrimeDime = () => {
   const [loading, setLoading] = useState(true);
   const [matches, setMatches] = useState<CollegeMatch[]>([]);
   const [athleteId, setAthleteId] = useState<string | null>(null);
+  const { isFree, isLoading: membershipLoading } = useMembershipStatus();
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -140,13 +143,84 @@ const PrimeDime = () => {
     return "Fair";
   };
 
-  if (loading) {
+  if (loading || membershipLoading) {
     return (
       <div className="min-h-screen bg-background sports-pattern flex items-center justify-center">
         <div className="text-center">
           <Trophy className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
           <p className="text-muted-foreground">Loading your Prime Dime...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Check if user has access to Prime Dime (Pro feature)
+  if (isFree) {
+    return (
+      <div className="min-h-screen bg-background sports-pattern">
+        <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
+              <div>
+                <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">Prime Dime</h1>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 College Matches</p>
+              </div>
+            </div>
+            
+            <nav className="flex items-center space-x-4">
+              <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Dashboard
+              </Button>
+            </nav>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-16">
+          <Card className="max-w-2xl mx-auto text-center p-12 bg-card/50 backdrop-blur border-2 border-primary/20">
+            <div className="mb-6">
+              <div className="relative inline-block">
+                <Trophy className="h-24 w-24 text-primary mx-auto mb-4" />
+                <Lock className="h-8 w-8 text-primary absolute -top-2 -right-2 bg-background rounded-full p-1" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-black uppercase mb-4 text-gradient-accent">
+              The Prime Dime is a Pro Feature
+            </h2>
+            <p className="text-muted-foreground text-lg mb-6 max-w-md mx-auto">
+              Get AI-powered college recommendations tailored to your academic, athletic, and financial profile. 
+              Upgrade to Pro to unlock The Prime Dime and find your perfect college fit.
+            </p>
+            <div className="space-y-4 text-left max-w-md mx-auto mb-8">
+              <div className="flex items-start gap-3">
+                <Target className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Top 10 College Matches</p>
+                  <p className="text-sm text-muted-foreground">Personalized recommendations based on your profile</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <TrendingUp className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">AI-Powered Analysis</p>
+                  <p className="text-sm text-muted-foreground">Academic, athletic, and financial fit scores</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <GraduationCap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Expert Insights</p>
+                  <p className="text-sm text-muted-foreground">Detailed school information and recommendations</p>
+                </div>
+              </div>
+            </div>
+            <Button onClick={() => navigate("/membership")} size="lg" className="w-full max-w-md">
+              <Trophy className="mr-2 h-5 w-5" />
+              Upgrade to Pro
+            </Button>
+          </Card>
+        </main>
       </div>
     );
   }

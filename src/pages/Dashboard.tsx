@@ -386,26 +386,27 @@ const Dashboard = () => {
 
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-6">
-              {/* College Matches */}
-              <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-2 border-primary/20">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="uppercase tracking-tight flex items-center gap-2">
-                        <Target className="h-5 w-5 text-primary" />
-                        Top College Matches
-                      </CardTitle>
-                      <CardDescription>Our team's recommendations based on your profile</CardDescription>
+              {/* College Matches - Pro Feature Only */}
+              {membership?.plan !== "free" ? (
+                <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-2 border-primary/20">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+                          <Target className="h-5 w-5 text-primary" />
+                          Top College Matches
+                        </CardTitle>
+                        <CardDescription>Our team's recommendations based on your profile</CardDescription>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => navigate("/prime-dime")}>
+                        View Prime Dime
+                      </Button>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/prime-dime")}>
-                      View Prime Dime
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {matches.length > 0 ? (
-                    <div className="space-y-4">
-                      {matches.map((match) => (
+                  </CardHeader>
+                  <CardContent>
+                    {matches.length > 0 ? (
+                      <div className="space-y-4">
+                        {matches.map((match) => (
                         <div key={match.id} className="p-4 rounded-lg border border-border hover:border-primary transition-colors">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -464,6 +465,35 @@ const Dashboard = () => {
                   )}
                 </CardContent>
               </Card>
+              ) : (
+                <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-2 border-primary/20">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+                          <Target className="h-5 w-5 text-primary" />
+                          The Prime Dime College Matching
+                        </CardTitle>
+                        <CardDescription>AI-powered college recommendations</CardDescription>
+                      </div>
+                      <Badge variant="secondary">Pro Feature</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12">
+                      <School className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h4 className="font-bold text-xl mb-2">Unlock The Prime Dime</h4>
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Get AI-powered college recommendations tailored to your academic, athletic, and financial profile with a Pro membership.
+                      </p>
+                      <Button onClick={() => navigate("/membership")} size="lg">
+                        <Trophy className="h-4 w-4 mr-2" />
+                        Upgrade to Pro
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Next Steps */}
               <Card className="bg-card/80 backdrop-blur border-2 border-secondary/20">
