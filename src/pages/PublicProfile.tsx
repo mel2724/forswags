@@ -67,26 +67,19 @@ export default function PublicProfile() {
       }
 
       // Build query based on whether we have username or id
-      let query = supabase
+      let athleteQuery = supabase
         .from('athletes')
-        .select(`
-          *,
-          user:profiles!athletes_user_id_fkey(
-            full_name,
-            city,
-            state
-          )
-        `)
+        .select('*')
         .eq('visibility', 'public');
 
       // Filter by username or id
       if (username) {
-        query = query.eq('username', username);
+        athleteQuery = athleteQuery.eq('username', username);
       } else if (id) {
-        query = query.eq('id', id);
+        athleteQuery = athleteQuery.eq('id', id);
       }
 
-      const { data: athleteData, error: athleteError } = await query.maybeSingle();
+      const { data: athleteData, error: athleteError } = await athleteQuery.maybeSingle();
 
       if (athleteError) throw athleteError;
 
@@ -95,17 +88,28 @@ export default function PublicProfile() {
         return;
       }
 
+      // Fetch profile data separately
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, city, state')
+        .eq('id', athleteData.user_id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+      }
+
       // SECURITY: Check if athlete is a minor and hide social media handles
-      const isMinor = athleteData.date_of_birth 
+      const isMinor = athleteData.date_of_birth
         ? new Date().getFullYear() - new Date(athleteData.date_of_birth).getFullYear() < 18
         : false;
 
       // Combine athlete and profile data
       const combinedProfile: AthleteProfile = {
         id: athleteData.id,
-        full_name: (athleteData.user as any)?.full_name || '',
-        city: (athleteData.user as any)?.city,
-        state: (athleteData.user as any)?.state,
+        full_name: profileData?.full_name || '',
+        city: profileData?.city,
+        state: profileData?.state,
         ...athleteData,
         // SECURITY: Always hide social media handles for minors to prevent direct contact
         twitter_handle: isMinor ? undefined : athleteData.twitter_handle,
