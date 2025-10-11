@@ -94,20 +94,30 @@ serve(async (req) => {
           continue;
         }
 
-        // Create temporary user account
-        const tempPassword = crypto.randomUUID();
-        const { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
-          email: row.email,
-          password: tempPassword,
-          email_confirm: true,
-          user_metadata: {
-            full_name: row.full_name,
-          }
-        });
+        // Check if user already exists
+        const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
+        let userId = existingUsers?.users?.find(u => u.email === row.email)?.id;
+        
+        if (!userId) {
+          // Create new user account
+          const tempPassword = crypto.randomUUID();
+          const { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
+            email: row.email,
+            password: tempPassword,
+            email_confirm: true,
+            user_metadata: {
+              full_name: row.full_name,
+            }
+          });
 
-        if (authError) {
-          result.errors.push(`Row ${i + 1}: Failed to create user - ${authError.message}`);
-          continue;
+          if (authError) {
+            result.errors.push(`Row ${i + 1}: Failed to create user - ${authError.message}`);
+            continue;
+          }
+          
+          userId = authData.user.id;
+        } else {
+          console.log(`User ${row.email} already exists, reusing existing account`);
         }
 
         // Generate claim token
@@ -119,7 +129,7 @@ serve(async (req) => {
           // Create alumni profile
           console.log(`Creating alumni profile for ${row.full_name}, grad year: ${gradYear}`);
           const alumniData = {
-            user_id: authData.user.id,
+            user_id: userId,
             school_id: null,
             sport: row.sport,
             position: row.position || null,
@@ -145,7 +155,7 @@ serve(async (req) => {
           const { error: athleteError } = await supabaseClient
             .from("athletes")
             .insert({
-              user_id: authData.user.id,
+              user_id: userId,
               sport: row.sport,
               position: row.position || null,
               high_school: row.high_school || null,
