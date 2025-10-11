@@ -40,7 +40,7 @@ export default function AdminAthletes() {
         .from("athletes")
         .select(`
           *,
-          profiles!athletes_user_id_fkey (
+          profiles (
             email,
             full_name
           )
