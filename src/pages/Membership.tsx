@@ -420,27 +420,6 @@ export default function Membership() {
                         <p className="text-xs text-muted-foreground">$80 value included</p>
                       </div>
                     </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold">Exclusive Webinars</span>
-                        <p className="text-xs text-muted-foreground">Monthly recruiting insights</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold">Early Access</span>
-                        <p className="text-xs text-muted-foreground">New features first</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-3 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold">VIP Support</span>
-                        <p className="text-xs text-muted-foreground">Dedicated account manager</p>
-                      </div>
-                    </li>
                   </ul>
                   <Button
                     className="w-full font-bold"

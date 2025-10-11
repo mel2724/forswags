@@ -224,14 +224,6 @@ export default function MembershipAthlete() {
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Exclusive yearly webinars</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Priority feature access</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
                       <span>Free parent account</span>
                     </li>
                   </ul>
