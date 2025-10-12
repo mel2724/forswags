@@ -14,6 +14,14 @@ import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
+interface MediaAsset {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  media_type: string;
+}
+
 interface AthleteProfile {
   id: string;
   full_name: string;
@@ -53,6 +61,8 @@ export default function PublicProfile() {
   const { username, id } = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<AthleteProfile | null>(null);
+  const [introVideo, setIntroVideo] = useState<MediaAsset | null>(null);
+  const [communityVideo, setCommunityVideo] = useState<MediaAsset | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -119,6 +129,18 @@ export default function PublicProfile() {
       };
 
       setProfile(combinedProfile);
+
+      // Fetch media assets (introduction and community videos)
+      const { data: mediaData } = await supabase
+        .from('media_assets')
+        .select('*')
+        .eq('athlete_id', athleteData.id)
+        .in('media_type', ['introduction_video', 'community_video']);
+
+      if (mediaData) {
+        setIntroVideo(mediaData.find(m => m.media_type === 'introduction_video') || null);
+        setCommunityVideo(mediaData.find(m => m.media_type === 'community_video') || null);
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
       toast.error('Failed to load profile');
@@ -287,6 +309,54 @@ export default function PublicProfile() {
         <div className="grid md:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="md:col-span-2 space-y-6">
+            {/* Introduction Video */}
+            {introVideo && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    {introVideo.title}
+                  </CardTitle>
+                  {introVideo.description && (
+                    <p className="text-sm text-muted-foreground">{introVideo.description}</p>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                    <video
+                      src={introVideo.url}
+                      controls
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Community Involvement Video */}
+            {communityVideo && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="h-5 w-5" />
+                    {communityVideo.title}
+                  </CardTitle>
+                  {communityVideo.description && (
+                    <p className="text-sm text-muted-foreground">{communityVideo.description}</p>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                    <video
+                      src={communityVideo.url}
+                      controls
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Highlights */}
             {profile.highlights_url && (
               <Card>
