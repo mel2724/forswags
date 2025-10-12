@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Trash2, Video, Plus, Edit, ExternalLink, Link as LinkIcon, Crown } from "lucide-react";
+import { ArrowLeft, Upload, Trash2, Video, Plus, Edit, ExternalLink, Link as LinkIcon, Crown, Loader2 } from "lucide-react";
 import { useMembershipStatus } from "@/hooks/useMembershipStatus";
 import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
@@ -324,6 +324,12 @@ const MediaGallery = () => {
             </div>
           ) : (
             <div className="space-y-4">
+              {uploading && (
+                <div className="flex items-center justify-center gap-2 p-4 bg-muted rounded-lg">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-sm font-medium">Uploading video, please wait...</span>
+                </div>
+              )}
               <div>
                 <Label htmlFor={`${type}-file`}>Video File</Label>
                 <Input
@@ -331,6 +337,7 @@ const MediaGallery = () => {
                   type="file"
                   accept="video/*"
                   onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                  disabled={uploading}
                 />
               </div>
               <div>
@@ -340,6 +347,7 @@ const MediaGallery = () => {
                   value={videoTitle}
                   onChange={(e) => setVideoTitle(e.target.value)}
                   placeholder="Enter video title"
+                  disabled={uploading}
                 />
               </div>
               <div>
@@ -350,6 +358,7 @@ const MediaGallery = () => {
                   onChange={(e) => setVideoDesc(e.target.value)}
                   placeholder="Describe your video"
                   rows={3}
+                  disabled={uploading}
                 />
               </div>
               <Button
@@ -370,8 +379,17 @@ const MediaGallery = () => {
                 disabled={uploading || !videoFile || !videoTitle}
                 className="w-full"
               >
-                <Upload className="h-4 w-4 mr-2" />
-                {uploading ? "Uploading..." : "Upload Video"}
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Video
+                  </>
+                )}
               </Button>
             </div>
           )}
