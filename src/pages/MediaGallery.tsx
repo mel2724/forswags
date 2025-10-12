@@ -88,9 +88,10 @@ const MediaGallery = () => {
     file: File,
     mediaType: "introduction_video" | "community_video" | "game_video",
     title: string,
-    description: string
+    description: string,
+    onSuccess?: () => void
   ) => {
-    if (!athleteId) return;
+    if (!athleteId) return false;
 
     // Check free tier limit
     if (isFree && totalVideos >= 1) {
@@ -106,7 +107,7 @@ const MediaGallery = () => {
           "Stand out to college recruiters",
         ]
       });
-      return;
+      return false;
     }
 
     try {
@@ -158,9 +159,12 @@ const MediaGallery = () => {
       if (insertError) throw insertError;
 
       toast.success("Video uploaded successfully!");
-      loadMediaAssets();
+      await loadMediaAssets();
+      onSuccess?.();
+      return true;
     } catch (error: any) {
       toast.error(error.message);
+      return false;
     } finally {
       setUploading(false);
     }
@@ -349,12 +353,16 @@ const MediaGallery = () => {
                 />
               </div>
               <Button
-                onClick={() => {
+                onClick={async () => {
                   if (videoFile && videoTitle) {
-                    handleUpload(videoFile, type, videoTitle, videoDesc);
-                    setVideoFile(null);
-                    setVideoTitle("");
-                    setVideoDesc("");
+                    const success = await handleUpload(videoFile, type, videoTitle, videoDesc, () => {
+                      setVideoFile(null);
+                      setVideoTitle("");
+                      setVideoDesc("");
+                    });
+                    if (!success) {
+                      // Only reset on success via callback, errors keep form intact
+                    }
                   } else {
                     toast.error("Please select a file and enter a title");
                   }
@@ -363,7 +371,7 @@ const MediaGallery = () => {
                 className="w-full"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Upload Video
+                {uploading ? "Uploading..." : "Upload Video"}
               </Button>
             </div>
           )}
