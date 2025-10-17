@@ -22,3 +22,4 @@ jobs:
           password: ${{ secrets.SFTP_PASS }}
           server-dir: ${{ secrets.REMOTE_DIR }}
           local-dir: ./dist/
+          dangerous-force-upload: true
