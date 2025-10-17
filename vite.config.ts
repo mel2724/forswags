@@ -1,4 +1,4 @@
-// Vite Configuration - Force rebuild v15
+// Vite Configuration - Force rebuild v16
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
