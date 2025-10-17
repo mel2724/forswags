@@ -1,3 +1,5 @@
+DirectoryIndex index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /sandbox/
@@ -6,3 +8,5 @@
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /sandbox/index.html [L]
 </IfModule>
+
+Options -Indexes
