@@ -61,6 +61,10 @@ serve(async (req) => {
 
     // Store verification code
     // During onboarding, athlete_id may be null - we'll link it later when the profile is created
+    // Extract first IP from x-forwarded-for header (which may contain multiple IPs)
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : "unknown";
+    
     const { error: insertError } = await supabaseClient
       .from("parent_verifications")
       .insert({
@@ -68,7 +72,7 @@ serve(async (req) => {
         user_id: user.id,
         parent_email,
         verification_code: verificationCode,
-        ip_address: req.headers.get("x-forwarded-for") || "unknown",
+        ip_address: ipAddress,
       });
 
     if (insertError) {
