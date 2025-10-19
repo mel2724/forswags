@@ -77,3 +77,12 @@ verify_jwt = true
 
 [functions.send-renewal-reminders]
 verify_jwt = false
+
+[functions.generate-athlete-of-week]
+verify_jwt = true
+
+[functions.generate-social-calendar]
+verify_jwt = true
+
+[functions.download-athlete-media-pack]
+verify_jwt = true

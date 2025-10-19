@@ -195,6 +195,94 @@ export type Database = {
           },
         ]
       }
+      athlete_of_week: {
+        Row: {
+          athlete_id: string
+          auto_generated: boolean | null
+          created_at: string
+          created_by: string | null
+          generated_copy: string
+          id: string
+          selection_criteria: string
+          selection_rationale: string
+          suggested_hashtags: string[] | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          athlete_id: string
+          auto_generated?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          generated_copy: string
+          id?: string
+          selection_criteria: string
+          selection_rationale: string
+          suggested_hashtags?: string[] | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          athlete_id?: string
+          auto_generated?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          generated_copy?: string
+          id?: string
+          selection_criteria?: string
+          selection_rationale?: string
+          suggested_hashtags?: string[] | null
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_of_week_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athlete_promotion_history: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          id: string
+          last_athlete_of_week: string | null
+          last_featured_date: string | null
+          total_features: number | null
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          id?: string
+          last_athlete_of_week?: string | null
+          last_featured_date?: string | null
+          total_features?: number | null
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          last_athlete_of_week?: string | null
+          last_featured_date?: string | null
+          total_features?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_promotion_history_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_stats: {
         Row: {
           athlete_id: string
@@ -2838,6 +2926,53 @@ export type Database = {
         }
         Relationships: []
       }
+      social_media_calendar: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          created_by: string | null
+          generated_copy: string
+          id: string
+          posted_at: string | null
+          promotion_type: string
+          scheduled_date: string
+          status: string
+          suggested_hashtags: string[] | null
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          created_by?: string | null
+          generated_copy: string
+          id?: string
+          posted_at?: string | null
+          promotion_type?: string
+          scheduled_date: string
+          status?: string
+          suggested_hashtags?: string[] | null
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          created_by?: string | null
+          generated_copy?: string
+          id?: string
+          posted_at?: string | null
+          promotion_type?: string
+          scheduled_date?: string
+          status?: string
+          suggested_hashtags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_media_calendar_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_posts: {
         Row: {
           athlete_id: string | null
@@ -3144,6 +3279,16 @@ export type Database = {
       get_impersonated_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_least_featured_athletes: {
+        Args: { limit_count?: number }
+        Returns: {
+          athlete_id: string
+          days_since_feature: number
+          full_name: string
+          last_featured_date: string
+          total_features: number
+        }[]
       }
       get_media_version_history: {
         Args: { p_media_id: string }

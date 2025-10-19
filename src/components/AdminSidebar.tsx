@@ -1,4 +1,4 @@
-import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell, FileVideo, DollarSign, UserPlus, FileBarChart } from "lucide-react";
+import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell, FileVideo, DollarSign, UserPlus, FileBarChart, Sparkles } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -24,6 +24,7 @@ const items = [
   { title: "Memberships", url: "/admin/memberships", icon: CreditCard },
   { title: "Athletes", url: "/admin/athletes", icon: Trophy },
   { title: "Import Athletes", url: "/admin/import-athletes", icon: UserPlus },
+  { title: "Athlete Promo", url: "/admin/athlete-promo", icon: Sparkles },
   { title: "Rankings", url: "/admin/rankings", icon: TrendingUp },
   { title: "Courses", url: "/admin/courses", icon: GraduationCap },
   { title: "Schools", url: "/admin/schools", icon: School },
