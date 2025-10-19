@@ -7,18 +7,30 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
+  console.log('=== Chat assistant function called ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse request body
-    const { message, conversationId, sessionId } = await req.json();
+    console.log('Processing chat request...');
     
-    if (!message) {
+    // Parse request body
+    let message, conversationId, sessionId;
+    try {
+      const body = await req.json();
+      message = body.message;
+      conversationId = body.conversationId;
+      sessionId = body.sessionId;
+      console.log('Parsed body - Message:', message, 'ConversationId:', conversationId, 'SessionId:', sessionId);
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
       return new Response(
-        JSON.stringify({ error: 'Message is required' }),
+        JSON.stringify({ error: 'Invalid request body' }), 
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -26,21 +38,33 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
+    console.log('Supabase URL exists:', !!supabaseUrl);
+    console.log('Supabase Key exists:', !!supabaseKey);
+    
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Supabase environment variables not configured');
     }
     
     const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase client created');
 
     // Get chatbot configuration
+    console.log('Fetching chatbot config...');
     const { data: config, error: configError } = await supabase
       .from('chatbot_config')
       .select('*')
       .single();
 
-    if (configError || !config) {
+    if (configError) {
+      console.error('Config fetch error:', configError);
+      throw new Error(`Failed to fetch config: ${configError.message}`);
+    }
+    
+    if (!config) {
       throw new Error('Chatbot configuration not found');
     }
+    
+    console.log('Config loaded:', config.coach_name);
 
     // Get or create conversation
     let conversation;
@@ -98,12 +122,14 @@ serve(async (req) => {
     // Call Lovable AI
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY is not configured');
       return new Response(
         JSON.stringify({ error: 'AI service is not configured' }), 
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('Calling Lovable AI...');
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -119,6 +145,7 @@ serve(async (req) => {
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
+      console.error('AI response error:', aiResponse.status, errorText);
       
       if (aiResponse.status === 429) {
         return new Response(
@@ -133,15 +160,17 @@ serve(async (req) => {
         );
       }
       return new Response(
-        JSON.stringify({ error: 'AI request failed' }), 
+        JSON.stringify({ error: 'AI request failed: ' + errorText }), 
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const aiData = await aiResponse.json();
+    console.log('AI response received');
     const assistantMessage = aiData.choices[0]?.message?.content;
     
     if (!assistantMessage) {
+      console.error('No message in AI response:', aiData);
       return new Response(
         JSON.stringify({ error: 'No response from AI' }), 
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
