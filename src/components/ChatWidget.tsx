@@ -90,7 +90,8 @@ export function ChatWidget() {
           variant="ghost"
           size="icon"
           onClick={() => setIsOpen(false)}
-          className="text-primary-foreground hover:bg-primary-foreground/20"
+          className="text-primary-foreground hover:bg-primary-foreground/20 hover:opacity-80"
+          aria-label="Close chat"
         >
           <X className="h-5 w-5" />
         </Button>
