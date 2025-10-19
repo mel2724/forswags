@@ -128,6 +128,17 @@ serve(async (req) => {
 
     console.log("Email sent:", emailResponse);
 
+    if (emailResponse.error) {
+      console.error("Failed to send email:", emailResponse.error);
+      return new Response(
+        JSON.stringify({ 
+          error: "Failed to send verification email. Please contact support.",
+          details: emailResponse.error.message 
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({ success: true }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
