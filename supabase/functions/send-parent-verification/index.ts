@@ -80,7 +80,9 @@ serve(async (req) => {
       throw insertError;
     }
 
-    // Send email
+    // Send email with verification link
+    const verificationUrl = `${Deno.env.get("SUPABASE_URL")?.replace("/v1", "")}/parent-verify?email=${encodeURIComponent(parent_email)}&name=${encodeURIComponent(child_name)}`;
+    
     const emailResponse = await resend.emails.send({
       from: "ForSWAGs <onboarding@resend.dev>",
       to: [parent_email],
@@ -96,6 +98,12 @@ serve(async (req) => {
           <div style="font-size: 32px; font-weight: bold; color: #3b82f6; letter-spacing: 4px;">
             ${verificationCode}
           </div>
+          <p style="margin: 15px 0 0 0;">
+            <a href="${verificationUrl}" 
+               style="display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+              Verify Email Now
+            </a>
+          </p>
         </div>
 
         <p><strong>What this means:</strong></p>

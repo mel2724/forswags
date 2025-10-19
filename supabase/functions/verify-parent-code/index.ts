@@ -27,44 +27,10 @@ serve(async (req) => {
       );
     }
 
-    // Get user session
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get athlete_id for this user
-    const { data: athlete, error: athleteError } = await supabaseClient
-      .from("athletes")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (athleteError || !athlete) {
-      return new Response(
-        JSON.stringify({ error: "Athlete profile not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Check verification code
+    // Check verification code (no authentication required for parent verification)
     const { data: verification, error: verifyError } = await supabaseClient
       .from("parent_verifications")
-      .select("*")
-      .eq("athlete_id", athlete.id)
+      .select("*, athletes(id, user_id)")
       .eq("parent_email", parent_email)
       .eq("verification_code", verification_code)
       .is("verified_at", null)
@@ -91,13 +57,30 @@ serve(async (req) => {
       throw updateError;
     }
 
+    // Update athlete profile to public if they have an athlete record
+    if (verification.athletes) {
+      const { error: athleteError } = await supabaseClient
+        .from("athletes")
+        .update({ 
+          visibility: 'public',
+          is_parent_verified: true,
+          parent_verified_at: new Date().toISOString(),
+          consent_expires_at: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()
+        })
+        .eq("id", verification.athletes.id);
+
+      if (athleteError) {
+        console.error("Error updating athlete visibility:", athleteError);
+      }
+    }
+
     // Log security event
     await supabaseClient.rpc("log_security_event", {
       p_event_type: "parent_email_verified",
       p_severity: "medium",
       p_description: "Parent email verified for minor athlete",
       p_metadata: {
-        athlete_id: athlete.id,
+        athlete_id: verification.athlete_id,
         parent_email,
         verification_id: verification.id,
       },

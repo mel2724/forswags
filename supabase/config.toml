@@ -49,7 +49,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.verify-parent-code]
-verify_jwt = true
+verify_jwt = false  # Parents don't need to be logged in to verify email
 
 [functions.send-consent-renewal-emails]
 verify_jwt = false

@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
+const ParentVerification = lazy(() => import("./pages/ParentVerification"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -118,6 +119,7 @@ const App = () => (
               <Route path="/profile/:id" element={<PublicProfile />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/claim/:token" element={<ClaimProfile />} />
+              <Route path="/parent-verify" element={<ParentVerification />} />
               <Route path="/sponsors" element={<Sponsors />} />
               <Route path="/sponsor-showcase" element={<SponsorShowcase />} />
               <Route path="/for-recruiters" element={<ForRecruiters />} />
