@@ -987,7 +987,6 @@ const Onboarding = () => {
                             placeholder="parent@example.com"
                             disabled={parentEmailVerified}
                             required
-                            className="bg-white dark:bg-gray-900"
                           />
                         </div>
                         {!parentEmailVerified && (
