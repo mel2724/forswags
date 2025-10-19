@@ -52,25 +52,20 @@ serve(async (req) => {
       );
     }
 
-    // Get athlete_id for this user
-    const { data: athlete, error: athleteError } = await supabaseClient
+    // Get athlete_id for this user (may not exist yet during onboarding)
+    const { data: athlete } = await supabaseClient
       .from("athletes")
       .select("id")
       .eq("user_id", user.id)
       .single();
 
-    if (athleteError || !athlete) {
-      return new Response(
-        JSON.stringify({ error: "Athlete profile not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Store verification code
+    // During onboarding, athlete_id may be null - we'll link it later when the profile is created
     const { error: insertError } = await supabaseClient
       .from("parent_verifications")
       .insert({
-        athlete_id: athlete.id,
+        athlete_id: athlete?.id || null,
+        user_id: user.id,
         parent_email,
         verification_code: verificationCode,
         ip_address: req.headers.get("x-forwarded-for") || "unknown",

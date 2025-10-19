@@ -2074,6 +2074,7 @@ export type Database = {
           id: string
           ip_address: unknown | null
           parent_email: string
+          user_id: string | null
           verification_code: string
           verified_at: string | null
         }
@@ -2084,6 +2085,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           parent_email: string
+          user_id?: string | null
           verification_code: string
           verified_at?: string | null
         }
@@ -2094,6 +2096,7 @@ export type Database = {
           id?: string
           ip_address?: unknown | null
           parent_email?: string
+          user_id?: string | null
           verification_code?: string
           verified_at?: string | null
         }
