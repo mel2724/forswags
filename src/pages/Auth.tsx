@@ -97,12 +97,13 @@ const Auth = () => {
         const { error: profileError } = await supabase
           .from('profiles')
           .upsert({
-            user_id: authData.user.id,
+            id: authData.user.id,
+            email: authData.user.email!,
             terms_accepted: true,
             terms_accepted_at: new Date().toISOString(),
             privacy_accepted: true,
             privacy_accepted_at: new Date().toISOString(),
-          } as any);
+          });
 
         if (profileError) {
           console.error("Error creating profile:", profileError);
