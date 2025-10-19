@@ -76,14 +76,12 @@ serve(async (req) => {
         .single();
       conversation = data;
     } else {
-      // Create new conversation with random nickname
-      const nickname = config.sports_nicknames[Math.floor(Math.random() * config.sports_nicknames.length)];
+      // Create new conversation
       const { data } = await supabase
         .from('chat_conversations')
         .insert({
           user_id: req.headers.get('x-user-id') || null,
-          session_id: sessionId,
-          nickname: nickname
+          session_id: sessionId
         })
         .select()
         .single();
@@ -101,7 +99,7 @@ serve(async (req) => {
     const aiMessages = [
       { 
         role: 'system', 
-        content: `${config.system_prompt}\n\nKnowledge Base:\n${config.knowledge_base}\n\nAddress the user as "${conversation.nickname}".`
+        content: `${config.system_prompt}\n\nKnowledge Base:\n${config.knowledge_base}`
       },
       ...(history || []).map(msg => ({
         role: msg.role,

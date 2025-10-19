@@ -15,10 +15,8 @@ export default function AdminChatbot() {
   const [config, setConfig] = useState({
     coach_name: 'Coach Ray',
     system_prompt: '',
-    knowledge_base: '',
-    sports_nicknames: [] as string[]
+    knowledge_base: ''
   });
-  const [nicknamesInput, setNicknamesInput] = useState('');
 
   useEffect(() => {
     loadConfig();
@@ -37,10 +35,8 @@ export default function AdminChatbot() {
         setConfig({
           coach_name: data.coach_name,
           system_prompt: data.system_prompt,
-          knowledge_base: data.knowledge_base,
-          sports_nicknames: data.sports_nicknames || []
+          knowledge_base: data.knowledge_base
         });
-        setNicknamesInput(data.sports_nicknames?.join(', ') || '');
       }
     } catch (error) {
       console.error('Error loading config:', error);
@@ -53,15 +49,12 @@ export default function AdminChatbot() {
   const saveConfig = async () => {
     setSaving(true);
     try {
-      const nicknames = nicknamesInput.split(',').map(n => n.trim()).filter(n => n);
-      
       const { error } = await supabase
         .from('chatbot_config')
         .update({
           coach_name: config.coach_name,
           system_prompt: config.system_prompt,
           knowledge_base: config.knowledge_base,
-          sports_nicknames: nicknames,
           updated_at: new Date().toISOString()
         })
         .eq('id', (await supabase.from('chatbot_config').select('id').single()).data?.id);
@@ -136,18 +129,6 @@ export default function AdminChatbot() {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="nicknames">Sports Nicknames (comma-separated)</Label>
-                <Input
-                  id="nicknames"
-                  value={nicknamesInput}
-                  onChange={(e) => setNicknamesInput(e.target.value)}
-                  placeholder="e.g., Champ, MVP, All-Star, Rookie, Captain"
-                />
-                <p className="text-sm text-muted-foreground">
-                  The chatbot will randomly assign one of these nicknames to each user
-                </p>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
