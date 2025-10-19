@@ -13,8 +13,22 @@ serve(async (req) => {
 
   try {
     console.log('Chat assistant called');
-    const { message, conversationId, sessionId } = await req.json();
-    console.log('Message received:', message);
+    
+    // Parse request body
+    let message, conversationId, sessionId;
+    try {
+      const body = await req.json();
+      message = body.message;
+      conversationId = body.conversationId;
+      sessionId = body.sessionId;
+      console.log('Message received:', message);
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
