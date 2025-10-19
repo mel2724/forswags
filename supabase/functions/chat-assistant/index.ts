@@ -12,7 +12,9 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Chat assistant called');
     const { message, conversationId, sessionId } = await req.json();
+    console.log('Message received:', message);
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -84,9 +86,14 @@ serve(async (req) => {
     // Call Lovable AI
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      console.error('LOVABLE_API_KEY is not configured');
+      return new Response(
+        JSON.stringify({ error: 'AI service is not configured' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
+    console.log('Calling Lovable AI...');
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -97,11 +104,13 @@ serve(async (req) => {
         model: 'google/gemini-2.5-flash',
         messages: messages,
         max_completion_tokens: 500,
-        temperature: 0.8,
       }),
     });
 
     if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('AI response error:', aiResponse.status, errorText);
+      
       if (aiResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }), 
@@ -114,11 +123,23 @@ serve(async (req) => {
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw new Error('AI request failed');
+      return new Response(
+        JSON.stringify({ error: 'AI request failed: ' + errorText }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const aiData = await aiResponse.json();
-    const assistantMessage = aiData.choices[0].message.content;
+    console.log('AI response received');
+    const assistantMessage = aiData.choices[0]?.message?.content;
+    
+    if (!assistantMessage) {
+      console.error('No message in AI response:', aiData);
+      return new Response(
+        JSON.stringify({ error: 'No response from AI' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Save assistant message
     await supabase
