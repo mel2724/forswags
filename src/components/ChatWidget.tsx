@@ -58,7 +58,11 @@ export function ChatWidget() {
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error("Failed to send message. Please try again.");
-      setMessages(prev => prev.slice(0, -1));
+      // Keep the user message, add error message instead of removing
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }
+      ]);
     } finally {
       setLoading(false);
     }
