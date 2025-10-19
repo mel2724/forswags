@@ -996,8 +996,20 @@ const Onboarding = () => {
                             className="w-full"
                             variant="secondary"
                           >
-                            {sendingVerification ? "Sending..." : "Send Verification Link to Parent"}
+                            {sendingVerification ? (
+                              <>
+                                <span className="animate-spin mr-2">⏳</span>
+                                Sending Verification Email...
+                              </>
+                            ) : (
+                              "Send Verification Link to Parent"
+                            )}
                           </Button>
+                        )}
+                        {!parentEmailVerified && sendingVerification && (
+                          <p className="text-sm text-amber-800 dark:text-amber-200 animate-pulse">
+                            Sending email to {parentEmail}...
+                          </p>
                         )}
                         {parentEmailVerified && (
                           <div className="flex items-center space-x-2 text-green-600">
