@@ -7,12 +7,17 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('=== Chat assistant function called ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Chat assistant called');
+    console.log('Processing chat request...');
     
     // Parse request body
     let message, conversationId, sessionId;
@@ -21,7 +26,7 @@ serve(async (req) => {
       message = body.message;
       conversationId = body.conversationId;
       sessionId = body.sessionId;
-      console.log('Message received:', message);
+      console.log('Parsed body - Message:', message, 'ConversationId:', conversationId, 'SessionId:', sessionId);
     } catch (parseError) {
       console.error('Failed to parse request body:', parseError);
       return new Response(
@@ -30,19 +35,36 @@ serve(async (req) => {
       );
     }
     
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    console.log('Supabase URL exists:', !!supabaseUrl);
+    console.log('Supabase Key exists:', !!supabaseKey);
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase environment variables not configured');
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase client created');
 
     // Get chatbot configuration
-    const { data: config } = await supabase
+    console.log('Fetching chatbot config...');
+    const { data: config, error: configError } = await supabase
       .from('chatbot_config')
       .select('*')
       .single();
 
+    if (configError) {
+      console.error('Config fetch error:', configError);
+      throw new Error(`Failed to fetch config: ${configError.message}`);
+    }
+    
     if (!config) {
       throw new Error('Chatbot configuration not found');
     }
+    
+    console.log('Config loaded:', config.coach_name);
 
     // Get or create conversation
     let conversation;
