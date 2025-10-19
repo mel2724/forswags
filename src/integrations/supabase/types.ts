@@ -668,6 +668,98 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          id: string
+          last_message_at: string | null
+          nickname: string | null
+          session_id: string
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          last_message_at?: string | null
+          nickname?: string | null
+          session_id: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          last_message_at?: string | null
+          nickname?: string | null
+          session_id?: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_config: {
+        Row: {
+          coach_name: string
+          id: string
+          knowledge_base: string | null
+          personality_traits: Json | null
+          sports_nicknames: string[] | null
+          system_prompt: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          coach_name?: string
+          id?: string
+          knowledge_base?: string | null
+          personality_traits?: Json | null
+          sports_nicknames?: string[] | null
+          system_prompt?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          coach_name?: string
+          id?: string
+          knowledge_base?: string | null
+          personality_traits?: Json | null
+          sports_nicknames?: string[] | null
+          system_prompt?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       coach_applications: {
         Row: {
           admin_notes: string | null
