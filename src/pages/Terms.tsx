@@ -1,11 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { SEO } from "@/components/SEO";
 
 export default function Terms() {
   const navigate = useNavigate();
+  const isNewTab = window.opener !== null || window.history.length <= 1;
+
+  const handleClose = () => {
+    if (window.opener) {
+      window.close();
+    } else {
+      navigate('/auth');
+    }
+  };
 
   return (
     <>
@@ -23,14 +32,25 @@ export default function Terms() {
       />
       <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+        {isNewTab ? (
+          <Button
+            variant="ghost"
+            onClick={handleClose}
+            className="mb-6"
+          >
+            <X className="mr-2 h-4 w-4" />
+            Close Tab
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="mb-6"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+        )}
 
         <Card>
           <CardHeader>
