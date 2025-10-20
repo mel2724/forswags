@@ -17,6 +17,7 @@ import { MembershipStatusBanner } from "@/components/MembershipStatusBanner";
 import { SEO } from "@/components/SEO";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { Footer } from "@/components/Footer";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -721,6 +722,7 @@ const Dashboard = () => {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 };
