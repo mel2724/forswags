@@ -972,85 +972,76 @@ const Onboarding = () => {
                 {/* Parent/Guardian Consent for Minors */}
                 {dateOfBirth && age !== null && age < 18 && publicProfileConsent && (
                   <div className="pt-4 border-t border-border space-y-4">
-                    {isUnder13 ? (
-                      <div className="space-y-4 p-4 border border-amber-500 rounded-lg bg-amber-50 dark:bg-amber-950/20">
-                        <h3 className="font-semibold text-amber-900 dark:text-amber-100">Parent Email Verification Required</h3>
-                        <div className="space-y-2">
-                          <p className="text-sm text-amber-800 dark:text-amber-200">
-                            ⚠️ Your profile will remain <strong>PRIVATE</strong> until your parent/guardian verifies their email.
-                          </p>
-                          <p className="text-sm text-amber-800 dark:text-amber-200">
-                            You can complete setup now, and we'll send your parent a verification link.
-                          </p>
-                        </div>
-                        <div>
-                          <Label htmlFor="parentEmail" className="text-amber-900 dark:text-amber-100">
-                            Parent/Guardian Email Address *
-                          </Label>
-                          <Input
-                            id="parentEmail"
-                            type="email"
-                            value={parentEmail}
-                            onChange={(e) => setParentEmail(e.target.value)}
-                            placeholder="parent@example.com"
-                            disabled={parentEmailVerified}
-                            required
-                          />
-                        </div>
-                        {!parentEmailVerified && (
-                          <Button 
-                            onClick={sendParentVerification} 
-                            disabled={!parentEmail || sendingVerification}
-                            className="w-full"
-                            variant="secondary"
-                          >
-                            {sendingVerification ? (
-                              <>
-                                <span className="animate-spin mr-2">⏳</span>
-                                Sending Verification Email...
-                              </>
-                            ) : (
-                              "Send Verification Link to Parent"
-                            )}
-                          </Button>
-                        )}
-                        {!parentEmailVerified && sendingVerification && (
-                          <p className="text-sm text-amber-800 dark:text-amber-200 animate-pulse">
-                            Sending email to {parentEmail}...
-                          </p>
-                        )}
-                        {parentEmailVerified && (
-                          <div className="flex items-center space-x-2 text-green-600">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="font-medium">Parent Email Verified ✓</span>
-                          </div>
+                    <div className={`space-y-4 p-4 rounded-lg ${isUnder13 ? 'border border-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'border border-border bg-muted/50'}`}>
+                      <h3 className={`font-semibold ${isUnder13 ? 'text-amber-900 dark:text-amber-100' : ''}`}>
+                        Parent Email Verification Required
+                      </h3>
+                      <div className="space-y-2">
+                        {isUnder13 ? (
+                          <>
+                            <p className="text-sm text-amber-800 dark:text-amber-200">
+                              ⚠️ Your profile will remain <strong>PRIVATE</strong> until your parent/guardian verifies their email.
+                            </p>
+                            <p className="text-sm text-amber-800 dark:text-amber-200">
+                              You can complete setup now, and we'll send your parent a verification link.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm text-muted-foreground">
+                              Since you're under 18, we need your parent or guardian to verify their email address before your profile can be made public.
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Your profile will remain private until they verify.
+                            </p>
+                          </>
                         )}
                       </div>
-                    ) : (
-                      <div className="flex items-start space-x-3">
-                        <input
-                          type="checkbox"
-                          id="parent-consent"
-                          checked={isParentConsenting}
-                          onChange={(e) => setIsParentConsenting(e.target.checked)}
-                          className="mt-1 h-4 w-4 rounded border-gray-300"
+                      <div>
+                        <Label htmlFor="parentEmail" className={isUnder13 ? 'text-amber-900 dark:text-amber-100' : ''}>
+                          Parent/Guardian Email Address *
+                        </Label>
+                        <Input
+                          id="parentEmail"
+                          type="email"
+                          value={parentEmail}
+                          onChange={(e) => setParentEmail(e.target.value)}
+                          placeholder="parent@example.com"
+                          disabled={parentEmailVerified}
+                          required
                         />
-                        <div className="space-y-2">
-                          <label
-                            htmlFor="parent-consent"
-                            className="text-sm font-medium leading-none"
-                          >
-                            Parent/Guardian Consent (Required for ages 13-17)
-                          </label>
-                          <p className="text-sm text-muted-foreground">
-                            As a parent or legal guardian, I consent to my child's athletic profile being made publicly searchable by college recruiters. 
-                            I understand that contact information will not be publicly displayed and recruiters must connect through the platform.
-                          </p>
-                        </div>
                       </div>
-                    )}
+                      {!parentEmailVerified && (
+                        <Button 
+                          onClick={sendParentVerification} 
+                          disabled={!parentEmail || sendingVerification}
+                          className="w-full"
+                          variant="secondary"
+                        >
+                          {sendingVerification ? (
+                            <>
+                              <span className="animate-spin mr-2">⏳</span>
+                              Sending Verification Email...
+                            </>
+                          ) : (
+                            "Send Verification Link to Parent"
+                          )}
+                        </Button>
+                      )}
+                      {!parentEmailVerified && sendingVerification && (
+                        <p className={`text-sm animate-pulse ${isUnder13 ? 'text-amber-800 dark:text-amber-200' : 'text-muted-foreground'}`}>
+                          Sending email to {parentEmail}...
+                        </p>
+                      )}
+                      {parentEmailVerified && (
+                        <div className="flex items-center space-x-2 text-green-600">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span className="font-medium">Parent Email Verified ✓</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1064,7 +1055,7 @@ const Onboarding = () => {
               <Button 
                 onClick={handleComplete} 
                 className="flex-1 btn-hero" 
-                disabled={loading || (age !== null && age >= 13 && age < 18 && publicProfileConsent && !isParentConsenting)}
+                disabled={loading || (age !== null && age < 18 && publicProfileConsent && !parentEmail)}
               >
                 {loading ? "Creating Profile..." : "Complete Setup"}
               </Button>
