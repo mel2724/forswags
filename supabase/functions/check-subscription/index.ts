@@ -82,13 +82,29 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       productId = subscription.items.data[0].price.product;
+      
+      // Safely handle subscription end date with fallback for test mode
+      try {
+        if (subscription.current_period_end) {
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        } else {
+          // Fallback for test mode - set 1 year from now
+          subscriptionEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+          logStep("Using fallback end date (test mode)", { subscriptionEnd });
+        }
+      } catch (error) {
+        // If date conversion fails, use fallback
+        subscriptionEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+        logStep("Date conversion failed, using fallback", { error: error instanceof Error ? error.message : String(error), subscriptionEnd });
+      }
+      
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
 
-      // Update the database membership record
+      // Determine plan name based on product ID
       const planName = productId === 'prod_RfjPTDIqw0AESn' ? 'championship_yearly' : 'pro_monthly';
       
+      // Update the database membership record
       const { error: updateError } = await supabaseClient
         .from('memberships')
         .update({
@@ -103,7 +119,7 @@ serve(async (req) => {
       if (updateError) {
         logStep("Error updating membership", { error: updateError.message });
       } else {
-        logStep("Database updated successfully", { plan: planName });
+        logStep("Database updated successfully", { plan: planName, status: 'active' });
       }
     } else {
       logStep("No active subscription found");
