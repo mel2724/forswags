@@ -89,3 +89,6 @@ verify_jwt = true
 
 [functions.chat-assistant]
 verify_jwt = false
+
+[functions.send-waitlist-confirmation]
+verify_jwt = false  # Public endpoint for waitlist signups

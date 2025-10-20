@@ -56,7 +56,25 @@ const ComingSoon = () => {
 
       if (error) throw error;
 
-      toast.success("Thank you! We'll notify you when we launch.");
+      // Send confirmation email
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-waitlist-confirmation', {
+          body: {
+            name: formData.fullName,
+            email: formData.email,
+            role: roleType,
+          },
+        });
+
+        if (emailError) {
+          console.error('Email sending failed:', emailError);
+          // Don't fail the whole process if email fails
+        }
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+      }
+
+      toast.success("Thank you! Check your email for confirmation.");
       
       // Reset form
       setFormData({
