@@ -25,10 +25,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending waitlist confirmation to ${email} (${role})`);
 
-    const roleTitle = role === 'parent' ? 'Parent Portal' : 'College Coach Recruiting Network';
+    const roleTitle = role === 'parent' ? 'Parent Portal' : 'College Scout Network';
     const roleDescription = role === 'parent' 
       ? 'connect with your athlete\'s journey and access parent-specific resources'
-      : 'search athlete profiles, manage watchlists, and streamline your recruiting process';
+      : 'search athlete profiles, manage watchlists, and streamline your scouting process';
 
     const emailResponse = await resend.emails.send({
       from: "ForSWAGs <coach@forswags.com>",
@@ -83,20 +83,20 @@ const handler = async (req: Request): Promise<Response> => {
                       
                       <ul style="margin: 0 0 30px 0; padding-left: 20px; color: #4b5563; font-size: 16px; line-height: 1.8;">
                         ${role === 'parent' ? `
-                          <li>Direct insights into your athlete's recruiting journey</li>
-                          <li>Real-time updates on profile views and coach interest</li>
+                          <li>Direct insights into your athlete's journey</li>
+                          <li>Real-time updates on profile views and scout interest</li>
                           <li>Parent-specific resources and guidance</li>
                           <li>Communication tools to stay connected</li>
                         ` : `
                           <li>Advanced athlete search and filtering tools</li>
-                          <li>Watchlist management for prospective recruits</li>
+                          <li>Watchlist management for prospective athletes</li>
                           <li>Direct communication with verified athletes</li>
-                          <li>Analytics and recruiting insights</li>
+                          <li>Analytics and scouting insights</li>
                         `}
                       </ul>
                       
                       <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
-                        In the meantime, our athlete profiles are live! Athletes can sign up and start building their recruiting profiles today.
+                        In the meantime, our athlete profiles are live! Athletes can sign up and start building their profiles today.
                       </p>
                       
                       <div style="text-align: center; margin: 30px 0;">

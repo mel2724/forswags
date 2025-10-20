@@ -97,10 +97,10 @@ const ComingSoon = () => {
     }
   };
 
-  const roleTitle = roleType === 'parent' ? 'Parent Portal' : 'College Coach Recruiting Network';
+  const roleTitle = roleType === 'parent' ? 'Parent Portal' : 'College Scout Network';
   const roleDescription = roleType === 'parent' 
-    ? 'Stay connected with your athlete\'s journey, receive updates tailored to supporting their college recruiting path, and access parent-specific resources when we launch.'
-    : 'Search and evaluate athlete profiles, get notified regarding your watchlists, and receive updates tailored to your recruiting needs inside our college recruiting network when we launch.';
+    ? "Stay connected with your athlete's journey, receive updates tailored to supporting their college path, and access parent-specific resources when we launch."
+    : 'Search and evaluate athlete profiles, get notified regarding your watchlists, and receive updates tailored to your scouting needs inside our college scout network when we launch.';
 
   return (
     <>
@@ -141,7 +141,7 @@ const ComingSoon = () => {
               <div className="mb-8 p-4 bg-primary/5 rounded-lg border border-primary/20">
                 <h3 className="font-bold text-lg mb-2">Get Early Access</h3>
                 <p className="text-sm text-muted-foreground">
-                  Tell us about yourself and we'll invite you to the {roleType === 'parent' ? 'Parent' : 'Coach'} Portal.
+                  Tell us about yourself and we'll invite you to the {roleType === 'parent' ? 'Parent' : 'Scout'} Portal.
                 </p>
               </div>
 
@@ -263,18 +263,6 @@ const ComingSoon = () => {
                       id="subscribe"
                       checked={formData.subscribeUpdates}
                       onCheckedChange={(checked) => setFormData({ ...formData, subscribeUpdates: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="beta" className="text-base">Interested in beta</Label>
-                      <p className="text-sm text-muted-foreground">Get early access to test features</p>
-                    </div>
-                    <Switch
-                      id="beta"
-                      checked={formData.interestedInBeta}
-                      onCheckedChange={(checked) => setFormData({ ...formData, interestedInBeta: checked })}
                     />
                   </div>
                 </div>
