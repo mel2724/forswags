@@ -102,7 +102,7 @@ export default function PublicProfile() {
       // Fetch profile data separately
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('full_name, city, state')
+        .select('full_name, city, state, avatar_url')
         .eq('id', athleteData.user_id)
         .maybeSingle();
 
@@ -122,6 +122,7 @@ export default function PublicProfile() {
         city: profileData?.city,
         state: profileData?.state,
         ...athleteData,
+        profile_photo_url: profileData?.avatar_url || athleteData.profile_photo_url,
         // SECURITY: Always hide social media handles for minors to prevent direct contact
         twitter_handle: isMinor ? undefined : athleteData.twitter_handle,
         instagram_handle: isMinor ? undefined : athleteData.instagram_handle,
