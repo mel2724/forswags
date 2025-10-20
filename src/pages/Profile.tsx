@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import logoIcon from "@/assets/forswags-logo.png";
 import { ArrowLeft, Save, Loader2, LogOut } from "lucide-react";
-import { useFeatureAccess } from "@/hooks/useFeatureAccess";
+import { useUserTier } from "@/hooks/useFeatureAccess";
 
 
 const profileSchema = z.object({
@@ -82,7 +82,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [athleteId, setAthleteId] = useState<string | null>(null);
-  const { hasAccess: hasPremiumProfile } = useFeatureAccess('profile_type');
+  const { isPaid: hasPremiumProfile } = useUserTier();
 
   // Profile fields
   const [fullName, setFullName] = useState("");
