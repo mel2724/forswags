@@ -19,7 +19,7 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
   try {
@@ -85,6 +85,26 @@ serve(async (req) => {
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       productId = subscription.items.data[0].price.product;
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
+
+      // Update the database membership record
+      const planName = productId === 'prod_RfjPTDIqw0AESn' ? 'championship_yearly' : 'pro_monthly';
+      
+      const { error: updateError } = await supabaseClient
+        .from('memberships')
+        .update({
+          plan: planName,
+          status: 'active',
+          stripe_subscription_id: subscription.id,
+          end_date: subscriptionEnd,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        logStep("Error updating membership", { error: updateError.message });
+      } else {
+        logStep("Database updated successfully", { plan: planName });
+      }
     } else {
       logStep("No active subscription found");
     }
