@@ -184,11 +184,11 @@ const Auth = () => {
       if (errorCode === 'user_already_exists' || 
           errorMsg.includes('already registered') ||
           errorMsg.includes('already exists')) {
-        toast.error(
-          "This email is already registered. Please switch to the Login tab to sign in.",
-          { duration: 6000 }
-        );
-      } else if (errorMsg.includes('weak_password') || 
+        toast.error("Email Already Registered!", {
+          description: "This email already has an account. Please use the Login tab instead, or use a different email address.",
+          duration: 8000,
+        });
+      } else if (errorMsg.includes('weak_password') ||
           errorMsg.includes('password is too weak') ||
           errorMsg.includes('password does not meet') ||
           errorMsg.includes('pwned')) {
