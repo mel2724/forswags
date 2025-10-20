@@ -8,7 +8,43 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import logoFull from "@/assets/forswags-logo.png";
+
+// Password strength checker
+const checkPasswordStrength = (password: string) => {
+  let strength = 0;
+  let feedback = [];
+
+  if (password.length >= 12) strength += 2;
+  else if (password.length >= 8) strength += 1;
+  else feedback.push("Use at least 8 characters");
+
+  if (/[a-z]/.test(password)) strength += 1;
+  else feedback.push("Add lowercase letters");
+
+  if (/[A-Z]/.test(password)) strength += 1;
+  else feedback.push("Add uppercase letters");
+
+  if (/[0-9]/.test(password)) strength += 1;
+  else feedback.push("Add numbers");
+
+  if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+  else feedback.push("Add special characters (!@#$%^&*)");
+
+  // Check for common patterns
+  const commonPatterns = ['password', 'test', '1234', 'qwerty', 'abc'];
+  if (commonPatterns.some(pattern => password.toLowerCase().includes(pattern))) {
+    strength -= 2;
+    feedback.push("Avoid common words or patterns");
+  }
+
+  return {
+    strength: Math.max(0, Math.min(5, strength)),
+    feedback,
+    label: strength >= 5 ? 'Strong' : strength >= 3 ? 'Medium' : 'Weak'
+  };
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -24,6 +60,7 @@ const Auth = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isStaffSignup, setIsStaffSignup] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ strength: 0, feedback: [], label: 'Weak' });
 
   useEffect(() => {
     // Check if this is a college staff signup
@@ -113,7 +150,26 @@ const Auth = () => {
 
       toast.success("Account created! Please check your email to verify.");
     } catch (error: any) {
-      toast.error(error.message || "Error creating account");
+      // Handle specific error cases with better messaging
+      if (error.message?.toLowerCase().includes('weak_password') || 
+          error.message?.toLowerCase().includes('password is too weak') ||
+          error.message?.toLowerCase().includes('password does not meet') ||
+          error.message?.toLowerCase().includes('pwned')) {
+        toast.error(
+          "Password not secure enough. Please use a unique, strong password with uppercase, lowercase, numbers, and special characters. Avoid common words or patterns.",
+          { duration: 6000 }
+        );
+      } else if (error.message?.toLowerCase().includes('quota') || 
+                 error.message?.toLowerCase().includes('storage')) {
+        toast.error(
+          "Browser storage is full. Please clear your browser's localStorage (F12 → Application → Local Storage → Clear) and try again.",
+          { duration: 8000 }
+        );
+      } else if (error.message?.toLowerCase().includes('already registered')) {
+        toast.error("This email is already registered. Try signing in instead.");
+      } else {
+        toast.error(error.message || "Error creating account");
+      }
     } finally {
       setLoading(false);
     }
@@ -401,19 +457,86 @@ const Auth = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-password">Password (min 8 characters)</Label>
+                <Label htmlFor="signup-password">Password</Label>
                 <Input
                   id="signup-password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    const newPassword = e.target.value;
+                    setPassword(newPassword);
+                    if (newPassword.length > 0) {
+                      setPasswordStrength(checkPasswordStrength(newPassword));
+                    }
+                  }}
                   required
                   minLength={8}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Use 8+ characters with a mix of letters, numbers & symbols
-                </p>
+                
+                {/* Password Strength Indicator */}
+                {password.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-300 ${
+                            passwordStrength.strength >= 5 ? 'bg-green-500 w-full' :
+                            passwordStrength.strength >= 3 ? 'bg-yellow-500 w-3/5' :
+                            'bg-red-500 w-2/5'
+                          }`}
+                        />
+                      </div>
+                      <span className={`text-xs font-semibold ${
+                        passwordStrength.strength >= 5 ? 'text-green-500' :
+                        passwordStrength.strength >= 3 ? 'text-yellow-500' :
+                        'text-red-500'
+                      }`}>
+                        {passwordStrength.label}
+                      </span>
+                    </div>
+                    
+                    {passwordStrength.feedback.length > 0 && (
+                      <div className="space-y-1">
+                        {passwordStrength.feedback.map((tip, idx) => (
+                          <p key={idx} className="text-xs text-muted-foreground flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {tip}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="bg-muted/50 border border-border rounded-md p-3 space-y-1">
+                  <p className="text-xs font-semibold text-foreground">Strong password requirements:</p>
+                  <ul className="text-xs text-muted-foreground space-y-0.5">
+                    <li className="flex items-center gap-1">
+                      {password.length >= 12 ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-muted-foreground/50" />}
+                      At least 12 characters (minimum 8)
+                    </li>
+                    <li className="flex items-center gap-1">
+                      {/[A-Z]/.test(password) ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-muted-foreground/50" />}
+                      Uppercase letters (A-Z)
+                    </li>
+                    <li className="flex items-center gap-1">
+                      {/[a-z]/.test(password) ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-muted-foreground/50" />}
+                      Lowercase letters (a-z)
+                    </li>
+                    <li className="flex items-center gap-1">
+                      {/[0-9]/.test(password) ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-muted-foreground/50" />}
+                      Numbers (0-9)
+                    </li>
+                    <li className="flex items-center gap-1">
+                      {/[^A-Za-z0-9]/.test(password) ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-muted-foreground/50" />}
+                      Special characters (!@#$%^&*)
+                    </li>
+                  </ul>
+                  <p className="text-xs text-muted-foreground italic pt-1">
+                    Example: <code className="text-foreground">Tr0phy$W1nn3r!2025</code>
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3">
