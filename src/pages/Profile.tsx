@@ -246,6 +246,7 @@ const Profile = () => {
       if (athleteError) throw athleteError;
 
       toast.success("Profile updated successfully!");
+      navigate("/dashboard");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
