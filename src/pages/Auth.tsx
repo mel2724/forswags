@@ -173,24 +173,29 @@ const Auth = () => {
     } catch (error: any) {
       setLoading(false);
       
+      console.error("Signup error:", error);
+      
       // Handle specific error cases with better messaging
-      if (error.code === 'user_already_exists' || 
-          error.message?.toLowerCase().includes('already registered') ||
-          error.message?.toLowerCase().includes('user already exists')) {
+      const errorMsg = error.message?.toLowerCase() || '';
+      const errorCode = error.code?.toLowerCase() || '';
+      
+      if (errorCode === 'user_already_exists' || 
+          errorMsg.includes('already registered') ||
+          errorMsg.includes('already exists')) {
         toast.error(
-          "This email is already registered. Please switch to the Login tab to sign in, or try a different email address.",
+          "This email is already registered. Please switch to the Login tab to sign in.",
           { duration: 6000 }
         );
-      } else if (error.message?.toLowerCase().includes('weak_password') || 
-          error.message?.toLowerCase().includes('password is too weak') ||
-          error.message?.toLowerCase().includes('password does not meet') ||
-          error.message?.toLowerCase().includes('pwned')) {
+      } else if (errorMsg.includes('weak_password') || 
+          errorMsg.includes('password is too weak') ||
+          errorMsg.includes('password does not meet') ||
+          errorMsg.includes('pwned')) {
         toast.error(
-          "Password not secure enough. Please use a unique, strong password with uppercase, lowercase, numbers, and special characters. Avoid common words or patterns.",
+          "Password not secure enough. Please use a unique, strong password with uppercase, lowercase, numbers, and special characters.",
           { duration: 6000 }
         );
-      } else if (error.message?.toLowerCase().includes('quota') || 
-                 error.message?.toLowerCase().includes('storage') ||
+      } else if (errorMsg.includes('quota') || 
+                 errorMsg.includes('storage') ||
                  error.name === 'QuotaExceededError') {
         toast.error(
           "Browser storage is full. Please clear your browser's localStorage (F12 → Application → Local Storage → Clear) and try again.",
