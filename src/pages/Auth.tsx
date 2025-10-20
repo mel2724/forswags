@@ -209,6 +209,14 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log("Sign in attempt:", { email, password: password ? "***" : "empty" });
+    
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -247,6 +255,7 @@ const Auth = () => {
 
       toast.success("Welcome back!");
     } catch (error: any) {
+      console.error("Sign in error:", error);
       toast.error(error.message || "Error signing in");
     } finally {
       setLoading(false);
