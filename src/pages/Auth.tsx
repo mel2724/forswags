@@ -61,6 +61,7 @@ const Auth = () => {
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [isStaffSignup, setIsStaffSignup] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, feedback: [], label: 'Weak' });
+  const [showManualContinue, setShowManualContinue] = useState(false);
 
   useEffect(() => {
     // Check if this is a college staff signup
@@ -114,6 +115,7 @@ const Auth = () => {
     }
     
     setLoading(true);
+    setShowManualContinue(false);
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -148,8 +150,29 @@ const Auth = () => {
         }
       }
 
-      toast.success("Account created! Please check your email to verify.");
+      toast.success("Account created! Redirecting...");
+
+      // Fallback navigation after 2 seconds if onAuthStateChange doesn't fire
+      setTimeout(async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            navigate("/onboarding");
+          } else {
+            // Session couldn't be saved, show manual continue button
+            setShowManualContinue(true);
+            toast.info("Account created! Click Continue to proceed.", { duration: 5000 });
+          }
+        } catch (e) {
+          console.error("Session check error:", e);
+          setShowManualContinue(true);
+        }
+        setLoading(false);
+      }, 2000);
+
     } catch (error: any) {
+      setLoading(false);
+      
       // Handle specific error cases with better messaging
       if (error.message?.toLowerCase().includes('weak_password') || 
           error.message?.toLowerCase().includes('password is too weak') ||
@@ -160,7 +183,8 @@ const Auth = () => {
           { duration: 6000 }
         );
       } else if (error.message?.toLowerCase().includes('quota') || 
-                 error.message?.toLowerCase().includes('storage')) {
+                 error.message?.toLowerCase().includes('storage') ||
+                 error.name === 'QuotaExceededError') {
         toast.error(
           "Browser storage is full. Please clear your browser's localStorage (F12 → Application → Local Storage → Clear) and try again.",
           { duration: 8000 }
@@ -170,8 +194,6 @@ const Auth = () => {
       } else {
         toast.error(error.message || "Error creating account");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -589,6 +611,16 @@ const Auth = () => {
               <Button type="submit" className="w-full btn-hero" disabled={loading || !termsAccepted || !privacyAccepted}>
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
+
+              {showManualContinue && (
+                <Button 
+                  type="button" 
+                  className="w-full btn-hero mt-4" 
+                  onClick={() => navigate("/onboarding")}
+                >
+                  Continue to Onboarding →
+                </Button>
+              )}
             </form>
           </TabsContent>
         </Tabs>
