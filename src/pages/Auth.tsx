@@ -87,8 +87,10 @@ const Auth = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        navigate("/onboarding");
+      // Only navigate to onboarding for NEW signups, not for sign-ins
+      if (event === "SIGNED_IN" && session && window.location.pathname === "/auth") {
+        // This will be handled by handleSignIn instead
+        return;
       }
     });
 
@@ -254,6 +256,7 @@ const Auth = () => {
       }
 
       toast.success("Welcome back!");
+      navigate("/dashboard");
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast.error(error.message || "Error signing in");
