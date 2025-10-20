@@ -133,7 +133,14 @@ const Dashboard = () => {
         }
       }
 
-      // Get membership
+      // Sync subscription status from Stripe
+      try {
+        await supabase.functions.invoke("check-subscription");
+      } catch (error) {
+        console.error("Error syncing subscription:", error);
+      }
+
+      // Get membership after syncing
       const { data: membershipData } = await supabase
         .from("memberships")
         .select("*")
