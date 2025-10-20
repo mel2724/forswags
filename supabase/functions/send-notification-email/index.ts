@@ -156,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "ForSWAGs <notifications@forswags.com>",
+      from: "ForSWAGs <noreply@updates.forswags.com>",
       to: [to],
       subject: subject || templateData.subject,
       html: htmlContent,

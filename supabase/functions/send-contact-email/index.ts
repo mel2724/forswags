@@ -102,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to user
     const userEmail = await resend.emails.send({
-      from: "ForSWAGs <onboarding@resend.dev>",
+      from: "ForSWAGs Contact <noreply@updates.forswags.com>",
       to: [email],
       subject: "We received your message!",
       html: `
@@ -150,8 +150,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to admin
     const adminEmail = await resend.emails.send({
-      from: "ForSWAGs Contact Form <onboarding@resend.dev>",
-      to: ["support@forswags.org"],
+      from: "ForSWAGs Contact <noreply@updates.forswags.com>",
+      to: ["coach@updates.forswags.com"],
       subject: `Contact Form: ${subject}`,
       html: `
         <!DOCTYPE html>

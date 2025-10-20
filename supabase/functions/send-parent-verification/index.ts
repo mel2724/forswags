@@ -84,7 +84,7 @@ serve(async (req) => {
     const verificationUrl = `${Deno.env.get("SUPABASE_URL")?.replace("/v1", "")}/parent-verify?email=${encodeURIComponent(parent_email)}&name=${encodeURIComponent(child_name)}`;
     
     const emailResponse = await resend.emails.send({
-      from: "ForSWAGs <onboarding@resend.dev>",
+      from: "ForSWAGs <noreply@updates.forswags.com>",
       to: [parent_email],
       subject: "Verify Your Child's ForSWAGs Profile - COPPA Compliance",
       html: `
