@@ -22,7 +22,7 @@ const ForRecruiters = () => {
           </h1>
           
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-foreground/80 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-            For verified college coaching staff: Access the nation's most comprehensive database of student-athletes with verified stats, video highlights, and holistic life skills rankings
+            For verified college scouts and staff: Access the nation's most comprehensive database of student-athletes with verified stats, video highlights, and holistic life skills rankings
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
@@ -44,10 +44,10 @@ const ForRecruiters = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
-              <span className="text-gradient-primary">Powerful Tools</span> for College Staff
+              <span className="text-gradient-primary">Powerful Tools</span> for College Scouts and Staff
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything your coaching staff needs to find and evaluate top talent
+              Everything your scouting team needs to find and evaluate top talent
             </p>
           </div>
           
@@ -121,7 +121,7 @@ const ForRecruiters = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
-              <span className="text-gradient-accent">College Staff Plan</span>
+              <span className="text-gradient-accent">College Scouts and Staff Plan</span>
             </h2>
             <p className="text-xl text-muted-foreground">Annual subscription for full platform access</p>
           </div>
@@ -133,7 +133,7 @@ const ForRecruiters = () => {
               </div>
               <div className="text-center mb-6">
                 <Star className="h-12 w-12 text-secondary mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-secondary">College Staff Yearly</h3>
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-secondary">College Scouts and Staff Yearly</h3>
                 <div className="mb-6">
                   <div className="text-5xl font-black mb-2 text-gradient-accent">
                     $997
@@ -195,7 +195,7 @@ const ForRecruiters = () => {
             Ready to Find Your <span className="text-gradient-accent">Next Star?</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join hundreds of college coaching staff already using ForSWAGs to discover top talent
+            Join hundreds of college scouts and staff already using ForSWAGs to discover top talent
           </p>
           <Button 
             size="lg" 
