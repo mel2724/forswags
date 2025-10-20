@@ -3,11 +3,13 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminLayout() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     checkAdminAccess();
@@ -18,25 +20,52 @@ export default function AdminLayout() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.log("No session found, redirecting to auth");
         navigate("/auth");
         return;
       }
 
-      const { data: rolesData } = await supabase
+      console.log("Checking admin access for user:", session.user.id);
+      
+      const { data: rolesData, error: rolesError } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id);
 
-      const hasAdminRole = rolesData?.some(r => r.role === "admin");
-
-      if (!hasAdminRole) {
+      if (rolesError) {
+        console.error("Error fetching roles:", rolesError);
+        toast({
+          title: "Access Error",
+          description: "Unable to verify admin access. Please try again.",
+          variant: "destructive",
+        });
         navigate("/dashboard");
         return;
       }
 
+      console.log("User roles:", rolesData);
+      const hasAdminRole = rolesData?.some(r => r.role === "admin");
+
+      if (!hasAdminRole) {
+        console.log("User is not an admin, redirecting to dashboard");
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access the admin area.",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
+      }
+
+      console.log("Admin access granted");
       setIsAdmin(true);
     } catch (error) {
       console.error("Error checking admin access:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
       navigate("/dashboard");
     } finally {
       setLoading(false);

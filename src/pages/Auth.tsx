@@ -261,10 +261,31 @@ const Auth = () => {
           console.warn("Membership check error:", membershipError);
           // Continue with login anyway - don't block access
         }
-      }
 
-      toast.success("Welcome back!");
-      navigate("/dashboard");
+        // Check if user is admin and redirect accordingly
+        try {
+          const { data: rolesData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", authData.user.id);
+
+          const isAdmin = rolesData?.some(r => r.role === "admin");
+          
+          if (isAdmin) {
+            toast.success('Welcome back, Admin!');
+            navigate("/admin");
+          } else {
+            toast.success('Welcome back!');
+            navigate("/dashboard");
+          }
+        } catch (roleError) {
+          console.warn("Role check failed:", roleError);
+          toast.success('Welcome back!');
+          navigate("/dashboard");
+        }
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast.error(error.message || "Error signing in");
