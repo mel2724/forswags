@@ -249,6 +249,14 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
+    // Step 1: Role selection - redirect non-athletes to coming soon page
+    if (step === 1) {
+      if (selectedRole === "parent" || selectedRole === "recruiter") {
+        navigate(`/coming-soon?role=${selectedRole}`);
+        return;
+      }
+    }
+    
     if (step === 2) {
       const validation = profileSchema.safeParse({ full_name: fullName, phone });
       if (!validation.success) {

@@ -43,6 +43,7 @@ const SocialMedia = lazy(() => import("./pages/SocialMedia"));
 const Membership = lazy(() => import("./pages/Membership"));
 const MembershipAthlete = lazy(() => import("./pages/MembershipAthlete"));
 const MembershipRecruiter = lazy(() => import("./pages/MembershipRecruiter"));
+const ComingSoon = lazy(() => import("./pages/ComingSoon"));
 const RecruiterDashboard = lazy(() => import("./pages/recruiter/RecruiterDashboard"));
 const AthleteSearch = lazy(() => import("./pages/recruiter/AthleteSearch"));
 const RecruiterProfile = lazy(() => import("./pages/recruiter/RecruiterProfile"));
@@ -128,8 +129,9 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/coming-soon" element={<ComingSoon />} />
+            <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/players" element={<Players />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/complete" element={<ProfileComprehensive />} />
