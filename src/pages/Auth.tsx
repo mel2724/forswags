@@ -288,7 +288,17 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
-      toast.error(error.message || "Error signing in");
+      
+      // Handle invalid credentials specifically
+      if (error.message?.toLowerCase().includes('invalid login credentials') || 
+          error.message?.toLowerCase().includes('invalid password')) {
+        toast.error("Incorrect email or password", {
+          description: "Please check your credentials and try again, or use 'Forgot Password' to reset.",
+          duration: 6000,
+        });
+      } else {
+        toast.error(error.message || "Error signing in");
+      }
     } finally {
       setLoading(false);
     }
