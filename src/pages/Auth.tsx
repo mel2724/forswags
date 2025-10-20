@@ -174,7 +174,14 @@ const Auth = () => {
       setLoading(false);
       
       // Handle specific error cases with better messaging
-      if (error.message?.toLowerCase().includes('weak_password') || 
+      if (error.code === 'user_already_exists' || 
+          error.message?.toLowerCase().includes('already registered') ||
+          error.message?.toLowerCase().includes('user already exists')) {
+        toast.error(
+          "This email is already registered. Please switch to the Login tab to sign in, or try a different email address.",
+          { duration: 6000 }
+        );
+      } else if (error.message?.toLowerCase().includes('weak_password') || 
           error.message?.toLowerCase().includes('password is too weak') ||
           error.message?.toLowerCase().includes('password does not meet') ||
           error.message?.toLowerCase().includes('pwned')) {
@@ -189,8 +196,6 @@ const Auth = () => {
           "Browser storage is full. Please clear your browser's localStorage (F12 → Application → Local Storage → Clear) and try again.",
           { duration: 8000 }
         );
-      } else if (error.message?.toLowerCase().includes('already registered')) {
-        toast.error("This email is already registered. Try signing in instead.");
       } else {
         toast.error(error.message || "Error creating account");
       }
