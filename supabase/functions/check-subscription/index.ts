@@ -19,12 +19,7 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    {
-      global: {
-        headers: { Authorization: req.headers.get("Authorization")! },
-      },
-    }
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
   try {
@@ -41,17 +36,21 @@ serve(async (req) => {
     }
     logStep("Authorization header found");
 
-    // Get user from the authenticated request
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    // Extract token from Bearer header
+    const token = authHeader.replace("Bearer ", "");
+    logStep("Token extracted, attempting authentication");
+    
+    // Validate the token and get user
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError) {
       logStep("Authentication failed", { error: userError.message });
       throw new Error(`Authentication error: ${userError.message}`);
     }
     if (!user?.email) {
-      logStep("No user or email found");
+      logStep("No user or email found after auth");
       throw new Error("User not authenticated or email not available");
     }
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated successfully", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
