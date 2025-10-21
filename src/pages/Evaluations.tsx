@@ -29,24 +29,32 @@ export default function Evaluations() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    fetchEvaluations();
+    const loadData = async () => {
+      const success = searchParams.get("success");
+      const canceled = searchParams.get("canceled");
 
-    // Check for success/canceled payment redirects
-    const success = searchParams.get("success");
-    const canceled = searchParams.get("canceled");
+      // If coming from successful payment, wait a moment for backend to process
+      if (success === "true") {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
 
-    if (success === "true") {
-      toast({
-        title: "Payment Successful!",
-        description: "Your evaluation will be assigned to a coach shortly.",
-      });
-    } else if (canceled === "true") {
-      toast({
-        title: "Payment Canceled",
-        description: "You can purchase an evaluation anytime.",
-        variant: "destructive",
-      });
-    }
+      await fetchEvaluations();
+
+      if (success === "true") {
+        toast({
+          title: "Payment Successful!",
+          description: "Your evaluation will be assigned to a coach shortly.",
+        });
+      } else if (canceled === "true") {
+        toast({
+          title: "Payment Canceled",
+          description: "You can purchase an evaluation anytime.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadData();
   }, [searchParams]);
 
   const fetchEvaluations = async () => {
