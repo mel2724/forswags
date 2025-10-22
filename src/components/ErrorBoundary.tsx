@@ -50,6 +50,12 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-sm text-muted-foreground">
                 An error occurred while rendering this page. This sometimes happens during development.
               </p>
+              <p className="text-sm text-muted-foreground">
+                If this error persists, please contact our technical support team at{' '}
+                <a href="mailto:techsupport@forswags.com" className="text-primary hover:underline">
+                  techsupport@forswags.com
+                </a>
+              </p>
               <Button onClick={this.handleReset} className="w-full">
                 Reload Page
               </Button>

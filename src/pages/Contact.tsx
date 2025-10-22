@@ -244,6 +244,21 @@ export default function Contact() {
                 </div>
 
                 <div className="flex items-start gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Technical Support</p>
+                    <a href="mailto:techsupport@forswags.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      techsupport@forswags.com
+                    </a>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      For technical issues and error reports
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
                   <div className="p-2 bg-secondary/10 rounded-lg">
                     <MapPin className="h-5 w-5 text-secondary" />
                   </div>
