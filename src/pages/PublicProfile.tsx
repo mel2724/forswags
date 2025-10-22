@@ -24,6 +24,16 @@ interface MediaAsset {
   season: string | null;
 }
 
+interface AthleteStat {
+  id: string;
+  stat_name: string;
+  stat_value: number;
+  season: string;
+  category: string | null;
+  unit: string | null;
+  is_highlighted: boolean;
+}
+
 interface AthleteProfile {
   id: string;
   full_name: string;
@@ -66,6 +76,7 @@ export default function PublicProfile() {
   const [introVideo, setIntroVideo] = useState<MediaAsset | null>(null);
   const [communityVideo, setCommunityVideo] = useState<MediaAsset | null>(null);
   const [gameVideos, setGameVideos] = useState<MediaAsset[]>([]);
+  const [stats, setStats] = useState<AthleteStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -147,6 +158,18 @@ export default function PublicProfile() {
         setIntroVideo(mediaData.find(m => m.media_type === 'introduction_video') || null);
         setCommunityVideo(mediaData.find(m => m.media_type === 'community_video') || null);
         setGameVideos(mediaData.filter(m => m.media_type === 'game_video'));
+      }
+
+      // Fetch athlete stats
+      const { data: statsData } = await supabase
+        .from('athlete_stats')
+        .select('id, stat_name, stat_value, season, category, unit, is_highlighted')
+        .eq('athlete_id', athleteData.id)
+        .order('season', { ascending: false })
+        .order('is_highlighted', { ascending: false });
+
+      if (statsData) {
+        setStats(statsData);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -446,7 +469,42 @@ export default function PublicProfile() {
               </Card>
             )}
 
-            {/* Athletic Performance */}
+            {/* Performance Stats */}
+            {stats.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Performance Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Group stats by season */}
+                    {Array.from(new Set(stats.map(s => s.season))).map((season) => (
+                      <div key={season}>
+                        <h4 className="font-semibold mb-3 text-sm text-muted-foreground">{season}</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          {stats
+                            .filter(s => s.season === season)
+                            .map((stat) => (
+                              <div key={stat.id} className={stat.is_highlighted ? "col-span-1" : "col-span-1"}>
+                                <p className="text-sm text-muted-foreground">{stat.stat_name}</p>
+                                <p className={`text-2xl font-bold ${stat.is_highlighted ? 'text-primary' : ''}`}>
+                                  {stat.stat_value}
+                                  {stat.unit === 'percentage' && '%'}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Athletic Performance - Legacy fields */}
             {(profile.forty_yard_dash || profile.vertical_jump || profile.bench_press_max || profile.squat_max) && (
               <Card>
                 <CardHeader>
