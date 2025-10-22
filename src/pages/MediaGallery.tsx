@@ -402,67 +402,177 @@ const MediaGallery = () => {
     const [url, setUrl] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [mode, setMode] = useState<"link" | "upload">("link");
     const [open, setOpen] = useState(false);
 
-    const handleSubmit = () => {
+    const resetForm = () => {
+      setUrl("");
+      setTitle("");
+      setDescription("");
+      setVideoFile(null);
+      setMode("link");
+    };
+
+    const handleLinkSubmit = () => {
       if (url && title) {
         handleAddVideoLink(url, title, description);
-        setUrl("");
-        setTitle("");
-        setDescription("");
+        resetForm();
         setOpen(false);
       } else {
         toast.error("Please enter a video link and title");
       }
     };
 
+    const handleUploadSubmit = async () => {
+      if (videoFile && title) {
+        const success = await handleUpload(videoFile, "game_video", title, description, () => {
+          resetForm();
+          setOpen(false);
+        });
+        if (!success) {
+          // Keep form intact on error
+        }
+      } else {
+        toast.error("Please select a file and enter a title");
+      }
+    };
+
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) resetForm();
+      }}>
         <DialogTrigger asChild>
           <Button className="w-full">
             <Plus className="h-4 w-4 mr-2" />
-            Add Game Video Link
+            Add Game Video
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Game Video Link</DialogTitle>
+            <DialogTitle>Add Game Video</DialogTitle>
             <DialogDescription>
-              Add a link to your game highlights from YouTube, Hudl, or other platforms
+              Upload a video file or add a link from YouTube, Hudl, or other platforms
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="video-url">Video Link</Label>
-              <Input
-                id="video-url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://youtube.com/watch?v=..."
-              />
-            </div>
-            <div>
-              <Label htmlFor="video-title">Title</Label>
-              <Input
-                id="video-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Championship Game Highlights"
-              />
-            </div>
-            <div>
-              <Label htmlFor="video-desc">Description (Optional)</Label>
-              <Textarea
-                id="video-desc"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe the game or your performance"
-                rows={3}
-              />
-            </div>
-            <Button onClick={handleSubmit} className="w-full">
-              Add Video
+          
+          <div className="flex gap-2 mb-4">
+            <Button
+              variant={mode === "link" ? "default" : "outline"}
+              onClick={() => setMode("link")}
+              className="flex-1"
+            >
+              <LinkIcon className="h-4 w-4 mr-2" />
+              Link
             </Button>
+            <Button
+              variant={mode === "upload" ? "default" : "outline"}
+              onClick={() => setMode("upload")}
+              className="flex-1"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+          </div>
+
+          {uploading && (
+            <div className="flex items-center justify-center gap-2 p-4 bg-muted rounded-lg mb-4">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm font-medium">Uploading video, please wait...</span>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {mode === "link" ? (
+              <>
+                <div>
+                  <Label htmlFor="video-url">Video Link</Label>
+                  <Input
+                    id="video-url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://youtube.com/watch?v=..."
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="video-title">Title</Label>
+                  <Input
+                    id="video-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., Championship Game Highlights"
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="video-desc">Description (Optional)</Label>
+                  <Textarea
+                    id="video-desc"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe the game or your performance"
+                    rows={3}
+                    disabled={uploading}
+                  />
+                </div>
+                <Button onClick={handleLinkSubmit} className="w-full" disabled={uploading}>
+                  Add Video Link
+                </Button>
+              </>
+            ) : (
+              <>
+                <div>
+                  <Label htmlFor="game-video-file">Video File</Label>
+                  <Input
+                    id="game-video-file"
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="upload-title">Title</Label>
+                  <Input
+                    id="upload-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., Championship Game Highlights"
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="upload-desc">Description (Optional)</Label>
+                  <Textarea
+                    id="upload-desc"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe the game or your performance"
+                    rows={3}
+                    disabled={uploading}
+                  />
+                </div>
+                <Button
+                  onClick={handleUploadSubmit}
+                  className="w-full"
+                  disabled={uploading || !videoFile || !title}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Video
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -590,7 +700,7 @@ const MediaGallery = () => {
                 Game Highlights
               </CardTitle>
               <CardDescription>
-                Add links to your game videos from YouTube, Hudl, or other platforms
+                Upload videos or add links from YouTube, Hudl, or other platforms
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -598,29 +708,42 @@ const MediaGallery = () => {
                 <div className="space-y-4">
                   {gameVideos.map((video) => (
                     <Card key={video.id} className="p-4">
-                      <div className="space-y-3">
+                       <div className="space-y-3">
+                        {video.url.includes("/media-assets/") ? (
+                          <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+                            <video
+                              src={video.url}
+                              controls
+                              className="w-full h-full"
+                            />
+                          </div>
+                        ) : null}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <h4 className="font-semibold flex items-center gap-2">
                               {video.title}
-                              <a
-                                href={video.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:text-primary/80"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
+                              {!video.url.includes("/media-assets/") && (
+                                <a
+                                  href={video.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:text-primary/80"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                              )}
                             </h4>
                             {video.description && (
                               <p className="text-sm text-muted-foreground mt-1">
                                 {video.description}
                               </p>
                             )}
-                            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                              <LinkIcon className="h-3 w-3" />
-                              {video.url}
-                            </p>
+                            {!video.url.includes("/media-assets/") && (
+                              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                                <LinkIcon className="h-3 w-3" />
+                                {video.url}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-2">
