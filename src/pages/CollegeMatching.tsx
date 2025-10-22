@@ -83,23 +83,22 @@ function CollegeMatchingPage() {
 
     setIsAnalyzing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-college-match', {
-        body: { athleteId }
-      });
+      const { data, error } = await supabase.functions.invoke('request-prime-dime-analysis');
 
       if (error) throw error;
 
       toast({
-        title: "Analysis Complete",
-        description: data.message,
+        title: "Analysis Requested",
+        description: "Our team is analyzing your profile. You'll be notified when your Prime Dime matches are ready (usually within 24 hours).",
       });
 
+      // Refresh to show the "in progress" state
       await fetchMatches(athleteId);
     } catch (error: any) {
-      console.error('Error analyzing matches:', error);
+      console.error('Error requesting analysis:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to analyze college matches",
+        description: error.message || "Failed to request college match analysis",
         variant: "destructive",
       });
     } finally {

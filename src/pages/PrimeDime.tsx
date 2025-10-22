@@ -19,7 +19,8 @@ import {
   Users,
   Award,
   Star,
-  Lock
+  Lock,
+  Loader2
 } from "lucide-react";
 
 interface School {
@@ -51,6 +52,8 @@ const PrimeDime = () => {
   const [loading, setLoading] = useState(true);
   const [matches, setMatches] = useState<CollegeMatch[]>([]);
   const [athleteId, setAthleteId] = useState<string | null>(null);
+  const [athlete, setAthlete] = useState<any>(null);
+  const [requesting, setRequesting] = useState(false);
   const { isFree, isLoading: membershipLoading } = useMembershipStatus();
 
   useEffect(() => {
@@ -63,13 +66,13 @@ const PrimeDime = () => {
         }
 
         // Get athlete profile
-        const { data: athlete } = await supabase
+        const { data: athleteData } = await supabase
           .from("athletes")
-          .select("id")
+          .select("id, analysis_requested_at, analysis_notified_at")
           .eq("user_id", session.user.id)
           .single();
 
-        if (!athlete) {
+        if (!athleteData) {
           toast({
             title: "Not an athlete",
             description: "This feature is only available for athlete profiles.",
@@ -79,7 +82,8 @@ const PrimeDime = () => {
           return;
         }
 
-        setAthleteId(athlete.id);
+        setAthleteId(athleteData.id);
+        setAthlete(athleteData);
 
         // Fetch top 10 college matches with school details
         const { data: matchesData, error } = await supabase
@@ -141,6 +145,40 @@ const PrimeDime = () => {
     if (score >= 80) return "Excellent";
     if (score >= 60) return "Good";
     return "Fair";
+  };
+
+  const handleRequestAnalysis = async () => {
+    setRequesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-prime-dime-analysis');
+
+      if (error) throw error;
+
+      toast({
+        title: "Analysis Requested",
+        description: "Our team is analyzing your profile. You'll be notified when your Prime Dime matches are ready (usually within 24 hours).",
+      });
+
+      // Refresh athlete data to show the "in progress" state
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: athleteData } = await supabase
+          .from("athletes")
+          .select("id, analysis_requested_at, analysis_notified_at")
+          .eq("user_id", session.user.id)
+          .single();
+        if (athleteData) setAthlete(athleteData);
+      }
+    } catch (error: any) {
+      console.error('Error requesting analysis:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to request college match analysis",
+        variant: "destructive",
+      });
+    } finally {
+      setRequesting(false);
+    }
   };
 
   if (loading || membershipLoading) {
@@ -249,14 +287,53 @@ const PrimeDime = () => {
       <main className="container mx-auto px-4 py-8">
         {matches.length === 0 ? (
           <Card className="p-16 text-center bg-card/50 backdrop-blur border-2 border-primary/20">
-            <Trophy className="h-20 w-20 text-primary mx-auto mb-6" />
-            <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">No Matches Yet</h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Complete your profile to get personalized college matches that fit your athletic and academic profile.
-            </p>
-            <Button className="btn-accent" onClick={() => navigate("/profile")}>
-              Complete Profile
-            </Button>
+            {athlete?.analysis_requested_at ? (
+              <>
+                <div className="relative inline-block mb-6">
+                  <Trophy className="h-20 w-20 text-primary mx-auto animate-pulse" />
+                </div>
+                <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Analysis In Progress</h2>
+                <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                  Our expert team is analyzing your profile to create your Prime Dime college matches.
+                </p>
+                <p className="text-sm text-muted-foreground mb-8">
+                  Requested: {new Date(athlete.analysis_requested_at).toLocaleDateString()} at {new Date(athlete.analysis_requested_at).toLocaleTimeString()}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  You'll receive a notification when your matches are ready (usually within 24 hours)
+                </p>
+              </>
+            ) : (
+              <>
+                <Trophy className="h-20 w-20 text-primary mx-auto mb-6" />
+                <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Get Your Prime Dime</h2>
+                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                  Request expert college match analysis from our team. We'll analyze your athletic and academic profile to find your top 10 best-fit colleges.
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <Button variant="outline" onClick={() => navigate("/profile")}>
+                    Complete Profile First
+                  </Button>
+                  <Button 
+                    className="btn-accent" 
+                    onClick={handleRequestAnalysis}
+                    disabled={requesting}
+                  >
+                    {requesting ? (
+                      <>
+                        <Trophy className="mr-2 h-4 w-4 animate-spin" />
+                        Requesting...
+                      </>
+                    ) : (
+                      <>
+                        <Trophy className="mr-2 h-4 w-4" />
+                        Request Analysis
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         ) : (
           <>
