@@ -20,6 +20,7 @@ interface MediaAsset {
   description: string | null;
   url: string;
   media_type: string;
+  display_order: number;
 }
 
 interface AthleteProfile {
@@ -63,6 +64,7 @@ export default function PublicProfile() {
   const [profile, setProfile] = useState<AthleteProfile | null>(null);
   const [introVideo, setIntroVideo] = useState<MediaAsset | null>(null);
   const [communityVideo, setCommunityVideo] = useState<MediaAsset | null>(null);
+  const [gameVideos, setGameVideos] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -131,16 +133,19 @@ export default function PublicProfile() {
 
       setProfile(combinedProfile);
 
-      // Fetch media assets (introduction and community videos)
+      // Fetch media assets (introduction, community, and game videos)
       const { data: mediaData } = await supabase
         .from('media_assets')
         .select('*')
         .eq('athlete_id', athleteData.id)
-        .in('media_type', ['introduction_video', 'community_video']);
+        .in('media_type', ['introduction_video', 'community_video', 'game_video'])
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false });
 
       if (mediaData) {
         setIntroVideo(mediaData.find(m => m.media_type === 'introduction_video') || null);
         setCommunityVideo(mediaData.find(m => m.media_type === 'community_video') || null);
+        setGameVideos(mediaData.filter(m => m.media_type === 'game_video'));
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -375,6 +380,43 @@ export default function PublicProfile() {
                       allowFullScreen
                     />
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Game Videos */}
+            {gameVideos.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    Game Highlights
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {gameVideos.map((video) => (
+                    <div key={video.id} className="space-y-2">
+                      <h4 className="font-semibold">{video.title}</h4>
+                      {video.description && (
+                        <p className="text-sm text-muted-foreground">{video.description}</p>
+                      )}
+                      <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                        {video.url.includes("/media-assets/") ? (
+                          <video
+                            src={video.url}
+                            controls
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <iframe
+                            src={video.url}
+                            className="w-full h-full"
+                            allowFullScreen
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
             )}

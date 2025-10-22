@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Trash2, Video, Plus, Edit, ExternalLink, Link as LinkIcon, Crown, Loader2 } from "lucide-react";
+import { ArrowLeft, Upload, Trash2, Video, Plus, Edit, ExternalLink, Link as LinkIcon, Crown, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import { useMembershipStatus } from "@/hooks/useMembershipStatus";
 import { UpgradePromptDialog } from "@/components/UpgradePromptDialog";
 import { useUpgradePrompt } from "@/hooks/useUpgradePrompt";
@@ -21,6 +21,7 @@ interface MediaAsset {
   url: string;
   media_type: string;
   created_at: string;
+  display_order: number;
 }
 
 const MediaGallery = () => {
@@ -67,6 +68,7 @@ const MediaGallery = () => {
         .select("*")
         .eq("athlete_id", athlete.id)
         .in("media_type", ["introduction_video", "community_video", "game_video"])
+        .order("display_order", { ascending: true })
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -128,6 +130,19 @@ const MediaGallery = () => {
         .from("media-assets")
         .getPublicUrl(fileName);
 
+      // Get the next display order for this media type
+      const { data: existingMedia } = await supabase
+        .from("media_assets")
+        .select("display_order")
+        .eq("athlete_id", athleteId)
+        .eq("media_type", mediaType)
+        .order("display_order", { ascending: false })
+        .limit(1);
+
+      const nextDisplayOrder = existingMedia && existingMedia.length > 0 
+        ? (existingMedia[0].display_order || 0) + 1 
+        : 1;
+
       // Delete old video if exists (only for intro/community)
       if (mediaType !== "game_video") {
         const existingVideo = mediaType === "introduction_video" ? introVideo : communityVideo;
@@ -153,7 +168,8 @@ const MediaGallery = () => {
           description,
           media_type: mediaType,
           url: publicUrl,
-          file_size: file.size
+          file_size: file.size,
+          display_order: nextDisplayOrder
         });
 
       if (insertError) throw insertError;
@@ -198,6 +214,19 @@ const MediaGallery = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Get the next display order for game videos
+      const { data: existingMedia } = await supabase
+        .from("media_assets")
+        .select("display_order")
+        .eq("athlete_id", athleteId)
+        .eq("media_type", "game_video")
+        .order("display_order", { ascending: false })
+        .limit(1);
+
+      const nextDisplayOrder = existingMedia && existingMedia.length > 0 
+        ? (existingMedia[0].display_order || 0) + 1 
+        : 1;
+
       const { error } = await supabase
         .from("media_assets")
         .insert({
@@ -207,6 +236,7 @@ const MediaGallery = () => {
           description,
           media_type: "game_video",
           url,
+          display_order: nextDisplayOrder
         });
 
       if (error) throw error;
@@ -260,6 +290,41 @@ const MediaGallery = () => {
       loadMediaAssets();
     } catch (error: any) {
       toast.error(error.message);
+    }
+  };
+
+  const handleReorder = async (videoId: string, direction: "up" | "down") => {
+    const currentVideos = [...gameVideos];
+    const currentIndex = currentVideos.findIndex(v => v.id === videoId);
+    
+    if (currentIndex === -1) return;
+    if (direction === "up" && currentIndex === 0) return;
+    if (direction === "down" && currentIndex === currentVideos.length - 1) return;
+
+    const newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    
+    // Swap the videos
+    [currentVideos[currentIndex], currentVideos[newIndex]] = 
+    [currentVideos[newIndex], currentVideos[currentIndex]];
+
+    // Update the UI immediately
+    setGameVideos(currentVideos);
+
+    try {
+      // Update both videos' display_order in the database
+      const updates = currentVideos.map((video, index) => 
+        supabase
+          .from("media_assets")
+          .update({ display_order: index + 1 })
+          .eq("id", video.id)
+      );
+
+      await Promise.all(updates);
+      toast.success("Video order updated!");
+    } catch (error: any) {
+      toast.error(error.message);
+      // Reload to restore correct order
+      loadMediaAssets();
     }
   };
 
@@ -747,6 +812,26 @@ const MediaGallery = () => {
                           </div>
                         </div>
                         <div className="flex gap-2">
+                          <div className="flex gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleReorder(video.id, "up")}
+                              disabled={gameVideos.indexOf(video) === 0}
+                              title="Move up"
+                            >
+                              <ChevronUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleReorder(video.id, "down")}
+                              disabled={gameVideos.indexOf(video) === gameVideos.length - 1}
+                              title="Move down"
+                            >
+                              <ChevronDown className="h-4 w-4" />
+                            </Button>
+                          </div>
                           <Button
                             variant="outline"
                             size="sm"

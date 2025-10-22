@@ -1737,6 +1737,7 @@ export type Database = {
           athlete_id: string | null
           created_at: string
           description: string | null
+          display_order: number | null
           file_size: number | null
           id: string
           is_archived: boolean | null
@@ -1753,6 +1754,7 @@ export type Database = {
           athlete_id?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number | null
           file_size?: number | null
           id?: string
           is_archived?: boolean | null
@@ -1769,6 +1771,7 @@ export type Database = {
           athlete_id?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number | null
           file_size?: number | null
           id?: string
           is_archived?: boolean | null
