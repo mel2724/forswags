@@ -21,6 +21,7 @@ interface MediaAsset {
   url: string;
   media_type: string;
   display_order: number;
+  season: string | null;
 }
 
 interface AthleteProfile {
@@ -396,7 +397,14 @@ export default function PublicProfile() {
                 <CardContent className="space-y-4">
                   {gameVideos.map((video) => (
                     <div key={video.id} className="space-y-2">
-                      <h4 className="font-semibold">{video.title}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold">{video.title}</h4>
+                        {video.season && (
+                          <Badge variant="secondary" className="text-xs">
+                            {video.season}
+                          </Badge>
+                        )}
+                      </div>
                       {video.description && (
                         <p className="text-sm text-muted-foreground">{video.description}</p>
                       )}

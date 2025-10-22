@@ -22,6 +22,7 @@ interface MediaAsset {
   media_type: string;
   created_at: string;
   display_order: number;
+  season: string | null;
 }
 
 const MediaGallery = () => {
@@ -91,6 +92,7 @@ const MediaGallery = () => {
     mediaType: "introduction_video" | "community_video" | "game_video",
     title: string,
     description: string,
+    season: string = "",
     onSuccess?: () => void
   ) => {
     if (!athleteId) return false;
@@ -169,7 +171,8 @@ const MediaGallery = () => {
           media_type: mediaType,
           url: publicUrl,
           file_size: file.size,
-          display_order: nextDisplayOrder
+          display_order: nextDisplayOrder,
+          season: season || null
         });
 
       if (insertError) throw insertError;
@@ -189,7 +192,8 @@ const MediaGallery = () => {
   const handleAddVideoLink = async (
     url: string,
     title: string,
-    description: string
+    description: string,
+    season: string = ""
   ) => {
     if (!athleteId) return;
 
@@ -236,7 +240,8 @@ const MediaGallery = () => {
           description,
           media_type: "game_video",
           url,
-          display_order: nextDisplayOrder
+          display_order: nextDisplayOrder,
+          season: season || null
         });
 
       if (error) throw error;
@@ -251,12 +256,17 @@ const MediaGallery = () => {
   const handleUpdate = async (
     videoId: string,
     title: string,
-    description: string
+    description: string,
+    season: string = ""
   ) => {
     try {
       const { error } = await supabase
         .from("media_assets")
-        .update({ title, description })
+        .update({ 
+          title, 
+          description,
+          season: season || null
+        })
         .eq("id", videoId);
 
       if (error) throw error;
@@ -429,7 +439,7 @@ const MediaGallery = () => {
               <Button
                 onClick={async () => {
                   if (videoFile && videoTitle) {
-                    const success = await handleUpload(videoFile, type, videoTitle, videoDesc, () => {
+                    const success = await handleUpload(videoFile, type, videoTitle, videoDesc, "", () => {
                       setVideoFile(null);
                       setVideoTitle("");
                       setVideoDesc("");
@@ -467,6 +477,7 @@ const MediaGallery = () => {
     const [url, setUrl] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [season, setSeason] = useState("");
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [mode, setMode] = useState<"link" | "upload">("link");
     const [open, setOpen] = useState(false);
@@ -475,13 +486,14 @@ const MediaGallery = () => {
       setUrl("");
       setTitle("");
       setDescription("");
+      setSeason("");
       setVideoFile(null);
       setMode("link");
     };
 
     const handleLinkSubmit = () => {
       if (url && title) {
-        handleAddVideoLink(url, title, description);
+        handleAddVideoLink(url, title, description, season);
         resetForm();
         setOpen(false);
       } else {
@@ -491,7 +503,7 @@ const MediaGallery = () => {
 
     const handleUploadSubmit = async () => {
       if (videoFile && title) {
-        const success = await handleUpload(videoFile, "game_video", title, description, () => {
+        const success = await handleUpload(videoFile, "game_video", title, description, season, () => {
           resetForm();
           setOpen(false);
         });
@@ -572,6 +584,16 @@ const MediaGallery = () => {
                   />
                 </div>
                 <div>
+                  <Label htmlFor="video-season">Season</Label>
+                  <Input
+                    id="video-season"
+                    value={season}
+                    onChange={(e) => setSeason(e.target.value)}
+                    placeholder="e.g., 2024 Fall, Spring 2023"
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
                   <Label htmlFor="video-desc">Description (Optional)</Label>
                   <Textarea
                     id="video-desc"
@@ -605,6 +627,16 @@ const MediaGallery = () => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g., Championship Game Highlights"
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="upload-season">Season</Label>
+                  <Input
+                    id="upload-season"
+                    value={season}
+                    onChange={(e) => setSeason(e.target.value)}
+                    placeholder="e.g., 2024 Fall, Spring 2023"
                     disabled={uploading}
                   />
                 </div>
@@ -647,11 +679,13 @@ const MediaGallery = () => {
   const EditVideoDialog = ({ video }: { video: MediaAsset | null }) => {
     const [title, setTitle] = useState(video?.title || "");
     const [description, setDescription] = useState(video?.description || "");
+    const [season, setSeason] = useState(video?.season || "");
 
     useEffect(() => {
       if (video) {
         setTitle(video.title);
         setDescription(video.description || "");
+        setSeason(video.season || "");
       }
     }, [video]);
 
@@ -663,7 +697,7 @@ const MediaGallery = () => {
           <DialogHeader>
             <DialogTitle>Edit Video</DialogTitle>
             <DialogDescription>
-              Update the title and description of your video
+              Update the details of your video
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -675,6 +709,17 @@ const MediaGallery = () => {
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
+            {video.media_type === "game_video" && (
+              <div>
+                <Label htmlFor="edit-season">Season</Label>
+                <Input
+                  id="edit-season"
+                  value={season}
+                  onChange={(e) => setSeason(e.target.value)}
+                  placeholder="e.g., 2024 Fall, Spring 2023"
+                />
+              </div>
+            )}
             <div>
               <Label htmlFor="edit-desc">Description</Label>
               <Textarea
@@ -685,7 +730,7 @@ const MediaGallery = () => {
               />
             </div>
             <Button
-              onClick={() => handleUpdate(video.id, title, description)}
+              onClick={() => handleUpdate(video.id, title, description, season)}
               className="w-full"
             >
               Save Changes
@@ -785,19 +830,26 @@ const MediaGallery = () => {
                         ) : null}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h4 className="font-semibold flex items-center gap-2">
-                              {video.title}
-                              {!video.url.includes("/media-assets/") && (
-                                <a
-                                  href={video.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:text-primary/80"
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                </a>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold flex items-center gap-2">
+                                {video.title}
+                                {!video.url.includes("/media-assets/") && (
+                                  <a
+                                    href={video.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:text-primary/80"
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </a>
+                                )}
+                              </h4>
+                              {video.season && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {video.season}
+                                </Badge>
                               )}
-                            </h4>
+                            </div>
                             {video.description && (
                               <p className="text-sm text-muted-foreground mt-1">
                                 {video.description}
