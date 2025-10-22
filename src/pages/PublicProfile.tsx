@@ -469,41 +469,6 @@ export default function PublicProfile() {
               </Card>
             )}
 
-            {/* Performance Stats */}
-            {stats.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5" />
-                    Performance Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {/* Group stats by season */}
-                    {Array.from(new Set(stats.map(s => s.season))).map((season) => (
-                      <div key={season}>
-                        <h4 className="font-semibold mb-3 text-sm text-muted-foreground">{season}</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          {stats
-                            .filter(s => s.season === season)
-                            .map((stat) => (
-                              <div key={stat.id} className={stat.is_highlighted ? "col-span-1" : "col-span-1"}>
-                                <p className="text-sm text-muted-foreground">{stat.stat_name}</p>
-                                <p className={`text-2xl font-bold ${stat.is_highlighted ? 'text-primary' : ''}`}>
-                                  {stat.stat_value}
-                                  {stat.unit === 'percentage' && '%'}
-                                </p>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Athletic Performance - Legacy fields */}
             {(profile.forty_yard_dash || profile.vertical_jump || profile.bench_press_max || profile.squat_max) && (
               <Card>
@@ -575,6 +540,40 @@ export default function PublicProfile() {
                       <span className="font-medium">{profile.act_score}</span>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Performance Stats */}
+            {stats.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Trophy className="h-4 w-4" />
+                    Performance Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Group stats by season */}
+                    {Array.from(new Set(stats.map(s => s.season))).map((season) => (
+                      <div key={season}>
+                        <h4 className="font-semibold mb-2 text-xs text-muted-foreground">{season}</h4>
+                        <div className="space-y-2">
+                          {stats
+                            .filter(s => s.season === season)
+                            .map((stat) => (
+                              <div key={stat.id} className="flex justify-between">
+                                <span className="text-sm text-muted-foreground">{stat.stat_name}</span>
+                                <span className={`font-medium ${stat.is_highlighted ? 'text-primary' : ''}`}>
+                                  {stat.stat_value}{stat.unit === 'percentage' && '%'}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             )}
