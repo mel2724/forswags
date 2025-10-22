@@ -169,6 +169,25 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
+    
+    // Send error notification to tech support
+    try {
+      const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+      await resend.emails.send({
+        from: "ForSWAGs Errors <noreply@updates.forswags.com>",
+        to: ["techsupport@forswags.com"],
+        subject: "Prime Dime Notification Error - ForSWAGs",
+        html: `
+          <h2>Prime Dime Notification Error</h2>
+          <p><strong>Error:</strong> ${errorMessage}</p>
+          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+          <p><strong>Stack:</strong> <pre>${error instanceof Error ? error.stack : 'N/A'}</pre></p>
+        `,
+      });
+    } catch (notifyError) {
+      console.error("Failed to send error notification:", notifyError);
+    }
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       {

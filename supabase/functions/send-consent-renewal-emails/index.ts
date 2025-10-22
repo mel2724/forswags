@@ -121,6 +121,30 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('[CONSENT-RENEWAL] Error:', error);
+    
+    // Send error notification to tech support
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      
+      await supabase.functions.invoke('send-notification-email', {
+        body: {
+          to: 'techsupport@forswags.com',
+          template: 'badge_earned', // Using existing template for error format
+          subject: 'Consent Renewal Email Error - ForSWAGs',
+          variables: {
+            first_name: 'Tech Support',
+            badge_name: `Error: ${error.message}`,
+            dashboard_url: '#',
+            profile_url: '#'
+          }
+        }
+      });
+    } catch (notifyError) {
+      console.error('[CONSENT-RENEWAL] Failed to send error notification:', notifyError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       {

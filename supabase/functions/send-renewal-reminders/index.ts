@@ -110,6 +110,34 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error sending renewal reminders:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Send error notification to tech support
+    try {
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'ForSWAGs Errors <onboarding@resend.dev>',
+            to: ['techsupport@forswags.com'],
+            subject: 'Renewal Reminder Error - ForSWAGs',
+            html: `
+              <h2>Renewal Reminder Error</h2>
+              <p><strong>Error:</strong> ${errorMessage}</p>
+              <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+              <p><strong>Stack:</strong> <pre>${error instanceof Error ? error.stack : 'N/A'}</pre></p>
+            `,
+          }),
+        });
+      }
+    } catch (notifyError) {
+      console.error('Failed to send error notification:', notifyError);
+    }
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }

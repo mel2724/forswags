@@ -173,6 +173,24 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error sending email:", error);
+    
+    // Send error notification to tech support
+    try {
+      await resend.emails.send({
+        from: "ForSWAGs Errors <noreply@updates.forswags.com>",
+        to: ["techsupport@forswags.com"],
+        subject: "Email Send Error - ForSWAGs",
+        html: `
+          <h2>Email Send Error</h2>
+          <p><strong>Error:</strong> ${error.message}</p>
+          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+          <p><strong>Stack:</strong> <pre>${error.stack || 'N/A'}</pre></p>
+        `,
+      });
+    } catch (notifyError) {
+      console.error("Failed to send error notification:", notifyError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       {
