@@ -274,7 +274,7 @@ const Dashboard = () => {
                     <CardDescription>Complete your profile to attract more colleges</CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/athlete/${athlete.id}`)}>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/profile/${athlete.id}`)}>
                       <User className="h-4 w-4 mr-2" />
                       View Profile
                     </Button>
