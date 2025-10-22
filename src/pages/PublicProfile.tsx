@@ -336,15 +336,143 @@ export default function PublicProfile() {
           </CardContent>
         </Card>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Main Content */}
+        <div className="grid md:grid-cols-5 gap-6">
+          {/* Left Column - Academics & Performance Stats (60% width) */}
+          <div className="md:col-span-3 space-y-6">
+            {/* Academics */}
+            {(profile.gpa || profile.sat_score || profile.act_score) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5" />
+                    Academics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-6">
+                    {profile.gpa && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">GPA</p>
+                        <p className="text-3xl font-bold">{profile.gpa.toFixed(2)}</p>
+                      </div>
+                    )}
+                    {profile.sat_score && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">SAT</p>
+                        <p className="text-3xl font-bold">{profile.sat_score}</p>
+                      </div>
+                    )}
+                    {profile.act_score && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">ACT</p>
+                        <p className="text-3xl font-bold">{profile.act_score}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Performance Stats */}
+            {stats.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Performance Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Group stats by season */}
+                    {Array.from(new Set(stats.map(s => s.season))).map((season) => (
+                      <div key={season}>
+                        <h4 className="font-semibold mb-4 text-sm text-muted-foreground">{season}</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                          {stats
+                            .filter(s => s.season === season)
+                            .map((stat) => (
+                              <div key={stat.id}>
+                                <p className="text-sm text-muted-foreground mb-2">{stat.stat_name}</p>
+                                <p className={`text-3xl font-bold ${stat.is_highlighted ? 'text-primary' : ''}`}>
+                                  {stat.stat_value}{stat.unit === 'percentage' && '%'}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Athletic Performance - Legacy fields */}
+            {(profile.forty_yard_dash || profile.vertical_jump || profile.bench_press_max || profile.squat_max) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Athletic Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {profile.forty_yard_dash && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">40 Yard Dash</p>
+                        <p className="text-3xl font-bold">{profile.forty_yard_dash}s</p>
+                      </div>
+                    )}
+                    {profile.vertical_jump && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Vertical Jump</p>
+                        <p className="text-3xl font-bold">{profile.vertical_jump}"</p>
+                      </div>
+                    )}
+                    {profile.bench_press_max && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Bench Press</p>
+                        <p className="text-3xl font-bold">{profile.bench_press_max} lbs</p>
+                      </div>
+                    )}
+                    {profile.squat_max && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Squat</p>
+                        <p className="text-3xl font-bold">{profile.squat_max} lbs</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Message to Coaches */}
+            {profile.message_to_coaches && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Message to Coaches
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground whitespace-pre-wrap">
+                    {profile.message_to_coaches}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Right Column - Highlight Videos (40% width) */}
           <div className="md:col-span-2 space-y-6">
             {/* Introduction Video */}
             {introVideo && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Video className="h-4 w-4" />
                     {introVideo.title}
                   </CardTitle>
                   {introVideo.description && (
@@ -367,8 +495,8 @@ export default function PublicProfile() {
             {communityVideo && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Heart className="h-4 w-4" />
                     {communityVideo.title}
                   </CardTitle>
                   {communityVideo.description && (
@@ -391,8 +519,8 @@ export default function PublicProfile() {
             {profile.highlights_url && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Video className="h-4 w-4" />
                     Highlights
                   </CardTitle>
                 </CardHeader>
@@ -412,8 +540,8 @@ export default function PublicProfile() {
             {gameVideos.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Video className="h-4 w-4" />
                     Game Highlights
                   </CardTitle>
                 </CardHeader>
@@ -421,7 +549,7 @@ export default function PublicProfile() {
                   {gameVideos.map((video) => (
                     <div key={video.id} className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold">{video.title}</h4>
+                        <h4 className="font-semibold text-sm">{video.title}</h4>
                         {video.season && (
                           <Badge variant="secondary" className="text-xs">
                             {video.season}
@@ -451,257 +579,134 @@ export default function PublicProfile() {
                 </CardContent>
               </Card>
             )}
-
-            {/* Message to Coaches */}
-            {profile.message_to_coaches && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Message to Coaches
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {profile.message_to_coaches}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Athletic Performance - Legacy fields */}
-            {(profile.forty_yard_dash || profile.vertical_jump || profile.bench_press_max || profile.squat_max) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5" />
-                    Athletic Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    {profile.forty_yard_dash && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">40 Yard Dash</p>
-                        <p className="text-2xl font-bold">{profile.forty_yard_dash}s</p>
-                      </div>
-                    )}
-                    {profile.vertical_jump && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Vertical Jump</p>
-                        <p className="text-2xl font-bold">{profile.vertical_jump}"</p>
-                      </div>
-                    )}
-                    {profile.bench_press_max && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Bench Press</p>
-                        <p className="text-2xl font-bold">{profile.bench_press_max} lbs</p>
-                      </div>
-                    )}
-                    {profile.squat_max && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Squat</p>
-                        <p className="text-2xl font-bold">{profile.squat_max} lbs</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
+        </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Academics */}
-            {(profile.gpa || profile.sat_score || profile.act_score) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <GraduationCap className="h-4 w-4" />
-                    Academics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {profile.gpa && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">GPA</span>
-                      <span className="font-medium">{profile.gpa.toFixed(2)}</span>
-                    </div>
-                  )}
-                  {profile.sat_score && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">SAT</span>
-                      <span className="font-medium">{profile.sat_score}</span>
-                    </div>
-                  )}
-                  {profile.act_score && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">ACT</span>
-                      <span className="font-medium">{profile.act_score}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Performance Stats */}
-            {stats.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Trophy className="h-4 w-4" />
-                    Performance Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* Group stats by season */}
-                    {Array.from(new Set(stats.map(s => s.season))).map((season) => (
-                      <div key={season}>
-                        <h4 className="font-semibold mb-2 text-xs text-muted-foreground">{season}</h4>
-                        <div className="space-y-2">
-                          {stats
-                            .filter(s => s.season === season)
-                            .map((stat) => (
-                              <div key={stat.id} className="flex justify-between">
-                                <span className="text-sm text-muted-foreground">{stat.stat_name}</span>
-                                <span className={`font-medium ${stat.is_highlighted ? 'text-primary' : ''}`}>
-                                  {stat.stat_value}{stat.unit === 'percentage' && '%'}
-                                </span>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    ))}
+        {/* Additional Information Section - Below main content */}
+        <div className="grid md:grid-cols-3 gap-6 mt-6">
+          {/* Recruitment Status */}
+          {(profile.being_recruited || profile.received_offers || profile.committed) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Target className="h-4 w-4" />
+                  Recruitment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {profile.committed && (
+                  <div>
+                    <Badge className="bg-green-500 mb-2">✓ Committed</Badge>
+                    {profile.committed_school && (
+                      <p className="text-sm font-medium">{profile.committed_school}</p>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Recruitment Status */}
-            {(profile.being_recruited || profile.received_offers || profile.committed) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Target className="h-4 w-4" />
-                    Recruitment
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {profile.committed && (
-                    <div>
-                      <Badge className="bg-green-500 mb-2">✓ Committed</Badge>
-                      {profile.committed_school && (
-                        <p className="text-sm font-medium">{profile.committed_school}</p>
-                      )}
+                )}
+                {!profile.committed && profile.received_offers && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Offers From:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.offer_schools?.map((school, idx) => (
+                        <Badge key={idx} variant="secondary">{school}</Badge>
+                      ))}
                     </div>
-                  )}
-                  {!profile.committed && profile.received_offers && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Offers From:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.offer_schools?.map((school, idx) => (
-                          <Badge key={idx} variant="secondary">{school}</Badge>
-                        ))}
-                      </div>
+                  </div>
+                )}
+                {!profile.committed && profile.being_recruited && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Recruiting Interest:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.recruiting_schools?.map((school, idx) => (
+                        <Badge key={idx} variant="outline">{school}</Badge>
+                      ))}
                     </div>
-                  )}
-                  {!profile.committed && profile.being_recruited && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Recruiting Interest:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.recruiting_schools?.map((school, idx) => (
-                          <Badge key={idx} variant="outline">{school}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Social Media - For Recruiting Purposes */}
-            {(profile.twitter_handle || profile.instagram_handle || profile.tiktok_handle) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Share2 className="h-4 w-4" />
-                    Social Media
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {profile.twitter_handle && (
-                    <a
-                      href={`https://twitter.com/${profile.twitter_handle.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm hover:text-primary"
-                    >
-                      <span className="text-muted-foreground">Twitter:</span>
-                      <span>{profile.twitter_handle}</span>
-                    </a>
-                  )}
-                  {profile.instagram_handle && (
-                    <a
-                      href={`https://instagram.com/${profile.instagram_handle.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm hover:text-primary"
-                    >
-                      <span className="text-muted-foreground">Instagram:</span>
-                      <span>{profile.instagram_handle}</span>
-                    </a>
-                  )}
-                  {profile.tiktok_handle && (
-                    <a
-                      href={`https://tiktok.com/@${profile.tiktok_handle.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm hover:text-primary"
-                    >
-                      <span className="text-muted-foreground">TikTok:</span>
-                      <span>{profile.tiktok_handle}</span>
-                    </a>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Contact Information - Removed for Privacy */}
-            <Card className="border-primary/20">
-              <CardContent className="pt-6 text-center space-y-2">
-                <p className="text-sm font-medium">Interested in recruiting this athlete?</p>
-                <p className="text-xs text-muted-foreground">
-                  Connect through our platform for direct communication
-                </p>
-                <Button onClick={() => navigate('/')} className="w-full">
-                  Go to ForSWAGs
-                </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
+          )}
 
-            {/* Awards */}
-            {profile.athletic_awards && profile.athletic_awards.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Trophy className="h-4 w-4" />
-                    Awards & Honors
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {profile.athletic_awards.map((award, idx) => (
-                      <li key={idx} className="text-sm flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>{award}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          {/* Social Media - For Recruiting Purposes */}
+          {(profile.twitter_handle || profile.instagram_handle || profile.tiktok_handle) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Share2 className="h-4 w-4" />
+                  Social Media
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {profile.twitter_handle && (
+                  <a
+                    href={`https://twitter.com/${profile.twitter_handle.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm hover:text-primary"
+                  >
+                    <span className="text-muted-foreground">Twitter:</span>
+                    <span>{profile.twitter_handle}</span>
+                  </a>
+                )}
+                {profile.instagram_handle && (
+                  <a
+                    href={`https://instagram.com/${profile.instagram_handle.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm hover:text-primary"
+                  >
+                    <span className="text-muted-foreground">Instagram:</span>
+                    <span>{profile.instagram_handle}</span>
+                  </a>
+                )}
+                {profile.tiktok_handle && (
+                  <a
+                    href={`https://tiktok.com/@${profile.tiktok_handle.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm hover:text-primary"
+                  >
+                    <span className="text-muted-foreground">TikTok:</span>
+                    <span>{profile.tiktok_handle}</span>
+                  </a>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Contact Information - Removed for Privacy */}
+          <Card className="border-primary/20">
+            <CardContent className="pt-6 text-center space-y-2">
+              <p className="text-sm font-medium">Interested in recruiting this athlete?</p>
+              <p className="text-xs text-muted-foreground">
+                Connect through our platform for direct communication
+              </p>
+              <Button onClick={() => navigate('/')} className="w-full">
+                Go to ForSWAGs
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Awards */}
+          {profile.athletic_awards && profile.athletic_awards.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Trophy className="h-4 w-4" />
+                  Awards & Honors
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {profile.athletic_awards.map((award, idx) => (
+                    <li key={idx} className="text-sm flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <span>{award}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
       
