@@ -183,9 +183,39 @@ Return ONLY valid JSON in this exact format:
     );
 
   } catch (error) {
-    console.error('Error in analyze-college-match:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in analyze-college-match:', errorMessage);
+    
+    // Send error notification to tech support
+    try {
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'ForSWAGs Errors <noreply@updates.forswags.com>',
+            to: ['techsupport@forswags.com'],
+            subject: 'College Match Analysis Error - ForSWAGs',
+            html: `
+              <h2>College Match Analysis Error</h2>
+              <p><strong>Error:</strong> ${errorMessage}</p>
+              <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+              <p><strong>Stack:</strong> <pre>${error instanceof Error ? error.stack : 'N/A'}</pre></p>
+              <p><strong>Note:</strong> Check if LOVABLE_API_KEY is configured and has sufficient credits.</p>
+            `,
+          }),
+        });
+      }
+    } catch (notifyError) {
+      console.error('Failed to send error notification:', notifyError);
+    }
+    
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: errorMessage }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

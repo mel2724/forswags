@@ -87,7 +87,7 @@ serve(async (req) => {
     logStep("Analysis request recorded");
 
     // Trigger the actual analysis
-    const { error: analysisError } = await supabaseClient.functions.invoke(
+    const { data: analysisData, error: analysisError } = await supabaseClient.functions.invoke(
       "analyze-college-match",
       {
         body: { athleteId: athlete.id }
@@ -96,9 +96,36 @@ serve(async (req) => {
 
     if (analysisError) {
       logStep("Analysis error", { error: analysisError });
+      
+      // Send error notification to tech support
+      try {
+        const resendApiKey = Deno.env.get("RESEND_API_KEY");
+        if (resendApiKey) {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'ForSWAGs Errors <noreply@updates.forswags.com>',
+              to: ['techsupport@forswags.com'],
+              subject: 'Prime Dime Analysis Trigger Error - ForSWAGs',
+              html: `
+                <h2>Prime Dime Analysis Trigger Error</h2>
+                <p><strong>Athlete ID:</strong> ${athlete.id}</p>
+                <p><strong>Error:</strong> ${JSON.stringify(analysisError)}</p>
+                <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+              `,
+            }),
+          });
+        }
+      } catch (notifyError) {
+        logStep("Failed to send error notification", { error: notifyError });
+      }
       // Don't fail the request, analysis can be retried
     } else {
-      logStep("Analysis triggered successfully");
+      logStep("Analysis triggered successfully", { result: analysisData });
     }
 
     return new Response(
