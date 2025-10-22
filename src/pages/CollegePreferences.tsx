@@ -187,6 +187,7 @@ const CollegePreferences = () => {
       }
 
       toast.success("Preferences saved successfully!");
+      navigate("/dashboard");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
