@@ -108,7 +108,7 @@ const PrimeDime = () => {
               website_url
             )
           `)
-          .eq("athlete_id", athlete.id)
+          .eq("athlete_id", athleteData.id)
           .order("match_score", { ascending: false })
           .limit(10);
 
