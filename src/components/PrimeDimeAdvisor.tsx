@@ -76,8 +76,8 @@ export function PrimeDimeAdvisor({ athleteId, onComplete }: PrimeDimeAdvisorProp
   };
 
   return (
-    <Card className="flex flex-col h-[600px]">
-      <CardHeader className="border-b bg-gradient-to-r from-primary/10 to-secondary/10">
+    <Card className="flex flex-col h-[calc(100vh-16rem)] min-h-[500px] max-h-[700px]">
+      <CardHeader className="border-b bg-gradient-to-r from-primary/10 to-secondary/10 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           <h3 className="font-bold text-lg">Prime Dime Advisor</h3>
@@ -87,7 +87,7 @@ export function PrimeDimeAdvisor({ athleteId, onComplete }: PrimeDimeAdvisorProp
         </p>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -120,7 +120,7 @@ export function PrimeDimeAdvisor({ athleteId, onComplete }: PrimeDimeAdvisorProp
         <div ref={messagesEndRef} />
       </CardContent>
 
-      <CardFooter className="border-t p-4">
+      <CardFooter className="border-t p-4 flex-shrink-0 bg-background">
         <form
           onSubmit={(e) => {
             e.preventDefault();
