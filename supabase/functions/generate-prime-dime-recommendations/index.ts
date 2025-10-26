@@ -53,7 +53,7 @@ For each college recommendation, provide:
 2. Division level
 3. Location (City, State)
 4. Why it's a good fit (2-3 sentences)
-5. Twitter handle for the appropriate sport's recruiting coordinator (format: @username)
+5. Recruiter contact information (name, email, phone, Twitter if known)
 
 Consider:
 - Athletic level and competition
@@ -72,7 +72,10 @@ Return your response in this exact JSON format:
       "division": "D1/D2/D3/NAIA/JUCO",
       "location": "City, State",
       "fit_reason": "Why this is a great match",
-      "recruiter_twitter": "@username"
+      "recruiter_name": "Coach Full Name (if known, otherwise null)",
+      "recruiter_email": "coach@school.edu (if known, otherwise null)",
+      "recruiter_phone": "555-123-4567 (if known, otherwise null)",
+      "recruiter_twitter": "@username (if known, otherwise null)"
     }
   ],
   "next_steps": "Advice on next steps and using ForSWAGs tools"
@@ -89,7 +92,7 @@ Return your response in this exact JSON format:
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Here are the student-athlete's answers:\n\n${answersText}\n\nPlease provide 10 college recommendations with Twitter handles for recruiters.` }
+          { role: 'user', content: `Here are the student-athlete's answers:\n\n${answersText}\n\nPlease provide 10 college recommendations with comprehensive recruiter contact information (name, email, phone, Twitter).` }
         ],
         temperature: 0.7,
       }),
