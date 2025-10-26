@@ -707,14 +707,16 @@ export default function PublicProfile() {
 
         {/* Contact Information - Removed for Privacy */}
         <Card className="border-primary/20 mt-6">
-          <CardContent className="pt-6 text-center space-y-2">
-            <p className="text-sm font-medium">Interested in recruiting this athlete?</p>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <p className="text-xl font-semibold">Interested in recruiting this athlete?</p>
+            <p className="text-base text-muted-foreground">
               Connect through our platform for direct communication
             </p>
-            <Button onClick={() => navigate('/')} className="w-full">
-              Go to ForSWAGs
-            </Button>
+            <div className="flex justify-center pt-2">
+              <Button onClick={() => navigate('/')} size="lg" className="w-auto px-8">
+                Go to ForSWAGs
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
