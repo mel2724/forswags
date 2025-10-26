@@ -715,7 +715,7 @@ export default function PublicProfile() {
                   Connect through our platform for direct communication
                 </p>
               </div>
-              <Button onClick={() => navigate('/')} size="lg" className="shrink-0 px-8">
+              <Button onClick={() => navigate('/')} size="lg" className="shrink-0 px-12 py-6 text-lg">
                 Go to ForSWAGs
               </Button>
             </div>
