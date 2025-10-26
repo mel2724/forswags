@@ -254,9 +254,20 @@ Keep it brief, encouraging, and coach-like.`;
         }, { onConflict: 'athlete_id' });
 
       // Trigger recommendations generation
-      await supabase.functions.invoke('generate-prime-dime-recommendations', {
-        body: { athleteId }
-      });
+      console.log('[PRIME-DIME-ADVISOR] Triggering recommendations generation for athlete:', athleteId);
+      try {
+        const { data: recsData, error: recsError } = await supabase.functions.invoke('generate-prime-dime-recommendations', {
+          body: { athleteId }
+        });
+        
+        if (recsError) {
+          console.error('[PRIME-DIME-ADVISOR] Error invoking recommendations generation:', recsError);
+        } else {
+          console.log('[PRIME-DIME-ADVISOR] Recommendations generation triggered successfully');
+        }
+      } catch (invokeError) {
+        console.error('[PRIME-DIME-ADVISOR] Exception invoking recommendations:', invokeError);
+      }
 
       return new Response(
         JSON.stringify({ 

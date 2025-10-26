@@ -12,7 +12,12 @@ serve(async (req) => {
   }
 
   try {
-    const { athleteId } = await req.json();
+    console.log('[GENERATE-RECOMMENDATIONS] Function invoked');
+    const body = await req.json();
+    console.log('[GENERATE-RECOMMENDATIONS] Request body:', JSON.stringify(body));
+    const { athleteId } = body;
+    
+    console.log('[GENERATE-RECOMMENDATIONS] Processing for athlete ID:', athleteId);
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -21,14 +26,19 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get conversation data
+    console.log('[GENERATE-RECOMMENDATIONS] Fetching conversation data');
     const { data: prefs, error: prefsError } = await supabase
       .from('college_match_prefs')
       .select('conversation_data')
       .eq('athlete_id', athleteId)
       .single();
 
-    if (prefsError) throw prefsError;
+    if (prefsError) {
+      console.error('[GENERATE-RECOMMENDATIONS] Error fetching prefs:', prefsError);
+      throw prefsError;
+    }
 
+    console.log('[GENERATE-RECOMMENDATIONS] Conversation data retrieved, answers count:', prefs.conversation_data?.answers?.length || 0);
     const answers = prefs.conversation_data?.answers || [];
 
     // Build comprehensive prompt from all answers
@@ -68,6 +78,7 @@ Return your response in this exact JSON format:
   "next_steps": "Advice on next steps and using ForSWAGs tools"
 }`;
 
+    console.log('[GENERATE-RECOMMENDATIONS] Calling AI with answers text length:', answersText.length);
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -85,11 +96,14 @@ Return your response in this exact JSON format:
     });
 
     if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('[GENERATE-RECOMMENDATIONS] AI API error:', aiResponse.status, errorText);
       if (aiResponse.status === 429) throw new Error('Rate limit exceeded');
       if (aiResponse.status === 402) throw new Error('AI credits depleted');
       throw new Error(`AI API error: ${aiResponse.status}`);
     }
 
+    console.log('[GENERATE-RECOMMENDATIONS] AI response received');
     const aiData = await aiResponse.json();
     let recommendations;
     
@@ -107,6 +121,7 @@ Return your response in this exact JSON format:
     }
 
     // Store recommendations
+    console.log('[GENERATE-RECOMMENDATIONS] Storing recommendations in database');
     const { error: insertError } = await supabase
       .from('college_recommendations')
       .upsert({
@@ -118,7 +133,12 @@ Return your response in this exact JSON format:
         ignoreDuplicates: false 
       });
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error('[GENERATE-RECOMMENDATIONS] Error storing recommendations:', insertError);
+      throw insertError;
+    }
+
+    console.log('[GENERATE-RECOMMENDATIONS] Recommendations stored successfully');
 
     // Send notification email
     try {
