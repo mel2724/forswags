@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import logoIcon from "@/assets/forswags-logo.png";
 import { useMembershipStatus } from "@/hooks/useMembershipStatus";
+import { PrimeDimeAdvisor } from "@/components/PrimeDimeAdvisor";
 import { 
   ArrowLeft, 
   Trophy, 
@@ -20,166 +21,108 @@ import {
   Award,
   Star,
   Lock,
-  Loader2
+  Loader2,
+  ExternalLink
 } from "lucide-react";
 
-interface School {
-  id: string;
-  name: string;
-  location_city: string;
-  location_state: string;
-  division: string;
-  conference: string;
-  enrollment: number;
-  tuition: number;
-  website_url: string;
-}
-
-interface CollegeMatch {
-  id: string;
-  match_score: number;
-  academic_fit: number;
-  athletic_fit: number;
-  financial_fit: number;
-  notes: string | null;
-  is_saved: boolean;
-  school: School;
-}
 
 const PrimeDime = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [matches, setMatches] = useState<CollegeMatch[]>([]);
   const [athleteId, setAthleteId] = useState<string | null>(null);
-  const [athlete, setAthlete] = useState<any>(null);
-  const [requesting, setRequesting] = useState(false);
+  const [showAdvisor, setShowAdvisor] = useState(false);
+  const [conversationCompleted, setConversationCompleted] = useState(false);
+  const [recommendations, setRecommendations] = useState<any>(null);
   const { isFree, isLoading: membershipLoading } = useMembershipStatus();
 
   useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          navigate("/auth");
-          return;
-        }
+    fetchAthleteAndRecommendations();
+  }, []);
 
-        // Get athlete profile
-        const { data: athleteData } = await supabase
-          .from("athletes")
-          .select("id, analysis_requested_at, analysis_notified_at")
-          .eq("user_id", session.user.id)
-          .single();
+  const fetchAthleteAndRecommendations = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
 
-        if (!athleteData) {
-          toast({
-            title: "Not an athlete",
-            description: "This feature is only available for athlete profiles.",
-            variant: "destructive",
-          });
-          navigate("/dashboard");
-          return;
-        }
+      // Get athlete profile
+      const { data: athlete, error: athleteError } = await supabase
+        .from('athletes')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
 
-        setAthleteId(athleteData.id);
-        setAthlete(athleteData);
-
-        // Fetch top 10 Prime Dime matches with school details
-        const { data: matchesData, error } = await supabase
-          .from("college_matches")
-          .select(`
-            id,
-            match_score,
-            academic_fit,
-            athletic_fit,
-            financial_fit,
-            notes,
-            is_saved,
-            schools (
-              id,
-              name,
-              location_city,
-              location_state,
-              division,
-              conference,
-              enrollment,
-              tuition,
-              website_url
-            )
-          `)
-          .eq("athlete_id", athleteData.id)
-          .order("match_score", { ascending: false })
-          .limit(10);
-
-        if (error) throw error;
-
-        // Transform data to match interface
-        const transformedMatches = matchesData?.map((match: any) => ({
-          ...match,
-          school: match.schools
-        })) || [];
-
-        setMatches(transformedMatches);
-      } catch (error: any) {
+      if (athleteError) {
         toast({
-          title: "Error loading matches",
-          description: error.message,
+          title: "Not an athlete",
+          description: "This feature is only available for athlete profiles.",
           variant: "destructive",
         });
-      } finally {
-        setLoading(false);
+        navigate("/dashboard");
+        return;
       }
-    };
+      
+      setAthleteId(athlete.id);
 
-    fetchMatches();
-  }, [navigate, toast]);
+      // Check conversation status
+      const { data: prefs } = await supabase
+        .from('college_match_prefs')
+        .select('conversation_completed')
+        .eq('athlete_id', athlete.id)
+        .maybeSingle();
 
-  const getFitColor = (score: number) => {
-    if (score >= 80) return "text-secondary";
-    if (score >= 60) return "text-primary";
-    return "text-muted-foreground";
-  };
+      setConversationCompleted(prefs?.conversation_completed || false);
 
-  const getFitBadge = (score: number) => {
-    if (score >= 80) return "Excellent";
-    if (score >= 60) return "Good";
-    return "Fair";
-  };
-
-  const handleRequestAnalysis = async () => {
-    setRequesting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('request-prime-dime-analysis');
-
-      if (error) throw error;
-
-      toast({
-        title: "Analysis Requested",
-        description: "Our team is analyzing your profile. You'll be notified when your Prime Dime matches are ready (usually within 24 hours).",
-      });
-
-      // Refresh athlete data to show the "in progress" state
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: athleteData } = await supabase
-          .from("athletes")
-          .select("id, analysis_requested_at, analysis_notified_at")
-          .eq("user_id", session.user.id)
-          .single();
-        if (athleteData) setAthlete(athleteData);
+      // Fetch recommendations if completed
+      if (prefs?.conversation_completed) {
+        await fetchRecommendations(athlete.id);
       }
     } catch (error: any) {
-      console.error('Error requesting analysis:', error);
+      console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to request Prime Dime analysis",
+        description: "Failed to load Prime Dime data",
         variant: "destructive",
       });
     } finally {
-      setRequesting(false);
+      setLoading(false);
     }
   };
+
+  const fetchRecommendations = async (athleteId: string) => {
+    const { data, error } = await supabase
+      .from('college_recommendations')
+      .select('*')
+      .eq('athlete_id', athleteId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching recommendations:', error);
+      return;
+    }
+
+    if (data) {
+      setRecommendations(data.recommendations);
+    }
+  };
+
+  const handleStartAdvisor = () => {
+    setShowAdvisor(true);
+  };
+
+  const handleAdvisorComplete = async () => {
+    setShowAdvisor(false);
+    setConversationCompleted(true);
+    if (athleteId) {
+      await fetchRecommendations(athleteId);
+    }
+  };
+
 
   if (loading || membershipLoading) {
     return (
@@ -285,190 +228,120 @@ const PrimeDime = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {matches.length === 0 ? (
+        {showAdvisor ? (
+          <PrimeDimeAdvisor 
+            athleteId={athleteId!} 
+            onComplete={handleAdvisorComplete}
+          />
+        ) : !conversationCompleted ? (
           <Card className="p-16 text-center bg-card/50 backdrop-blur border-2 border-primary/20">
-            {athlete?.analysis_requested_at ? (
-              <>
-                <div className="relative inline-block mb-6">
-                  <Trophy className="h-20 w-20 text-primary mx-auto animate-pulse" />
-                </div>
-                <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Analysis In Progress</h2>
-                <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                  Our expert team is analyzing your profile to create your Prime Dime matches.
+            <Trophy className="h-20 w-20 text-primary mx-auto mb-6" />
+            <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Get Your Prime Dime</h2>
+            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+              Let's find your perfect college match! Answer 22 questions about your athletic abilities, academic interests, financial needs, and lifestyle preferences.
+            </p>
+            <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto mb-8">
+              <div className="p-4 border rounded-lg">
+                <Trophy className="h-8 w-8 text-primary mb-2 mx-auto" />
+                <h3 className="font-semibold mb-1">Athletic Fit</h3>
+                <p className="text-sm text-muted-foreground">
+                  Match your skill level and competition goals
                 </p>
-                <p className="text-sm text-muted-foreground mb-8">
-                  Requested: {new Date(athlete.analysis_requested_at).toLocaleDateString()} at {new Date(athlete.analysis_requested_at).toLocaleTimeString()}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  You'll receive a notification when your matches are ready (usually within 24 hours)
-                </p>
-              </>
-            ) : (
-              <>
-                <Trophy className="h-20 w-20 text-primary mx-auto mb-6" />
-                <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Get Your Prime Dime</h2>
-                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                  Request expert Prime Dime analysis from our team. We'll analyze your athletic and academic profile to find your top 10 best-fit colleges.
-                </p>
-                <div className="flex gap-4 justify-center">
-                  <Button variant="outline" onClick={() => navigate("/profile")}>
-                    Complete Profile First
-                  </Button>
-                  <Button 
-                    className="btn-accent" 
-                    onClick={handleRequestAnalysis}
-                    disabled={requesting}
-                  >
-                    {requesting ? (
-                      <>
-                        <Trophy className="mr-2 h-4 w-4 animate-spin" />
-                        Requesting...
-                      </>
-                    ) : (
-                      <>
-                        <Trophy className="mr-2 h-4 w-4" />
-                        Request Analysis
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </>
-            )}
-          </Card>
-        ) : (
-          <>
-            <div className="mb-8 text-center">
-              <div className="inline-flex items-center space-x-2 mb-4">
-                <Star className="h-8 w-8 text-secondary fill-secondary" />
-                <h2 className="text-4xl font-black uppercase text-gradient-accent">Your Prime Dime</h2>
-                <Star className="h-8 w-8 text-secondary fill-secondary" />
               </div>
-              <p className="text-muted-foreground uppercase text-sm tracking-wider">
-                Your top {matches.length} Prime Dime matches based on your profile
+              <div className="p-4 border rounded-lg">
+                <GraduationCap className="h-8 w-8 text-secondary mb-2 mx-auto" />
+                <h3 className="font-semibold mb-1">Academic Programs</h3>
+                <p className="text-sm text-muted-foreground">
+                  Find schools with your ideal majors
+                </p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <MapPin className="h-8 w-8 text-accent mb-2 mx-auto" />
+                <h3 className="font-semibold mb-1">Location & Culture</h3>
+                <p className="text-sm text-muted-foreground">
+                  Discover campuses where you'll thrive
+                </p>
+              </div>
+            </div>
+            <Button onClick={handleStartAdvisor} size="lg">
+              Start Your Prime Dime Consultation
+            </Button>
+          </Card>
+        ) : recommendations ? (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your College Match Profile</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{recommendations.summary}</p>
+              </CardContent>
+            </Card>
+
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Your Top 10 College Recommendations</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                {recommendations.colleges?.map((college: any, index: number) => (
+                  <Card key={index} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-xl">{college.name}</CardTitle>
+                          <div className="flex gap-2 mt-2">
+                            <Badge variant="secondary">{college.division}</Badge>
+                            <Badge variant="outline">{college.location}</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{college.fit_reason}</p>
+                      {college.recruiter_twitter && (
+                        <div className="flex items-center gap-2 pt-2 border-t">
+                          <ExternalLink className="h-4 w-4 text-primary" />
+                          <a
+                            href={`https://twitter.com/${college.recruiter_twitter.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-sm font-medium"
+                          >
+                            Contact Recruiter {college.recruiter_twitter}
+                          </a>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <Card className="bg-muted">
+              <CardHeader>
+                <CardTitle>Next Steps</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{recommendations.next_steps}</p>
+                <div className="flex gap-2 mt-4">
+                  <Button onClick={() => {
+                    setConversationCompleted(false);
+                    setRecommendations(null);
+                    setShowAdvisor(true);
+                  }}>
+                    Start New Consultation
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                Generating your personalized recommendations...
               </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-              {matches.map((match, index) => (
-                <Card key={match.id} className="overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/20">
-                  <CardHeader className="bg-gradient-to-r from-card to-card/50 border-b-2 border-primary/20">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <Badge className="bg-gradient-to-r from-secondary to-secondary-glow text-black font-black text-lg px-3 py-1">
-                            #{index + 1}
-                          </Badge>
-                          <Badge variant="outline" className="text-primary border-primary">
-                            {match.school.division}
-                          </Badge>
-                        </div>
-                        <CardTitle className="text-2xl font-black uppercase mb-1">
-                          {match.school.name}
-                        </CardTitle>
-                        <CardDescription className="flex items-center text-sm">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {match.school.location_city}, {match.school.location_state}
-                        </CardDescription>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-3xl font-black text-gradient-primary">
-                          {match.match_score?.toFixed(0)}%
-                        </div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Overall Match
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="pt-6 space-y-4">
-                    {/* Conference & Enrollment */}
-                    <div className="grid grid-cols-2 gap-4 pb-4 border-b border-border">
-                      <div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Conference</div>
-                        <div className="font-bold text-sm">{match.school.conference || "N/A"}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 flex items-center">
-                          <Users className="h-3 w-3 mr-1" />
-                          Enrollment
-                        </div>
-                        <div className="font-bold text-sm">{match.school.enrollment?.toLocaleString() || "N/A"}</div>
-                      </div>
-                    </div>
-
-                    {/* Fit Scores */}
-                    <div className="space-y-3">
-                      {/* Academic Fit */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <GraduationCap className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium">Academic Fit</span>
-                          </div>
-                          <Badge variant="outline" className={`${getFitColor(match.academic_fit || 0)}`}>
-                            {getFitBadge(match.academic_fit || 0)}
-                          </Badge>
-                        </div>
-                        <Progress value={match.academic_fit || 0} className="h-2" />
-                      </div>
-
-                      {/* Athletic Fit */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <Trophy className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium">Athletic Fit</span>
-                          </div>
-                          <Badge variant="outline" className={`${getFitColor(match.athletic_fit || 0)}`}>
-                            {getFitBadge(match.athletic_fit || 0)}
-                          </Badge>
-                        </div>
-                        <Progress value={match.athletic_fit || 0} className="h-2" />
-                      </div>
-
-                      {/* Financial Fit */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <DollarSign className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium">Financial Fit</span>
-                          </div>
-                          <Badge variant="outline" className={`${getFitColor(match.financial_fit || 0)}`}>
-                            {getFitBadge(match.financial_fit || 0)}
-                          </Badge>
-                        </div>
-                        <Progress value={match.financial_fit || 0} className="h-2" />
-                      </div>
-                    </div>
-
-                    {/* Tuition */}
-                    {match.school.tuition && (
-                      <div className="pt-4 border-t border-border">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Annual Tuition</span>
-                          <span className="font-bold text-secondary">
-                            ${match.school.tuition.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    <div className="pt-4 flex space-x-2">
-                      <Button 
-                        className="flex-1 btn-hero"
-                        onClick={() => window.open(match.school.website_url, "_blank")}
-                      >
-                        <Award className="h-4 w-4 mr-2" />
-                        Visit Website
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </>
+            </CardContent>
+          </Card>
         )}
       </main>
     </div>
