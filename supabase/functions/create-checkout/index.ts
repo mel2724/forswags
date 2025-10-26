@@ -1,11 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const checkoutRequestSchema = z.object({
+  priceId: z.string().min(1, "Price ID is required").startsWith("price_", "Invalid Stripe price ID format"),
+  promoCode: z.string().max(50, "Promo code must be less than 50 characters").optional(),
+});
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -39,8 +45,18 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceId, promoCode } = await req.json();
-    if (!priceId) throw new Error("Price ID is required");
+    const body = await req.json();
+    const validationResult = checkoutRequestSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      logStep("Validation failed", { errors: validationResult.error.errors });
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: validationResult.error.errors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const { priceId, promoCode } = validationResult.data;
     logStep("Request data", { priceId, promoCode });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });

@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const twitterPostSchema = z.object({
+  text: z.string().min(1, "Tweet text is required").max(280, "Tweet must be 280 characters or less"),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,11 +17,17 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const body = await req.json();
+    const validationResult = twitterPostSchema.safeParse(body);
     
-    if (!text || text.length > 280) {
-      throw new Error('Tweet text is required and must be 280 characters or less');
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validationResult.error.errors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    
+    const { text } = validationResult.data;
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

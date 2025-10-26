@@ -1,9 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const pressReleaseRequestSchema = z.object({
+  milestoneType: z.enum([
+    'commitment', 'scholarship', 'championship', 'record', 
+    'award', 'signing', 'allstar', 'other'
+  ]),
+  athleteName: z.string().min(1, "Athlete name is required").max(100, "Athlete name must be less than 100 characters"),
+  sport: z.string().min(1, "Sport is required").max(50, "Sport must be less than 50 characters"),
+  details: z.string().min(10, "Details must be at least 10 characters").max(2000, "Details must be less than 2000 characters"),
+  quote: z.string().max(500, "Quote must be less than 500 characters").optional(),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -11,14 +23,17 @@ serve(async (req) => {
   }
 
   try {
-    const { milestoneType, athleteName, sport, details, quote } = await req.json();
-
-    if (!milestoneType || !athleteName || !sport || !details) {
+    const body = await req.json();
+    const validationResult = pressReleaseRequestSchema.safeParse(body);
+    
+    if (!validationResult.success) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Invalid input", details: validationResult.error.errors }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    const { milestoneType, athleteName, sport, details, quote } = validationResult.data;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {

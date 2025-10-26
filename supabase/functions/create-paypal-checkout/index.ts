@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const paypalCheckoutRequestSchema = z.object({
+  plan: z.string().min(1, "PayPal plan ID is required"),
+  price: z.number().positive("Price must be positive"),
+  interval: z.enum(['monthly', 'yearly'], { errorMap: () => ({ message: "Interval must be monthly or yearly" }) }),
+});
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -63,10 +70,18 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { plan, price, interval } = await req.json();
-    if (!plan || !price || !interval) {
-      throw new Error("Missing required fields: plan, price, interval");
+    const body = await req.json();
+    const validationResult = paypalCheckoutRequestSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      logStep("Validation failed", { errors: validationResult.error.errors });
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: validationResult.error.errors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+    
+    const { plan, price, interval } = validationResult.data;
     logStep("Request data", { plan, price, interval });
 
     // Get PayPal access token
