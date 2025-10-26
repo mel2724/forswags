@@ -225,19 +225,6 @@ const PrimeDime = () => {
   };
 
   const handleRestart = () => {
-    if (!canStartNewConsultation) {
-      const daysRemaining = lastConsultationDate 
-        ? 30 - Math.floor((new Date().getTime() - lastConsultationDate.getTime()) / (1000 * 60 * 60 * 24))
-        : 0;
-      
-      toast({
-        title: "Consultation Cooldown",
-        description: `You can start a new consultation in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}. This helps us provide quality recommendations and manage resources.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
     setConversationCompleted(false);
     setRecommendations(null);
     setGenerationError(false);
@@ -560,26 +547,26 @@ const PrimeDime = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">{recommendations.next_steps}</p>
-                {lastConsultationDate && !canStartNewConsultation && (
+                {lastConsultationDate && !canStartNewConsultation ? (
                   <div className="mt-4 p-3 bg-background/50 rounded-lg border">
                     <p className="text-sm text-muted-foreground">
-                      <strong>Consultation Cooldown:</strong> You can request a new consultation on{' '}
-                      {new Date(lastConsultationDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-                        month: 'long', 
-                        day: 'numeric', 
-                        year: 'numeric' 
-                      })}
+                      You can request a new consultation on{' '}
+                      <strong>
+                        {new Date(lastConsultationDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </strong>
                     </p>
                   </div>
+                ) : (
+                  <div className="flex gap-2 mt-4">
+                    <Button onClick={handleRestart}>
+                      Start New Consultation
+                    </Button>
+                  </div>
                 )}
-                <div className="flex gap-2 mt-4">
-                  <Button 
-                    onClick={handleRestart}
-                    disabled={!canStartNewConsultation}
-                  >
-                    Start New Consultation
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           </div>
