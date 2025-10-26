@@ -547,20 +547,7 @@ const PrimeDime = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">{recommendations.next_steps}</p>
-                {lastConsultationDate && !canStartNewConsultation ? (
-                  <div className="mt-4 p-3 bg-background/50 rounded-lg border">
-                    <p className="text-sm text-muted-foreground">
-                      You can request a new consultation on{' '}
-                      <strong>
-                        {new Date(lastConsultationDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-                          month: 'long', 
-                          day: 'numeric', 
-                          year: 'numeric' 
-                        })}
-                      </strong>
-                    </p>
-                  </div>
-                ) : (
+                {canStartNewConsultation && (
                   <div className="flex gap-2 mt-4">
                     <Button onClick={handleRestart}>
                       Start New Consultation
