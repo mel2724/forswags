@@ -44,6 +44,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Verify cron secret for scheduled function authentication
+  const cronSecret = req.headers.get('x-cron-secret');
+  const expectedSecret = Deno.env.get('CRON_SECRET');
+  
+  if (!cronSecret || cronSecret !== expectedSecret) {
+    logStep('AUTH_ERROR', 'Unauthorized: Invalid or missing cron secret');
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
     logStep("Function started");
 
