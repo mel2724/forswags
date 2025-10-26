@@ -12,7 +12,25 @@ serve(async (req) => {
   }
 
   try {
+    // 1. Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { athleteId } = await req.json();
+    
+    // Validate athleteId format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!athleteId || !uuidRegex.test(athleteId)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid athlete ID format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -20,7 +38,19 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch athlete profile and stats
+    // Verify JWT and get user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('Authentication failed:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 2. Fetch athlete profile and verify ownership
     const { data: athlete, error: athleteError } = await supabase
       .from('athletes')
       .select(`
@@ -30,7 +60,46 @@ serve(async (req) => {
       .eq('id', athleteId)
       .single();
 
-    if (athleteError) throw athleteError;
+    if (athleteError || !athlete) {
+      return new Response(
+        JSON.stringify({ error: 'Athlete not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 3. Verify user is owner or admin
+    const isOwner = athlete.user_id === user.id;
+    const { data: isAdmin } = await supabase.rpc('has_role', { 
+      _user_id: user.id, 
+      _role: 'admin' 
+    });
+
+    if (!isOwner && !isAdmin) {
+      console.log('Authorization failed: User', user.id, 'attempted to analyze athlete', athleteId);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized to analyze this athlete' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 4. Rate limiting: Check if analysis was run in last 24 hours
+    const { data: recentMatches } = await supabase
+      .from('college_matches')
+      .select('created_at')
+      .eq('athlete_id', athleteId)
+      .gte('created_at', new Date(Date.now() - 24*60*60*1000).toISOString())
+      .limit(1);
+
+    if (recentMatches && recentMatches.length > 0) {
+      const nextAvailable = new Date(new Date(recentMatches[0].created_at).getTime() + 24*60*60*1000);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Analysis already run in last 24 hours. Please try again later.',
+          next_available: nextAvailable.toISOString()
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Fetch athlete stats
     const { data: stats } = await supabase
