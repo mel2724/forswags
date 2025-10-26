@@ -112,7 +112,7 @@ const Dashboard = () => {
                   : recommendations.recommendations;
                 
                 const colleges = parsed.colleges || [];
-                const formatted = colleges.slice(0, 3).map((college: any) => ({
+                const formatted = colleges.map((college: any) => ({
                   id: college.name,
                   schools: {
                     name: college.name,
