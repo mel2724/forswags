@@ -19,14 +19,60 @@ serve(async (req) => {
   try {
     console.log('Processing chat request...');
     
-    // Parse request body
+    // Parse and validate request body
     let message, conversationId, sessionId;
     try {
       const body = await req.json();
-      message = body.message;
-      conversationId = body.conversationId;
-      sessionId = body.sessionId;
-      console.log('Parsed body - Message:', message, 'ConversationId:', conversationId, 'SessionId:', sessionId);
+      
+      // Validate message
+      if (!body.message || typeof body.message !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Message is required and must be a string' }), 
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      message = body.message.trim();
+      
+      if (message.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'Message cannot be empty' }), 
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (message.length > 2000) {
+        return new Response(
+          JSON.stringify({ error: 'Message is too long (maximum 2000 characters)' }), 
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Validate conversationId (optional UUID)
+      if (body.conversationId && typeof body.conversationId === 'string') {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(body.conversationId)) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid conversation ID format' }), 
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        conversationId = body.conversationId;
+      }
+      
+      // Validate sessionId (optional UUID)
+      if (body.sessionId && typeof body.sessionId === 'string') {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(body.sessionId)) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid session ID format' }), 
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        sessionId = body.sessionId;
+      }
+      
+      console.log('Validated body - Message length:', message.length, 'ConversationId:', conversationId, 'SessionId:', sessionId);
     } catch (parseError) {
       console.error('Failed to parse request body:', parseError);
       return new Response(
