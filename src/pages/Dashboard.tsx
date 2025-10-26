@@ -93,25 +93,45 @@ const Dashboard = () => {
           
           setAthlete(athleteData);
 
-          // Get Prime Dime matches
+          // Get Prime Dime recommendations
           if (athleteData) {
-            const { data: matchesData } = await supabase
-              .from("college_matches")
-              .select(`
-                *,
-                schools (
-                  name,
-                  location_city,
-                  location_state,
-                  division,
-                  conference
-                )
-              `)
+            const { data: recommendations } = await supabase
+              .from("college_recommendations")
+              .select("recommendations")
               .eq("athlete_id", athleteData.id)
-              .order("match_score", { ascending: false })
-              .limit(3);
+              .maybeSingle();
             
-            setMatches(matchesData || []);
+            // Parse and format recommendations for display
+            if (recommendations?.recommendations) {
+              try {
+                const parsed = typeof recommendations.recommendations === 'string' 
+                  ? JSON.parse(recommendations.recommendations)
+                  : recommendations.recommendations;
+                
+                const colleges = parsed.colleges || [];
+                const formatted = colleges.slice(0, 3).map((college: any) => ({
+                  id: college.name,
+                  schools: {
+                    name: college.name,
+                    location_city: college.location?.split(', ')[0] || '',
+                    location_state: college.location?.split(', ')[1] || '',
+                    division: college.division,
+                    conference: ''
+                  },
+                  match_score: 85, // Default score since not in Prime Dime data
+                  academic_fit: 80,
+                  athletic_fit: 85,
+                  financial_fit: 80
+                }));
+                
+                setMatches(formatted);
+              } catch (error) {
+                console.error('Error parsing recommendations:', error);
+                setMatches([]);
+              }
+            } else {
+              setMatches([]);
+            }
 
             // Get athlete stats
             const { data: statsData } = await supabase
