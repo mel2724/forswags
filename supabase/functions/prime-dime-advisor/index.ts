@@ -8,36 +8,36 @@ const corsHeaders = {
 
 const QUESTIONS = [
   // ATHLETICS
-  { id: 1, text: "What sport(s) do you play? What's your main position?" },
-  { id: 2, text: "What level do you realistically believe you can compete at in college? (D1, D2, D3, NAIA, JUCO)" },
-  { id: 3, text: "What are your current stats or highlight metrics (speed, size, awards)?" },
-  { id: 4, text: "Are you looking to start as a freshman or grow into a program?" },
-  { id: 5, text: "Are athletic scholarships important to you?" },
+  { id: 1, text: "What sport and position do you play?" },
+  { id: 2, text: "What college division level? (D1, D2, D3, NAIA, JUCO)" },
+  { id: 3, text: "What are your key stats or awards?" },
+  { id: 4, text: "Start as a freshman or develop over time?" },
+  { id: 5, text: "Do you need athletic scholarships?" },
   
   // ACADEMICS
-  { id: 6, text: "What's your current GPA?" },
-  { id: 7, text: "Have you taken the SAT or ACT? What was your score?" },
-  { id: 8, text: "What majors or career fields are you interested in?" },
-  { id: 9, text: "Do you need academic support services?" },
-  { id: 10, text: "Do you want a school that is more academically focused or more athletically focused?" },
+  { id: 6, text: "What's your GPA?" },
+  { id: 7, text: "SAT or ACT score?" },
+  { id: 8, text: "What majors interest you?" },
+  { id: 9, text: "Need academic support services?" },
+  { id: 10, text: "Prefer academically or athletically focused schools?" },
   
   // FINANCES
-  { id: 11, text: "Do you need financial aid or scholarships?" },
-  { id: 12, text: "Are you eligible for FAFSA or Pell Grants?" },
-  { id: 13, text: "Would you consider private/out-of-state schools if aid is good?" },
-  { id: 14, text: "Are you willing to work a part-time job in college?" },
+  { id: 11, text: "Do you need financial aid?" },
+  { id: 12, text: "Are you FAFSA or Pell Grant eligible?" },
+  { id: 13, text: "Consider private/out-of-state if aid is good?" },
+  { id: 14, text: "Willing to work part-time in college?" },
   
   // LOCATION
-  { id: 15, text: "Do you want to stay close to home or go out of state?" },
-  { id: 16, text: "Do you prefer urban, rural, or suburban campuses?" },
-  { id: 17, text: "Do you want a small, medium, or large student body?" },
-  { id: 18, text: "Does weather matter to you?" },
+  { id: 15, text: "Stay close to home or go out of state?" },
+  { id: 16, text: "Urban, rural, or suburban campus?" },
+  { id: 17, text: "Small, medium, or large school size?" },
+  { id: 18, text: "Does weather matter?" },
   
   // LIFESTYLE
-  { id: 19, text: "Do you want a faith-based or values-driven school?" },
-  { id: 20, text: "Is campus culture (diversity, clubs, community service) important?" },
-  { id: 21, text: "Do you care about school prestige or traditions?" },
-  { id: 22, text: "If sports don't work out, what do you want to do for a career?" }
+  { id: 19, text: "Want a faith-based or values-driven school?" },
+  { id: 20, text: "Is campus culture important (diversity, clubs, etc.)?" },
+  { id: 21, text: "Care about school prestige or traditions?" },
+  { id: 22, text: "Backup career plan if sports don't work out?" }
 ];
 
 serve(async (req) => {
@@ -131,11 +131,11 @@ Keep it brief, encouraging, and coach-like.`;
     }
 
     // Get AI to ask the next question in a coach-like manner
-    const systemPrompt = `You are a friendly, encouraging College Match Advisor. Your job is to ask the following question in a natural, coach-like way:
+    const systemPrompt = `You are a College Match Advisor. Ask this question directly and briefly:
 
 "${currentQuestion.text}"
 
-Add a brief encouraging comment or context before asking. Keep it warm and conversational. Don't number the questions. Make it feel like a natural conversation.`;
+Keep it SHORT - just ask the question with maybe ONE quick sentence of context if needed. No fluff. Be direct and friendly.`;
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
