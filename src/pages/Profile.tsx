@@ -294,7 +294,7 @@ const Profile = () => {
             Edit Profile
           </h1>
           <p className="text-muted-foreground">
-            Keep your information up to date to get the best college matches
+            Keep your information up to date to get the best Prime Dime matches
           </p>
         </div>
 

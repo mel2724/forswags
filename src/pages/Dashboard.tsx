@@ -93,7 +93,7 @@ const Dashboard = () => {
           
           setAthlete(athleteData);
 
-          // Get college matches
+          // Get Prime Dime matches
           if (athleteData) {
             const { data: matchesData } = await supabase
               .from("college_matches")
@@ -398,7 +398,7 @@ const Dashboard = () => {
 
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-6">
-              {/* College Matches - Pro Feature Only */}
+              {/* The Prime Dime - Pro Feature Only */}
               {membership?.plan !== "free" ? (
                 <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-2 border-primary/20">
                   <CardHeader>
@@ -406,7 +406,7 @@ const Dashboard = () => {
                       <div>
                         <CardTitle className="uppercase tracking-tight flex items-center gap-2">
                           <Target className="h-5 w-5 text-primary" />
-                          Top College Matches
+                          Top Prime Dime Matches
                         </CardTitle>
                         <CardDescription>Our team's recommendations based on your profile</CardDescription>
                       </div>
@@ -468,7 +468,7 @@ const Dashboard = () => {
                       <Clock className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
                       <h4 className="font-bold mb-2">Analysis In Progress</h4>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Our expert team is analyzing your profile. You'll receive a notification when your Prime Dime college matches are ready!
+                        Our expert team is analyzing your profile. You'll receive a notification when your Prime Dime matches are ready!
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Requested: {new Date(athlete.analysis_requested_at).toLocaleDateString()}
@@ -479,7 +479,7 @@ const Dashboard = () => {
                       <School className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <h4 className="font-bold mb-2">Get Your Prime Dime Matches</h4>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Let our expert team analyze your profile and find your perfect college matches
+                        Let our expert team analyze your profile and find your perfect Prime Dime matches
                       </p>
                       <Button onClick={async () => {
                         try {
@@ -515,9 +515,9 @@ const Dashboard = () => {
                       <div>
                         <CardTitle className="uppercase tracking-tight flex items-center gap-2">
                           <Target className="h-5 w-5 text-primary" />
-                          The Prime Dime College Matching
+                          The Prime Dime Matching
                         </CardTitle>
-                        <CardDescription>Expert college recommendations</CardDescription>
+                        <CardDescription>Expert recommendations</CardDescription>
                       </div>
                       <Badge variant="secondary">Pro Feature</Badge>
                     </div>
@@ -527,7 +527,7 @@ const Dashboard = () => {
                       <School className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                       <h4 className="font-bold text-xl mb-2">Unlock The Prime Dime</h4>
                       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                        Get expert college recommendations from our team, tailored to your academic, athletic, and financial profile with a Pro membership.
+                        Get expert recommendations from our team, tailored to your academic, athletic, and financial profile with a Pro membership.
                       </p>
                       <Button onClick={() => navigate("/membership")} size="lg">
                         <Trophy className="h-4 w-4 mr-2" />
@@ -623,7 +623,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex-1">
                         <h5 className="font-semibold text-sm mb-1">View Prime Dime</h5>
-                        <p className="text-xs text-muted-foreground">Check your top 10 college matches</p>
+                        <p className="text-xs text-muted-foreground">Check your top 10 Prime Dime matches</p>
                       </div>
                     </div>
 

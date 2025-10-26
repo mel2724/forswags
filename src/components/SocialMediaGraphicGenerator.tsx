@@ -22,7 +22,7 @@ const TEMPLATES: GraphicTemplate[] = [
   { type: "offer", title: "College Offer", description: "Announce a new scholarship offer" },
   { type: "commitment", title: "Commitment", description: "Celebrate your college commitment" },
   { type: "achievement", title: "Achievement", description: "Share an accomplishment or award" },
-  { type: "match", title: "College Match", description: "Highlight your top college matches" },
+  { type: "match", title: "The Prime Dime", description: "Highlight your top Prime Dime matches" },
   { type: "custom", title: "Custom", description: "Create your own announcement" },
 ];
 
@@ -487,7 +487,7 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
   const addMatchGraphic = async () => {
     if (!fabricCanvas) return;
 
-    const title = new Textbox("TOP COLLEGE MATCHES", {
+    const title = new Textbox("TOP PRIME DIME MATCHES", {
       left: 540,
       top: 200,
       width: 900,

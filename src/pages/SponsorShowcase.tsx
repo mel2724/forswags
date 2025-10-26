@@ -181,7 +181,7 @@ export default function SponsorShowcase() {
             
             <div className="max-w-3xl mx-auto">
               <p className="text-xs text-muted-foreground leading-relaxed border-l-4 border-secondary pl-4 text-left">
-                ForSWAGs is an athletic development and college matching platform. 
+                ForSWAGs is an athletic development and Prime Dime matching platform. 
                 We are not recruiters and do not guarantee college placement or scholarships. 
                 Results depend on individual effort, performance, and external factors beyond our control.
               </p>

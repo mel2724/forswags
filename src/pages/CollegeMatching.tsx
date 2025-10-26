@@ -54,7 +54,7 @@ function CollegeMatchingPage() {
       console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: "Failed to load college matches",
+        description: "Failed to load Prime Dime matches",
         variant: "destructive",
       });
     } finally {
@@ -98,7 +98,7 @@ function CollegeMatchingPage() {
       console.error('Error requesting analysis:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to request college match analysis",
+        description: error.message || "Failed to request Prime Dime analysis",
         variant: "destructive",
       });
     } finally {
@@ -118,7 +118,7 @@ function CollegeMatchingPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">College Matching</h1>
+          <h1 className="text-3xl font-bold mb-2">The Prime Dime</h1>
           <p className="text-muted-foreground">
             Expert recommendations from our team based on your academic and athletic profile
           </p>

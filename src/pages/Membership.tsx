@@ -496,7 +496,7 @@ export default function Membership() {
                         <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
                       </tr>
                       <tr>
-                        <td className="py-3 px-4">The Prime Dime College Matching</td>
+                        <td className="py-3 px-4">The Prime Dime Matching</td>
                         <td className="text-center py-3 px-4">-</td>
                         <td className="text-center py-3 px-4 bg-primary/5"><Check className="h-5 w-5 text-primary mx-auto" /></td>
                       </tr>

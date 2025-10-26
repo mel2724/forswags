@@ -85,7 +85,7 @@ const PrimeDime = () => {
         setAthleteId(athleteData.id);
         setAthlete(athleteData);
 
-        // Fetch top 10 college matches with school details
+        // Fetch top 10 Prime Dime matches with school details
         const { data: matchesData, error } = await supabase
           .from("college_matches")
           .select(`
@@ -173,7 +173,7 @@ const PrimeDime = () => {
       console.error('Error requesting analysis:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to request college match analysis",
+        description: error.message || "Failed to request Prime Dime analysis",
         variant: "destructive",
       });
     } finally {
@@ -202,7 +202,7 @@ const PrimeDime = () => {
               <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
               <div>
                 <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">Prime Dime</h1>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 College Matches</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 Prime Dime Matches</p>
               </div>
             </div>
             
@@ -234,7 +234,7 @@ const PrimeDime = () => {
               <div className="flex items-start gap-3">
                 <Target className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Top 10 College Matches</p>
+                  <p className="font-semibold">Top 10 Prime Dime Matches</p>
                   <p className="text-sm text-muted-foreground">Personalized recommendations based on your profile</p>
                 </div>
               </div>
@@ -271,7 +271,7 @@ const PrimeDime = () => {
             <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
             <div>
               <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">Prime Dime</h1>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 College Matches</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 Prime Dime Matches</p>
             </div>
           </div>
           
@@ -294,7 +294,7 @@ const PrimeDime = () => {
                 </div>
                 <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Analysis In Progress</h2>
                 <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                  Our expert team is analyzing your profile to create your Prime Dime college matches.
+                  Our expert team is analyzing your profile to create your Prime Dime matches.
                 </p>
                 <p className="text-sm text-muted-foreground mb-8">
                   Requested: {new Date(athlete.analysis_requested_at).toLocaleDateString()} at {new Date(athlete.analysis_requested_at).toLocaleTimeString()}
@@ -308,7 +308,7 @@ const PrimeDime = () => {
                 <Trophy className="h-20 w-20 text-primary mx-auto mb-6" />
                 <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Get Your Prime Dime</h2>
                 <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                  Request expert college match analysis from our team. We'll analyze your athletic and academic profile to find your top 10 best-fit colleges.
+                  Request expert Prime Dime analysis from our team. We'll analyze your athletic and academic profile to find your top 10 best-fit colleges.
                 </p>
                 <div className="flex gap-4 justify-center">
                   <Button variant="outline" onClick={() => navigate("/profile")}>
@@ -344,7 +344,7 @@ const PrimeDime = () => {
                 <Star className="h-8 w-8 text-secondary fill-secondary" />
               </div>
               <p className="text-muted-foreground uppercase text-sm tracking-wider">
-                Your top {matches.length} college matches based on your profile
+                Your top {matches.length} Prime Dime matches based on your profile
               </p>
             </div>
 
