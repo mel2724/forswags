@@ -75,6 +75,7 @@ Return your response in this exact JSON format:
       "division": "D1/D2/D3/NAIA/JUCO",
       "location": "City, State",
       "website": "https://www.college.edu",
+      "match_score": 92,
       "fit_reason": "Why this is a great match for YOU (written in second person)",
       "recruiter_name": "Coach Full Name (if known, otherwise null)",
       "recruiter_email": "coach@school.edu (if known, otherwise null)",
@@ -83,7 +84,20 @@ Return your response in this exact JSON format:
     }
   ],
   "next_steps": "Advice on YOUR next steps and using ForSWAGs tools (written in second person addressing the athlete)"
-}`;
+}
+
+IMPORTANT: The match_score should be a number between 75-98, reflecting the overall fit based on:
+- Athletic fit (division level, competition, playing time opportunities)
+- Academic fit (GPA alignment, major offerings)
+- Financial fit (scholarships, tuition, aid opportunities)
+- Cultural fit (location, campus size, student life)
+- Career fit (academic programs, career services)
+
+Higher scores (95-98) = Exceptional fit across all categories
+Mid scores (85-94) = Strong fit with minor considerations
+Lower scores (75-84) = Good fit with some trade-offs
+
+Order colleges by match_score from highest to lowest.`;
 
     console.log('[GENERATE-RECOMMENDATIONS] Calling AI with answers text length:', answersText.length);
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {

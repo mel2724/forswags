@@ -275,7 +275,7 @@ const PrimeDime = () => {
           location: college.location,
           division: college.division,
           website: college.website,
-          overall_match_score: 85, // Default value since not in current data
+          overall_match_score: college.match_score || 85,
           academic_fit_score: 80,
           athletic_fit_score: 85,
           financial_fit_score: 75,
@@ -498,6 +498,37 @@ const PrimeDime = () => {
                               </a>
                             )}
                           </div>
+                        </div>
+                        <div className="flex flex-col items-center ml-4">
+                          <div className="relative h-16 w-16 mb-1">
+                            <svg className="transform -rotate-90 h-16 w-16">
+                              <circle
+                                cx="32"
+                                cy="32"
+                                r="28"
+                                stroke="currentColor"
+                                strokeWidth="6"
+                                fill="none"
+                                className="text-muted/20"
+                              />
+                              <circle
+                                cx="32"
+                                cy="32"
+                                r="28"
+                                stroke="currentColor"
+                                strokeWidth="6"
+                                fill="none"
+                                strokeDasharray={`${2 * Math.PI * 28}`}
+                                strokeDashoffset={`${2 * Math.PI * 28 * (1 - (college.match_score || 85) / 100)}`}
+                                className="text-primary transition-all duration-1000"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-lg font-bold">{college.match_score || 85}%</span>
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground font-medium">Match</span>
                         </div>
                       </div>
                     </CardHeader>

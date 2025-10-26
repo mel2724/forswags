@@ -121,7 +121,7 @@ const Dashboard = () => {
                     division: college.division,
                     conference: ''
                   },
-                  match_score: 85, // Default score since not in "Prime Dime" data
+                  match_score: college.match_score || 85,
                   academic_fit: 80,
                   athletic_fit: 85,
                   financial_fit: 80
