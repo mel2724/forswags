@@ -276,21 +276,12 @@ export default function PublicProfile() {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              <div className="flex gap-4">
-                <Avatar className="h-32 w-32 border-4 border-primary">
-                  <AvatarImage src={profile.profile_photo_url || undefined} />
-                  <AvatarFallback className="text-4xl">
-                    {profile.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                {profile.team_logo_url && (
-                  <Avatar className="h-24 w-24 border-2 border-border self-center">
-                    <AvatarImage src={profile.team_logo_url} alt="Team logo" />
-                    <AvatarFallback>Team</AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
+              <Avatar className="h-32 w-32 border-4 border-primary">
+                <AvatarImage src={profile.profile_photo_url || undefined} />
+                <AvatarFallback className="text-4xl">
+                  {profile.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
+                </AvatarFallback>
+              </Avatar>
 
               <div className="flex-1 space-y-4">
                 <div>
@@ -387,10 +378,18 @@ export default function PublicProfile() {
             {stats.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5" />
-                    Performance Stats
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="h-5 w-5" />
+                      Performance Stats
+                    </CardTitle>
+                    {profile.team_logo_url && (
+                      <Avatar className="h-16 w-16 border-2 border-border">
+                        <AvatarImage src={profile.team_logo_url} alt="Team logo" />
+                        <AvatarFallback>Team</AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
