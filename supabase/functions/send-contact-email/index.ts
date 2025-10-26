@@ -148,6 +148,14 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
+    console.log("User email response:", userEmail);
+
+    // Check if user email failed
+    if (userEmail.error) {
+      console.error("Failed to send user email:", userEmail.error);
+      throw new Error(`Failed to send confirmation email: ${userEmail.error.message || 'Unknown error'}`);
+    }
+
     // Send notification email to admin
     const adminEmail = await resend.emails.send({
       from: "ForSWAGs Contact <noreply@updates.forswags.com>",
@@ -192,8 +200,13 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Confirmation email sent:", userEmail);
-    console.log("Admin notification sent:", adminEmail);
+    console.log("Admin email response:", adminEmail);
+
+    // Check if admin email failed
+    if (adminEmail.error) {
+      console.error("Failed to send admin email:", adminEmail.error);
+      // Don't throw error for admin email, but log it
+    }
 
     // Log successful submission for rate limiting
     await supabase.from("contact_form_submissions").insert({
@@ -204,7 +217,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     return new Response(
-      JSON.stringify({ success: true, userEmail, adminEmail }),
+      JSON.stringify({ success: true }),
       {
         status: 200,
         headers: {
