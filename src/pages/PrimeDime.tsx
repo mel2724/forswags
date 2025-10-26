@@ -94,9 +94,48 @@ const PrimeDime = () => {
     }
   };
 
-  const fetchRecommendations = async (athleteId: string) => {
+  const fetchRecommendations = async (athleteId: string, shouldGenerate = false) => {
     setIsGenerating(true);
     setGenerationError(false);
+    
+    // If we should generate, trigger the generation function first
+    if (shouldGenerate) {
+      console.log('[PrimeDime] Manually triggering recommendation generation...');
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-prime-dime-recommendations', {
+          body: { athleteId }
+        });
+        
+        console.log('[PrimeDime] Generation response:', { data, error });
+        
+        if (error) {
+          console.error('[PrimeDime] Error generating recommendations:', error);
+          toast({
+            title: "Generation Error",
+            description: error.message || "Failed to generate recommendations",
+            variant: "destructive",
+          });
+          setGenerationError(true);
+          setIsGenerating(false);
+          return;
+        }
+        
+        toast({
+          title: "Success!",
+          description: "Your recommendations have been generated",
+        });
+      } catch (err: any) {
+        console.error('[PrimeDime] Exception generating:', err);
+        toast({
+          title: "Error",
+          description: err.message || "Failed to start generation",
+          variant: "destructive",
+        });
+        setGenerationError(true);
+        setIsGenerating(false);
+        return;
+      }
+    }
     
     // Set a timeout to detect stuck generation
     const timeout = setTimeout(() => {
@@ -125,9 +164,12 @@ const PrimeDime = () => {
       if (data) {
         setRecommendations(data.recommendations);
         setIsGenerating(false);
-      } else {
-        // No data yet, keep checking
+      } else if (!shouldGenerate) {
+        // No data yet, keep checking (only if we didn't just generate)
         setTimeout(() => fetchRecommendations(athleteId), 3000);
+      } else {
+        // We just generated but no data yet, wait a bit longer
+        setTimeout(() => fetchRecommendations(athleteId), 5000);
       }
     } catch (error) {
       clearTimeout(timeout);
@@ -154,7 +196,7 @@ const PrimeDime = () => {
     setGenerationError(false);
     setRecommendations(null);
     if (athleteId) {
-      fetchRecommendations(athleteId);
+      fetchRecommendations(athleteId, true); // Force generation
     }
   };
 
@@ -402,9 +444,20 @@ const PrimeDime = () => {
               <p className="text-muted-foreground mb-2">
                 Generating your personalized recommendations...
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mb-4">
                 This may take up to 60 seconds
               </p>
+              <Button 
+                onClick={() => {
+                  if (athleteId) {
+                    fetchRecommendations(athleteId, true);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+              >
+                Regenerate Now
+              </Button>
             </CardContent>
           </Card>
         )}
