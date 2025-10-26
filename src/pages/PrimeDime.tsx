@@ -238,7 +238,7 @@ const PrimeDime = () => {
             <Trophy className="h-20 w-20 text-primary mx-auto mb-6" />
             <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Get Your Prime Dime</h2>
             <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-              Let's find your perfect college match! Answer 22 questions about your athletic abilities, academic interests, financial needs, and lifestyle preferences.
+              Let's find your perfect college match! Answer questions about your athletic abilities, academic interests, financial needs, and lifestyle preferences.
             </p>
             <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto mb-8">
               <div className="p-4 border rounded-lg">
