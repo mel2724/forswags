@@ -40,6 +40,8 @@ const PrimeDime = () => {
   const [recommendations, setRecommendations] = useState<any>(null);
   const [generationError, setGenerationError] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [lastConsultationDate, setLastConsultationDate] = useState<Date | null>(null);
+  const [canStartNewConsultation, setCanStartNewConsultation] = useState(true);
   const { isFree, isLoading: membershipLoading } = useMembershipStatus();
 
   useEffect(() => {
@@ -81,6 +83,24 @@ const PrimeDime = () => {
         .maybeSingle();
 
       setConversationCompleted(prefs?.conversation_completed || false);
+
+      // Check last consultation date from recommendations
+      const { data: lastRec } = await supabase
+        .from('college_recommendations')
+        .select('updated_at')
+        .eq('athlete_id', athlete.id)
+        .maybeSingle();
+
+      if (lastRec?.updated_at) {
+        const lastDate = new Date(lastRec.updated_at);
+        setLastConsultationDate(lastDate);
+        
+        // Check if 30 days have passed (you can change to 90 for quarterly)
+        const daysSinceLastConsultation = Math.floor(
+          (new Date().getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        setCanStartNewConsultation(daysSinceLastConsultation >= 30);
+      }
 
       // Fetch recommendations if completed
       if (prefs?.conversation_completed) {
@@ -205,6 +225,19 @@ const PrimeDime = () => {
   };
 
   const handleRestart = () => {
+    if (!canStartNewConsultation) {
+      const daysRemaining = lastConsultationDate 
+        ? 30 - Math.floor((new Date().getTime() - lastConsultationDate.getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+      
+      toast({
+        title: "Consultation Cooldown",
+        description: `You can start a new consultation in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}. This helps us provide quality recommendations and manage resources.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setConversationCompleted(false);
     setRecommendations(null);
     setGenerationError(false);
@@ -428,6 +461,9 @@ const PrimeDime = () => {
                 </p>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground mb-4 max-w-md mx-auto">
+              Note: New consultations can be requested once every 30 days to ensure quality recommendations and manage resources.
+            </p>
             <Button onClick={handleStartAdvisor} size="lg">
               Start Your Prime Dime Consultation
             </Button>
@@ -524,12 +560,23 @@ const PrimeDime = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">{recommendations.next_steps}</p>
+                {lastConsultationDate && !canStartNewConsultation && (
+                  <div className="mt-4 p-3 bg-background/50 rounded-lg border">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Consultation Cooldown:</strong> You can request a new consultation on{' '}
+                      {new Date(lastConsultationDate.getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
+                        month: 'long', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}
+                    </p>
+                  </div>
+                )}
                 <div className="flex gap-2 mt-4">
-                  <Button onClick={() => {
-                    setConversationCompleted(false);
-                    setRecommendations(null);
-                    setShowAdvisor(true);
-                  }}>
+                  <Button 
+                    onClick={handleRestart}
+                    disabled={!canStartNewConsultation}
+                  >
                     Start New Consultation
                   </Button>
                 </div>
