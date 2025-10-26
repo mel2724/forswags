@@ -118,7 +118,7 @@ function CollegeMatchingPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">The Prime Dime</h1>
         <p className="text-muted-foreground">
-          AI-powered college recommendations based on your unique profile and goals
+          Personalized college recommendations based on your unique profile and goals
         </p>
       </div>
 

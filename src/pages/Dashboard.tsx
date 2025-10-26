@@ -599,7 +599,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex-1">
                         <h5 className="font-semibold text-sm mb-1">Start Prime Dime Consultation</h5>
-                        <p className="text-xs text-muted-foreground">Answer 22 questions to get AI college recommendations</p>
+                        <p className="text-xs text-muted-foreground">Answer 22 questions to get personalized college recommendations</p>
                       </div>
                     </div>
 
