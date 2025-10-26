@@ -91,6 +91,7 @@ export function PrimeDimeAdvisor({ athleteId, onComplete }: PrimeDimeAdvisorProp
     setIsTyping(true);
 
     try {
+      console.log('[PrimeDimeAdvisor] Calling prime-dime-advisor function...', { athleteId });
       const { data, error } = await supabase.functions.invoke('prime-dime-advisor', {
         body: {
           athleteId,
@@ -98,7 +99,12 @@ export function PrimeDimeAdvisor({ athleteId, onComplete }: PrimeDimeAdvisorProp
         }
       });
 
-      if (error) throw error;
+      console.log('[PrimeDimeAdvisor] Response received:', { data, error });
+
+      if (error) {
+        console.error('[PrimeDimeAdvisor] Function error:', error);
+        throw error;
+      }
 
       // Simulate typing delay
       await new Promise(resolve => setTimeout(resolve, 800));
