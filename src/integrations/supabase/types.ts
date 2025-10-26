@@ -3068,6 +3068,45 @@ export type Database = {
         }
         Relationships: []
       }
+      secret_rotation_tracking: {
+        Row: {
+          created_at: string
+          id: string
+          is_critical: boolean
+          last_rotated_at: string
+          next_rotation_due: string | null
+          rotated_by: string | null
+          rotation_frequency_days: number
+          rotation_notes: string | null
+          secret_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_critical?: boolean
+          last_rotated_at?: string
+          next_rotation_due?: string | null
+          rotated_by?: string | null
+          rotation_frequency_days?: number
+          rotation_notes?: string | null
+          secret_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_critical?: boolean
+          last_rotated_at?: string
+          next_rotation_due?: string | null
+          rotated_by?: string | null
+          rotation_frequency_days?: number
+          rotation_notes?: string | null
+          secret_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string
@@ -3572,6 +3611,16 @@ export type Database = {
         Args: { p_athlete_id: string }
         Returns: Json
       }
+      get_secrets_needing_rotation: {
+        Args: never
+        Returns: {
+          days_overdue: number
+          is_critical: boolean
+          last_rotated_at: string
+          next_rotation_due: string
+          secret_name: string
+        }[]
+      }
       get_user_evaluation_price: {
         Args: { p_is_reevaluation: boolean; p_user_id: string }
         Returns: number
@@ -3607,6 +3656,10 @@ export type Database = {
           p_severity: string
         }
         Returns: string
+      }
+      mark_secret_rotated: {
+        Args: { p_rotation_notes?: string; p_secret_name: string }
+        Returns: Json
       }
       notify_expiring_consents: { Args: never; Returns: undefined }
       start_impersonation_session: {

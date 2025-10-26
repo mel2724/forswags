@@ -1,4 +1,4 @@
-import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell, FileVideo, DollarSign, UserPlus, FileBarChart, Sparkles, MessageSquare } from "lucide-react";
+import { Users, GraduationCap, Trophy, School, LayoutDashboard, LogOut, Mail, CreditCard, Clipboard, TrendingUp, Bell, FileVideo, DollarSign, UserPlus, FileBarChart, Sparkles, MessageSquare, Shield } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -34,6 +34,7 @@ const items = [
   { title: "Sponsors", url: "/admin/sponsors", icon: DollarSign },
   { title: "Email Templates", url: "/admin/email-templates", icon: Mail },
   { title: "Send Notifications", url: "/admin/notifications", icon: Bell },
+  { title: "Secret Rotation", url: "/admin/secret-rotation", icon: Shield },
 ];
 
 export function AdminSidebar() {

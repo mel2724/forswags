@@ -71,6 +71,7 @@ const AdminArchivedMedia = lazy(() => import("./pages/admin/AdminArchivedMedia")
 const AdminImportAthletes = lazy(() => import("./pages/admin/AdminImportAthletes"));
 const AdminAthletePromo = lazy(() => import("./pages/admin/AdminAthletePromo"));
 const AdminChatbot = lazy(() => import("./pages/admin/AdminChatbot"));
+const AdminSecretRotation = lazy(() => import("./pages/admin/AdminSecretRotation"));
 const CoachApplication = lazy(() => import("./pages/CoachApplication"));
 const PurchaseEvaluation = lazy(() => import("./pages/PurchaseEvaluation"));
 const CoachDashboard = lazy(() => import("./pages/coach/CoachDashboard"));
@@ -193,6 +194,7 @@ const App = () => (
                 <Route path="import-athletes" element={<AdminImportAthletes />} />
                 <Route path="athlete-promo" element={<AdminAthletePromo />} />
                 <Route path="chatbot" element={<AdminChatbot />} />
+                <Route path="secret-rotation" element={<AdminSecretRotation />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
