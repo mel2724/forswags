@@ -71,8 +71,8 @@ export default function Contact() {
       if (error) throw error;
 
       toast({
-        title: "Message sent!",
-        description: "We've received your message and will get back to you soon.",
+        title: "Thank you for reaching out!",
+        description: "A coach from the ForSWAGs team will contact you within 24 hours. In the meantime, connect with us on Instagram, Facebook, and X!",
       });
 
       // Reset form
