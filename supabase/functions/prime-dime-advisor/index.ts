@@ -6,39 +6,85 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const QUESTIONS = [
+const ALL_QUESTIONS = [
   // ATHLETICS
-  { id: 1, text: "What sport and position do you play?" },
-  { id: 2, text: "What college division level? (D1, D2, D3, NAIA, JUCO)" },
-  { id: 3, text: "What are your key stats or awards?" },
-  { id: 4, text: "Start as a freshman or develop over time?" },
-  { id: 5, text: "Do you need athletic scholarships?" },
+  { id: 1, text: "What sport and position do you play?", profileField: 'sport_position' },
+  { id: 2, text: "What college division level? (D1, D2, D3, NAIA, JUCO)", profileField: null },
+  { id: 3, text: "Any recent highlights or achievements?", profileField: 'stats' },
+  { id: 4, text: "Start as a freshman or develop over time?", profileField: null },
+  { id: 5, text: "Do you need athletic scholarships?", profileField: null },
   
   // ACADEMICS
-  { id: 6, text: "What's your GPA?" },
-  { id: 7, text: "SAT or ACT score?" },
-  { id: 8, text: "What majors interest you?" },
-  { id: 9, text: "Need academic support services?" },
-  { id: 10, text: "Prefer academically or athletically focused schools?" },
+  { id: 6, text: "What's your GPA?", profileField: 'gpa' },
+  { id: 7, text: "SAT or ACT score?", profileField: 'test_scores' },
+  { id: 8, text: "What majors interest you?", profileField: null },
+  { id: 9, text: "Need academic support services?", profileField: null },
+  { id: 10, text: "Prefer academically or athletically focused schools?", profileField: null },
   
   // FINANCES
-  { id: 11, text: "Do you need financial aid?" },
-  { id: 12, text: "Are you FAFSA or Pell Grant eligible?" },
-  { id: 13, text: "Consider private/out-of-state if aid is good?" },
-  { id: 14, text: "Willing to work part-time in college?" },
+  { id: 11, text: "Do you need financial aid?", profileField: null },
+  { id: 12, text: "Are you FAFSA or Pell Grant eligible?", profileField: null },
+  { id: 13, text: "Consider private/out-of-state if aid is good?", profileField: null },
+  { id: 14, text: "Willing to work part-time in college?", profileField: null },
   
   // LOCATION
-  { id: 15, text: "Stay close to home or go out of state?" },
-  { id: 16, text: "Urban, rural, or suburban campus?" },
-  { id: 17, text: "Small, medium, or large school size?" },
-  { id: 18, text: "Does weather matter?" },
+  { id: 15, text: "Stay close to home or go out of state?", profileField: null },
+  { id: 16, text: "Urban, rural, or suburban campus?", profileField: null },
+  { id: 17, text: "Small, medium, or large school size?", profileField: null },
+  { id: 18, text: "Does weather matter?", profileField: null },
   
   // LIFESTYLE
-  { id: 19, text: "Want a faith-based or values-driven school?" },
-  { id: 20, text: "Is campus culture important (diversity, clubs, etc.)?" },
-  { id: 21, text: "Care about school prestige or traditions?" },
-  { id: 22, text: "Backup career plan if sports don't work out?" }
+  { id: 19, text: "Want a faith-based or values-driven school?", profileField: null },
+  { id: 20, text: "Is campus culture important (diversity, clubs, etc.)?", profileField: null },
+  { id: 21, text: "Care about school prestige or traditions?", profileField: null },
+  { id: 22, text: "Backup career plan if sports don't work out?", profileField: null }
 ];
+
+async function getAthleteProfileData(supabase: any, athleteId: string) {
+  const { data: athlete } = await supabase
+    .from('athletes')
+    .select('*, profiles(*)')
+    .eq('id', athleteId)
+    .single();
+
+  const { data: stats } = await supabase
+    .from('athlete_stats')
+    .select('*')
+    .eq('athlete_id', athleteId)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  return { athlete, stats };
+}
+
+function buildProfileContext(athlete: any, stats: any[]) {
+  const context: any = {};
+  
+  if (athlete?.sport && athlete?.position) {
+    context.sport_position = `${athlete.sport} - ${athlete.position}`;
+  }
+  if (athlete?.gpa) {
+    context.gpa = athlete.gpa;
+  }
+  if (athlete?.sat_score || athlete?.act_score) {
+    context.test_scores = athlete.sat_score 
+      ? `SAT: ${athlete.sat_score}` 
+      : `ACT: ${athlete.act_score}`;
+  }
+  if (stats && stats.length > 0) {
+    const statsSummary = stats.map(s => `${s.stat_name}: ${s.stat_value}`).join(', ');
+    context.stats = statsSummary;
+  }
+  
+  return context;
+}
+
+function getRelevantQuestions(profileContext: any) {
+  return ALL_QUESTIONS.filter(q => {
+    if (!q.profileField) return true; // Always ask preference questions
+    return !profileContext[q.profileField]; // Skip if we have the data
+  });
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -54,6 +100,10 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Get athlete profile data
+    const { athlete, stats } = await getAthleteProfileData(supabase, athleteId);
+    const profileContext = buildProfileContext(athlete, stats);
+
     // Get current question progress
     const { data: prefs } = await supabase
       .from('college_match_prefs')
@@ -61,13 +111,45 @@ serve(async (req) => {
       .eq('athlete_id', athleteId)
       .maybeSingle();
 
-    const conversationData = prefs?.conversation_data || { answers: [], currentQuestion: 0 };
+    // Initialize or get conversation data
+    let conversationData = prefs?.conversation_data || { 
+      answers: [], 
+      currentQuestion: 0,
+      profileContext,
+      questions: getRelevantQuestions(profileContext)
+    };
+
+    // If first time, pre-populate with profile data
+    if (!conversationData.profileContext) {
+      conversationData.profileContext = profileContext;
+      conversationData.questions = getRelevantQuestions(profileContext);
+      
+      // Pre-populate college_match_prefs with existing data
+      await supabase
+        .from('college_match_prefs')
+        .upsert({
+          athlete_id: athleteId,
+          sport: athlete?.sport,
+          position: athlete?.position,
+          current_gpa: athlete?.gpa,
+          test_scores: athlete?.sat_score ? `SAT: ${athlete.sat_score}` : athlete?.act_score ? `ACT: ${athlete.act_score}` : null,
+          current_stats: stats?.map((s: any) => `${s.stat_name}: ${s.stat_value}`).join(', '),
+          conversation_data: conversationData
+        }, { onConflict: 'athlete_id' });
+    }
+
+    const QUESTIONS = conversationData.questions;
     const currentQuestionIndex = conversationData.currentQuestion || 0;
 
     // Check if all questions are answered
     if (currentQuestionIndex >= QUESTIONS.length) {
+      // Build profile summary
+      const profileSummary = Object.entries(profileContext)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+
       // Generate final recommendations
-      const systemPrompt = `You are a College Match Advisor. Based on the student-athlete's answers, provide a warm closing summary and remind them to:
+      const systemPrompt = `You are a College Match Advisor. Based on the student-athlete's profile (${profileSummary}) and their answers, provide a warm closing summary and remind them to:
 1. Talk to their family and coaches
 2. Use ForSWAGs tools to continue their college search
 3. Let them know their detailed recommendations are being generated
@@ -130,12 +212,17 @@ Keep it brief, encouraging, and coach-like.`;
       });
     }
 
+    // Build context about what we already know
+    const knownInfo = Object.keys(profileContext).length > 0
+      ? `\n\nNote: We already know from their profile: ${Object.entries(profileContext).map(([k, v]) => `${k}: ${v}`).join(', ')}`
+      : '';
+
     // Get AI to ask the next question in a coach-like manner
     const systemPrompt = `You are a College Match Advisor. Ask this question directly and briefly:
 
 "${currentQuestion.text}"
 
-Keep it SHORT - just ask the question with maybe ONE quick sentence of context if needed. No fluff. Be direct and friendly.`;
+Keep it SHORT - just ask the question with maybe ONE quick sentence of context if needed. No fluff. Be direct and friendly.${knownInfo}`;
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
