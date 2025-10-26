@@ -66,7 +66,7 @@ function CollegeMatchingPage() {
       console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: "Failed to load Prime Dime data",
+        description: "Failed to load \"Prime Dime\" data",
         variant: "destructive",
       });
     } finally {
@@ -116,7 +116,7 @@ function CollegeMatchingPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">The Prime Dime</h1>
+        <h1 className="text-3xl font-bold mb-2">The "Prime Dime"</h1>
         <p className="text-muted-foreground">
           Personalized college recommendations based on your unique profile and goals
         </p>
@@ -130,7 +130,7 @@ function CollegeMatchingPage() {
       ) : !conversationCompleted ? (
         <Card>
           <CardHeader>
-            <CardTitle>Welcome to The Prime Dime</CardTitle>
+            <CardTitle>Welcome to The "Prime Dime"</CardTitle>
             <CardDescription>
               Let's find your perfect college match! I'll ask you some questions about your athletic abilities, academic interests, financial needs, and lifestyle preferences to recommend the best colleges for you.
             </CardDescription>
@@ -161,7 +161,7 @@ function CollegeMatchingPage() {
                 </div>
               </div>
               <Button onClick={handleStartAdvisor} size="lg" className="w-full">
-                Start Your Prime Dime Consultation
+                Start Your "Prime Dime" Consultation
               </Button>
             </div>
           </CardContent>

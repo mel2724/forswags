@@ -33,7 +33,7 @@ export const Footer = React.memo(() => {
             </p>
             <p className="text-xs text-muted-foreground/70 max-w-4xl mx-auto leading-relaxed">
               ForSWAGs®, the ForSWAGs logo, Playbook for Life®, and all associated trademarks, service marks, 
-              trade names, proprietary methodologies, evaluation systems, ranking algorithms, The Prime Dime matching technology, 
+              trade names, proprietary methodologies, evaluation systems, ranking algorithms, The "Prime Dime" matching technology, 
               and platform features are the exclusive intellectual property of ForSWAGs and are protected by U.S. and 
               international copyright, trademark, patent, trade secret, and other intellectual property laws.
             </p>

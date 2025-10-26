@@ -110,7 +110,7 @@ const PrimeDime = () => {
       console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: "Failed to load Prime Dime data",
+        description: "Failed to load \"Prime Dime\" data",
         variant: "destructive",
       });
     } finally {
@@ -297,7 +297,7 @@ const PrimeDime = () => {
 
       toast({
         title: "Export Complete",
-        description: "Your Prime Dime recommendations PDF has been downloaded",
+        description: "Your \"Prime Dime\" recommendations PDF has been downloaded",
       });
     } catch (error) {
       console.error('Error exporting PDF:', error);
@@ -315,13 +315,13 @@ const PrimeDime = () => {
       <div className="min-h-screen bg-background sports-pattern flex items-center justify-center">
         <div className="text-center">
           <Trophy className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Loading your Prime Dime...</p>
+          <p className="text-muted-foreground">Loading your "Prime Dime"...</p>
         </div>
       </div>
     );
   }
 
-  // Check if user has access to Prime Dime (Pro feature)
+  // Check if user has access to "Prime Dime" (Pro feature)
   if (isFree) {
     return (
       <div className="min-h-screen bg-background sports-pattern">
@@ -330,8 +330,8 @@ const PrimeDime = () => {
             <div className="flex items-center space-x-4">
               <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
               <div>
-                <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">Prime Dime</h1>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 Prime Dime Matches</p>
+                <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">"Prime Dime"</h1>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 "Prime Dime" Matches</p>
               </div>
             </div>
             
@@ -353,17 +353,17 @@ const PrimeDime = () => {
               </div>
             </div>
             <h2 className="text-3xl font-black uppercase mb-4 text-gradient-accent">
-              The Prime Dime is a Pro Feature
+              The "Prime Dime" is a Pro Feature
             </h2>
             <p className="text-muted-foreground text-lg mb-6 max-w-md mx-auto">
               Get expert college recommendations from our team, tailored to your academic, athletic, and financial profile. 
-              Upgrade to Pro to unlock The Prime Dime and find your perfect college fit.
+              Upgrade to Pro to unlock The "Prime Dime" and find your perfect college fit.
             </p>
             <div className="space-y-4 text-left max-w-md mx-auto mb-8">
               <div className="flex items-start gap-3">
                 <Target className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold">Top 10 Prime Dime Matches</p>
+                  <p className="font-semibold">Top 10 "Prime Dime" Matches</p>
                   <p className="text-sm text-muted-foreground">Personalized recommendations based on your profile</p>
                 </div>
               </div>
@@ -399,8 +399,8 @@ const PrimeDime = () => {
           <div className="flex items-center space-x-4">
             <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
             <div>
-              <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">Prime Dime</h1>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 Prime Dime Matches</p>
+              <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">"Prime Dime"</h1>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 "Prime Dime" Matches</p>
             </div>
           </div>
           
@@ -422,7 +422,7 @@ const PrimeDime = () => {
         ) : !conversationCompleted ? (
           <Card className="p-16 text-center bg-card/50 backdrop-blur border-2 border-primary/20">
             <Trophy className="h-20 w-20 text-primary mx-auto mb-6" />
-            <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Get Your Prime Dime</h2>
+            <h2 className="text-3xl font-black uppercase mb-4 text-gradient-primary">Get Your "Prime Dime"</h2>
             <p className="text-muted-foreground mb-4 max-w-md mx-auto">
               Let's find your perfect college match! Answer questions about your athletic abilities, academic interests, financial needs, and lifestyle preferences.
             </p>
@@ -453,7 +453,7 @@ const PrimeDime = () => {
               Note: New consultations can be requested once every 30 days to ensure quality recommendations and manage resources.
             </p>
             <Button onClick={handleStartAdvisor} size="lg">
-              Start Your Prime Dime Consultation
+              Start Your "Prime Dime" Consultation
             </Button>
           </Card>
         ) : recommendations ? (

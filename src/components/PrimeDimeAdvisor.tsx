@@ -61,13 +61,13 @@ export function PrimeDimeAdvisor({ athleteId, onComplete }: PrimeDimeAdvisorProp
 
         setMessages([{
           role: "assistant",
-          content: `Hey there! I'm your Prime Dime advisor. I'll help you find your perfect college match by asking you some questions about what matters most to you.${profileInfo}\n\nReady to get started?`
+          content: `Hey there! I'm your "Prime Dime" advisor. I'll help you find your perfect college match by asking you some questions about what matters most to you.${profileInfo}\n\nReady to get started?`
         }]);
       } catch (error) {
         console.error('Error loading profile:', error);
         setMessages([{
           role: "assistant",
-          content: "Hey there! I'm your Prime Dime advisor. I'll help you find your perfect college match by asking you some questions. Ready to get started? 🎯"
+          content: "Hey there! I'm your \"Prime Dime\" advisor. I'll help you find your perfect college match by asking you some questions. Ready to get started? 🎯"
         }]);
       } finally {
         setIsLoading(false);
@@ -134,7 +134,7 @@ export function PrimeDimeAdvisor({ athleteId, onComplete }: PrimeDimeAdvisorProp
       <CardHeader className="border-b bg-gradient-to-r from-primary/10 to-secondary/10 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h3 className="font-bold text-lg">Prime Dime Advisor</h3>
+          <h3 className="font-bold text-lg">"Prime Dime" Advisor</h3>
         </div>
         <p className="text-sm text-muted-foreground">
           Your personal college match consultant

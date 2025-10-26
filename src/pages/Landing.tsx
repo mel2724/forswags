@@ -23,7 +23,7 @@ export default function Landing() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "ForSWAGs",
-    "description": "Student athlete development and Prime Dime matching platform",
+    "description": "Student athlete development and &quot;Prime Dime&quot; matching platform",
     "url": "https://forswags.org",
     "logo": "https://forswags.org/src/assets/forswags-logo.png",
     "offers": [
@@ -48,8 +48,8 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       <SEO 
         title="Student Athlete Development & College Recruitment Platform"
-        description="Get professional coach evaluations, expert Prime Dime matching, life skills training, and social media tools. Build your profile and connect with college recruiters nationwide."
-        keywords="student athlete platform, college recruitment, coach evaluations, athlete training, Prime Dime matching, sports scholarships, athlete development, recruiting profile"
+        description="Get professional coach evaluations, expert &quot;Prime Dime&quot; matching, life skills training, and social media tools. Build your profile and connect with college recruiters nationwide."
+        keywords="student athlete platform, college recruitment, coach evaluations, athlete training, &quot;Prime Dime&quot; matching, sports scholarships, athlete development, recruiting profile"
         structuredData={structuredData}
       />
       <Header />
@@ -111,7 +111,7 @@ export default function Landing() {
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
                 <Brain className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Expert Prime Dime Matching</h3>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Expert "Prime Dime" Matching</h3>
               <p className="text-muted-foreground leading-relaxed">
                 Our expert team personally reviews your profile to find your perfect college fit based on athletics, academics, and personal preferences
               </p>
@@ -249,7 +249,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="font-semibold">Expert Prime Dime matching</span>
+                    <span className="font-semibold">Expert "Prime Dime" matching</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
@@ -383,11 +383,11 @@ export default function Landing() {
               },
               {
                 question: "What's the difference between Starter, Pro, and Championship?",
-                answer: "Starter (Free): Limited profile features, 3 training courses, browse athlete directory. Pro Monthly ($14.99): Full profile, unlimited courses, coach evaluations, The Prime Dime matching, analytics, free parent account. Championship Yearly ($97): Everything in Pro, plus priority support, advanced analytics, exclusive content, direct recruiter messaging, and you save $82 per year."
+                answer: "Starter (Free): Limited profile features, 3 training courses, browse athlete directory. Pro Monthly ($14.99): Full profile, unlimited courses, coach evaluations, The &quot;Prime Dime&quot; matching, analytics, free parent account. Championship Yearly ($97): Everything in Pro, plus priority support, advanced analytics, exclusive content, direct recruiter messaging, and you save $82 per year."
               },
               {
                 question: "What services can I add on to my membership?",
-                answer: "Athletes and families can choose from a variety of add-on services, such as: Player Evaluations ($97 initial, $49 each additional), Player Skills Training Courses ($99, position-specific), Highlight promotion on ForSWAGs social media (70K+ followers, many coaches watching), The Prime Dime List (10 schools tailored to your goals)"
+                answer: "Athletes and families can choose from a variety of add-on services, such as: Player Evaluations ($97 initial, $49 each additional), Player Skills Training Courses ($99, position-specific), Highlight promotion on ForSWAGs social media (70K+ followers, many coaches watching), The &quot;Prime Dime&quot; List (10 schools tailored to your goals)"
               },
               {
                 question: "Who can join ForSWAGs?",

@@ -47,7 +47,7 @@ export default function AlumniNetwork() {
       if (athleteError) throw athleteError;
       setAthleteId(athlete.id);
 
-      // Get saved schools from Prime Dime matches
+      // Get saved schools from "Prime Dime" matches
       const { data: matches } = await supabase
         .from('college_matches')
         .select(`

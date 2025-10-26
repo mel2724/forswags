@@ -110,9 +110,9 @@ serve(async (req) => {
             body: JSON.stringify({
               from: 'ForSWAGs Errors <noreply@updates.forswags.com>',
               to: ['techsupport@forswags.com'],
-              subject: 'Prime Dime Analysis Trigger Error - ForSWAGs',
+              subject: '"Prime Dime" Analysis Trigger Error - ForSWAGs',
               html: `
-                <h2>Prime Dime Analysis Trigger Error</h2>
+                <h2>"Prime Dime" Analysis Trigger Error</h2>
                 <p><strong>Athlete ID:</strong> ${athlete.id}</p>
                 <p><strong>Error:</strong> ${JSON.stringify(analysisError)}</p>
                 <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>

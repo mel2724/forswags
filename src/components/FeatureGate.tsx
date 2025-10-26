@@ -45,7 +45,7 @@ export function FeatureGate({ featureKey, children, fallback, featureName }: Fea
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Unlock premium features including analytics, The Prime Dime matching, rankings, and more with a paid membership.
+              Unlock premium features including analytics, The "Prime Dime" matching, rankings, and more with a paid membership.
             </p>
             <div className="flex gap-3">
               <Button onClick={() => navigate('/membership')}>

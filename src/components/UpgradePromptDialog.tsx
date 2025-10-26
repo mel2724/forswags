@@ -19,7 +19,7 @@ const DEFAULT_BENEFITS = {
   general: [
     "🎥 Unlimited video uploads - showcase every highlight",
     "📊 Advanced analytics - track profile views and engagement",
-    "🎯 Expert Prime Dime matching - find your perfect fit",
+    "🎯 Expert \"Prime Dime\" matching - find your perfect fit",
     "✨ Premium profile features - stand out to college scouts",
     "🏆 Priority support - get help when you need it",
     "📱 Social media tools - build your personal brand",

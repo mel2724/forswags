@@ -109,7 +109,7 @@ serve(async (req) => {
         const { error: emailError } = await resend.emails.send({
           from: "ForSWAGs <notifications@forswags.com>",
           to: [profile.email],
-          subject: "🏆 Your Prime Dime College Matches Are Ready!",
+          subject: "🏆 Your \"Prime Dime\" College Matches Are Ready!",
           html: emailHtml,
         });
 
@@ -126,7 +126,7 @@ serve(async (req) => {
           .from("notifications")
           .insert({
             user_id: athlete.user_id,
-            title: "Your Prime Dime is Ready! 🏆",
+            title: "Your \"Prime Dime\" is Ready! 🏆",
             message: "Our expert team has completed your college match analysis. View your personalized top 10 college recommendations now!",
             type: "college_match",
             link: "/prime-dime",
@@ -176,9 +176,9 @@ serve(async (req) => {
       await resend.emails.send({
         from: "ForSWAGs Errors <noreply@updates.forswags.com>",
         to: ["techsupport@forswags.com"],
-        subject: "Prime Dime Notification Error - ForSWAGs",
+        subject: "\"Prime Dime\" Notification Error - ForSWAGs",
         html: `
-          <h2>Prime Dime Notification Error</h2>
+          <h2>"Prime Dime" Notification Error</h2>
           <p><strong>Error:</strong> ${errorMessage}</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
           <p><strong>Stack:</strong> <pre>${error instanceof Error ? error.stack : 'N/A'}</pre></p>

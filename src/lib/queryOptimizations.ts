@@ -98,7 +98,7 @@ export async function getAthleteEvaluations(athleteId: string) {
 }
 
 /**
- * Optimized Prime Dime matches query
+ * Optimized "Prime Dime" matches query
  */
 export async function getCollegeMatches(athleteId: string) {
   const { data, error } = await supabase

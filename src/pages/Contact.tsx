@@ -93,7 +93,7 @@ export default function Contact() {
     <div className="min-h-screen bg-background py-12">
       <SEO 
         title="Contact Us - Get Help & Support"
-        description="Have questions about ForSWAGs? Contact our support team for help with athlete profiles, evaluations, The Prime Dime matching, and training courses. We're here to help you succeed."
+        description="Have questions about ForSWAGs? Contact our support team for help with athlete profiles, evaluations, The &quot;Prime Dime&quot; matching, and training courses. We're here to help you succeed."
         keywords="contact forswags, athlete support, student athlete help, college recruitment support, sports platform contact"
       />
       <div className="container mx-auto px-4">
