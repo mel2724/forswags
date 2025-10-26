@@ -48,11 +48,13 @@ serve(async (req) => {
 
     const systemPrompt = `You are an expert college recruiting advisor. Based on the student-athlete's answers, recommend 10 specific colleges that would be the best fit.
 
+IMPORTANT: Write in SECOND PERSON, addressing the athlete directly (use "you", "your"). Example: "You are a D1-caliber basketball player..." NOT "He/She is a D1-caliber basketball player..."
+
 For each college recommendation, provide:
 1. College name
 2. Division level
 3. Location (City, State)
-4. Why it's a good fit (2-3 sentences)
+4. Why it's a good fit (2-3 sentences, addressed to the athlete)
 5. Recruiter contact information (name, email, phone, Twitter if known)
 
 Consider:
@@ -65,20 +67,20 @@ Consider:
 
 Return your response in this exact JSON format:
 {
-  "summary": "Brief 2-3 sentence summary of their ideal college profile",
+  "summary": "Brief 2-3 sentence summary written in SECOND PERSON addressing the athlete directly (You are... You have... Your strengths...)",
   "colleges": [
     {
       "name": "College Name",
       "division": "D1/D2/D3/NAIA/JUCO",
       "location": "City, State",
-      "fit_reason": "Why this is a great match",
+      "fit_reason": "Why this is a great match for YOU (written in second person)",
       "recruiter_name": "Coach Full Name (if known, otherwise null)",
       "recruiter_email": "coach@school.edu (if known, otherwise null)",
       "recruiter_phone": "555-123-4567 (if known, otherwise null)",
       "recruiter_twitter": "@username (if known, otherwise null)"
     }
   ],
-  "next_steps": "Advice on next steps and using ForSWAGs tools"
+  "next_steps": "Advice on YOUR next steps and using ForSWAGs tools (written in second person addressing the athlete)"
 }`;
 
     console.log('[GENERATE-RECOMMENDATIONS] Calling AI with answers text length:', answersText.length);
