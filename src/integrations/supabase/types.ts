@@ -358,7 +358,7 @@ export type Database = {
           committed_school: string | null
           community_involvement: string | null
           consent_expires_at: string | null
-          consent_ip_address: unknown | null
+          consent_ip_address: unknown
           consent_timestamp: string | null
           consent_verified_by: string | null
           converted_at: string | null
@@ -443,7 +443,7 @@ export type Database = {
           committed_school?: string | null
           community_involvement?: string | null
           consent_expires_at?: string | null
-          consent_ip_address?: unknown | null
+          consent_ip_address?: unknown
           consent_timestamp?: string | null
           consent_verified_by?: string | null
           converted_at?: string | null
@@ -528,7 +528,7 @@ export type Database = {
           committed_school?: string | null
           community_involvement?: string | null
           consent_expires_at?: string | null
-          consent_ip_address?: unknown | null
+          consent_ip_address?: unknown
           consent_timestamp?: string | null
           consent_verified_by?: string | null
           converted_at?: string | null
@@ -2078,7 +2078,7 @@ export type Database = {
           created_at: string | null
           expires_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           parent_email: string
           user_id: string | null
           verification_code: string
@@ -2089,7 +2089,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           parent_email: string
           user_id?: string | null
           verification_code: string
@@ -2100,7 +2100,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           parent_email?: string
           user_id?: string | null
           verification_code?: string
@@ -2614,6 +2614,7 @@ export type Database = {
           notes: string | null
           primary_positions: string[] | null
           school_name: string
+          sport: string | null
           states_focus: string[] | null
           title: string | null
           updated_at: string
@@ -2626,6 +2627,7 @@ export type Database = {
           notes?: string | null
           primary_positions?: string[] | null
           school_name: string
+          sport?: string | null
           states_focus?: string[] | null
           title?: string | null
           updated_at?: string
@@ -2638,6 +2640,7 @@ export type Database = {
           notes?: string | null
           primary_positions?: string[] | null
           school_name?: string
+          sport?: string | null
           states_focus?: string[] | null
           title?: string | null
           updated_at?: string
@@ -3352,26 +3355,14 @@ export type Database = {
           version_number: number
         }[]
       }
-      archive_alumni_account: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
-      archive_user_data: {
-        Args: { p_user_id: string }
-        Returns: undefined
-      }
-      calculate_age: {
-        Args: { p_date_of_birth: string }
-        Returns: number
-      }
+      archive_alumni_account: { Args: { p_user_id: string }; Returns: Json }
+      archive_user_data: { Args: { p_user_id: string }; Returns: undefined }
+      calculate_age: { Args: { p_date_of_birth: string }; Returns: number }
       can_request_reevaluation: {
         Args: { p_athlete_id: string }
         Returns: boolean
       }
-      can_user_login: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      can_user_login: { Args: { p_user_id: string }; Returns: Json }
       check_duplicate_athlete: {
         Args: {
           p_full_name: string
@@ -3381,38 +3372,17 @@ export type Database = {
         }
         Returns: string
       }
-      check_expired_consents: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      check_profile_upload_rate_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      check_stat_update_reminders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      clean_old_contact_submissions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_expired_consents: { Args: never; Returns: undefined }
+      check_profile_upload_rate_limit: { Args: never; Returns: boolean }
+      check_stat_update_reminders: { Args: never; Returns: undefined }
+      clean_old_contact_submissions: { Args: never; Returns: undefined }
       decrypt_oauth_token: {
         Args: { encrypted_token: string }
         Returns: string
       }
-      encrypt_oauth_token: {
-        Args: { token: string }
-        Returns: string
-      }
-      end_impersonation_session: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      generate_claim_token: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      encrypt_oauth_token: { Args: { token: string }; Returns: string }
+      end_impersonation_session: { Args: never; Returns: undefined }
+      generate_claim_token: { Args: never; Returns: string }
       get_engagement_stats: {
         Args: { p_days?: number; p_user_id: string }
         Returns: {
@@ -3427,14 +3397,8 @@ export type Database = {
         Args: { eval_scores: Json }
         Returns: number
       }
-      get_evaluation_price: {
-        Args: { p_athlete_id: string }
-        Returns: string
-      }
-      get_impersonated_user_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_evaluation_price: { Args: { p_athlete_id: string }; Returns: string }
+      get_impersonated_user_id: { Args: never; Returns: string }
       get_least_featured_athletes: {
         Args: { limit_count?: number }
         Returns: {
@@ -3455,10 +3419,7 @@ export type Database = {
           version_number: number
         }[]
       }
-      get_membership_status: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      get_membership_status: { Args: { p_user_id: string }; Returns: Json }
       get_profile_view_stats: {
         Args: { p_athlete_id: string; p_days?: number }
         Returns: {
@@ -3469,6 +3430,7 @@ export type Database = {
           unique_viewers: number
         }[]
       }
+      get_recruiter_sport: { Args: { p_user_id: string }; Returns: string }
       get_safe_athlete_profile: {
         Args: { p_athlete_id: string }
         Returns: Json
@@ -3477,10 +3439,7 @@ export type Database = {
         Args: { p_is_reevaluation: boolean; p_user_id: string }
         Returns: number
       }
-      get_user_tier: {
-        Args: { p_user_id: string }
-        Returns: string
-      }
+      get_user_tier: { Args: { p_user_id: string }; Returns: string }
       has_feature_access: {
         Args: { p_feature_key: string; p_user_id: string }
         Returns: boolean
@@ -3492,14 +3451,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_minor: {
-        Args: { p_date_of_birth: string }
-        Returns: boolean
-      }
-      is_paid_recruiter: {
-        Args: { p_user_id: string }
-        Returns: boolean
-      }
+      is_minor: { Args: { p_date_of_birth: string }; Returns: boolean }
+      is_paid_recruiter: { Args: { p_user_id: string }; Returns: boolean }
       log_audit_event: {
         Args: {
           p_action: string
@@ -3518,10 +3471,7 @@ export type Database = {
         }
         Returns: string
       }
-      notify_expiring_consents: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      notify_expiring_consents: { Args: never; Returns: undefined }
       start_impersonation_session: {
         Args: { p_impersonated_user_id: string }
         Returns: string

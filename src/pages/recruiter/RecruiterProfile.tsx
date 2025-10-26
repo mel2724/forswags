@@ -22,6 +22,7 @@ export default function RecruiterProfile() {
     school_name: "",
     division: "",
     title: "",
+    sport: "",
     primary_positions: [] as string[],
     states_focus: [] as string[],
     notes: "",
@@ -83,6 +84,7 @@ export default function RecruiterProfile() {
           school_name: profileData.school_name || "",
           division: profileData.division || "",
           title: profileData.title || "",
+          sport: profileData.sport || "",
           primary_positions: profileData.primary_positions || [],
           states_focus: profileData.states_focus || [],
           notes: profileData.notes || "",
@@ -233,13 +235,37 @@ export default function RecruiterProfile() {
               </Select>
             </div>
 
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
               <Label>Your Title</Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="e.g., Head Coach, Recruiting Coordinator"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Sport *</Label>
+              <Select value={formData.sport} onValueChange={(val) => setFormData({ ...formData, sport: val })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sport" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Football">Football</SelectItem>
+                  <SelectItem value="Basketball">Basketball</SelectItem>
+                  <SelectItem value="Baseball">Baseball</SelectItem>
+                  <SelectItem value="Softball">Softball</SelectItem>
+                  <SelectItem value="Soccer">Soccer</SelectItem>
+                  <SelectItem value="Track & Field">Track & Field</SelectItem>
+                  <SelectItem value="Volleyball">Volleyball</SelectItem>
+                  <SelectItem value="Swimming">Swimming</SelectItem>
+                  <SelectItem value="Tennis">Tennis</SelectItem>
+                  <SelectItem value="Golf">Golf</SelectItem>
+                  <SelectItem value="Wrestling">Wrestling</SelectItem>
+                  <SelectItem value="Lacrosse">Lacrosse</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
@@ -316,7 +342,7 @@ export default function RecruiterProfile() {
       </Card>
 
       <div className="flex gap-2">
-        <Button onClick={handleSave} disabled={saving || !formData.school_name}>
+        <Button onClick={handleSave} disabled={saving || !formData.school_name || !formData.sport}>
           {saving ? "Saving..." : "Save Profile"}
         </Button>
         <Button variant="outline" onClick={() => navigate("/recruiter/dashboard")}>
