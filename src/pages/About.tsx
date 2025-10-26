@@ -143,6 +143,42 @@ const About = () => {
         </div>
       </section>
 
+      {/* Our Team */}
+      <section className="py-16 relative bg-gradient-to-b from-background to-primary/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
+              Meet the <span className="text-gradient-primary">ForSWAGs Team</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Experience, passion, and dedication to athlete success
+            </p>
+          </div>
+
+          <Card className="p-8 md:p-12 bg-card/50 backdrop-blur border-2 border-primary/20 max-w-5xl mx-auto">
+            <div className="space-y-6 text-lg leading-relaxed text-foreground/90">
+              <p>
+                The ForSWAGs team brings together <span className="font-bold text-primary">more than 50 years of combined experience in youth sports</span> and <span className="font-bold text-secondary">over 20 years in the educational field</span>. This unique blend of expertise allows us to understand the complete picture of what it takes for student-athletes to succeed at every level.
+              </p>
+              
+              <p>
+                Our passion goes beyond just scouting talent or tracking statistics. We are deeply committed to helping athletes connect with colleges and universities that will allow them to continue growing both athletically and academically. We understand that the right fit isn't just about athletic scholarships—it's about finding an environment where young athletes can thrive as students, competitors, and individuals.
+              </p>
+              
+              <p>
+                Every member of our team has witnessed firsthand the transformative power of sports combined with education. We've seen athletes overcome obstacles, achieve their dreams, and become leaders in their communities. This is why we wake up every day driven to create opportunities, build connections, and open doors that might otherwise remain closed.
+              </p>
+
+              <div className="pt-6 border-t border-primary/20 mt-8">
+                <p className="text-xl font-bold text-center text-gradient-accent">
+                  Your success is our mission. Your future is our focus.
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
       {/* Call to Action */}
       <section className="py-16 relative">
         <div className="container mx-auto px-4">
