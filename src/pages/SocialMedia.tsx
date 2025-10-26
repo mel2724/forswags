@@ -205,7 +205,7 @@ export default function SocialMedia() {
 
 After working with ForSWAGs' expert team, I've identified my top college fits:
 ${matches.map((college: any, index: number) => 
-  `\n${index + 1}. ${college.name} - ${college.match_score}% match`
+  `\n${index + 1}. ${college.name}`
 ).join('')}
 
 These schools align perfectly with my athletic, academic, and personal goals. Ready to take the next step in my recruiting journey! 💪
