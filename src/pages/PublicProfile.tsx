@@ -346,9 +346,9 @@ export default function PublicProfile() {
           </CardContent>
         </Card>
 
-        <div className="grid md:grid-cols-5 gap-6">
-          {/* Left Column - Academics & Performance Stats (60% width) */}
-          <div className="md:col-span-3 space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Left Column - Academics & Performance Stats (50% width) */}
+          <div className="space-y-6">
             {/* Academics */}
             {(profile.gpa || profile.sat_score || profile.act_score) && (
               <Card>
@@ -475,8 +475,8 @@ export default function PublicProfile() {
             )}
           </div>
 
-          {/* Right Column - Highlight Videos (40% width) */}
-          <div className="md:col-span-2 space-y-6">
+          {/* Right Column - Highlight Videos (50% width) */}
+          <div className="space-y-6">
             {/* Introduction Video */}
             {introVideo && (
               <Card>
