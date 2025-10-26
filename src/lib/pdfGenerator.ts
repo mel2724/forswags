@@ -21,6 +21,7 @@ interface CollegeMatch {
   school_name: string;
   location: string;
   division: string;
+  website?: string;
   overall_match_score: number;
   academic_fit_score: number;
   athletic_fit_score: number;
@@ -133,6 +134,13 @@ export const generatePrimeDimePDF = (
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...lightText);
     doc.text(`${college.location} • ${college.division}`, 30, yPos + 14);
+    
+    // Website URL
+    if (college.website) {
+      doc.setFontSize(8);
+      doc.setTextColor(...purple);
+      doc.text(college.website, 30, yPos + 18);
+    }
 
     // Match Score
     doc.setFontSize(10);
@@ -145,12 +153,12 @@ export const generatePrimeDimePDF = (
     doc.setTextColor(...lightText);
     doc.setFont('helvetica', 'normal');
     const fitScores = `Academic: ${college.academic_fit_score}% • Athletic: ${college.athletic_fit_score}% • Financial: ${college.financial_fit_score}% • Culture: ${college.culture_fit_score}%`;
-    doc.text(fitScores, 30, yPos + 20);
+    doc.text(fitScores, 30, college.website ? yPos + 24 : yPos + 20);
 
     // Why Good Fit (bullets)
     doc.setFontSize(8);
     doc.setTextColor(...darkText);
-    let bulletY = yPos + 26;
+    let bulletY = college.website ? yPos + 30 : yPos + 26;
     college.why_good_fit.slice(0, 2).forEach(reason => {
       doc.text(`• ${reason}`, 30, bulletY);
       bulletY += 4;
@@ -160,7 +168,7 @@ export const generatePrimeDimePDF = (
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...purple);
-    doc.text('Recruiter Contact:', 30, yPos + 38);
+    doc.text('Recruiter Contact:', 30, college.website ? yPos + 42 : yPos + 38);
     
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...darkText);
@@ -171,7 +179,7 @@ export const generatePrimeDimePDF = (
     if (contact.phone) contactText.push(`📞 ${contact.phone}`);
     if (contact.twitter) contactText.push(`🐦 ${contact.twitter}`);
     
-    doc.text(contactText.join(' • '), 30, yPos + 44);
+    doc.text(contactText.join(' • '), 30, college.website ? yPos + 48 : yPos + 44);
 
     yPos += 55;
   });

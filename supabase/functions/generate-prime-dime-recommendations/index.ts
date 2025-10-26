@@ -54,8 +54,9 @@ For each college recommendation, provide:
 1. College name
 2. Division level
 3. Location (City, State)
-4. Why it's a good fit (2-3 sentences, addressed to the athlete)
-5. Recruiter contact information (name, email, phone, Twitter if known)
+4. Official college website URL
+5. Why it's a good fit (2-3 sentences, addressed to the athlete)
+6. Recruiter contact information (name, email, phone, Twitter if known)
 
 Consider:
 - Athletic level and competition
@@ -73,6 +74,7 @@ Return your response in this exact JSON format:
       "name": "College Name",
       "division": "D1/D2/D3/NAIA/JUCO",
       "location": "City, State",
+      "website": "https://www.college.edu",
       "fit_reason": "Why this is a great match for YOU (written in second person)",
       "recruiter_name": "Coach Full Name (if known, otherwise null)",
       "recruiter_email": "coach@school.edu (if known, otherwise null)",

@@ -274,6 +274,7 @@ const PrimeDime = () => {
           school_name: college.name,
           location: college.location,
           division: college.division,
+          website: college.website,
           overall_match_score: 85, // Default value since not in current data
           academic_fit_score: 80,
           athletic_fit_score: 85,
@@ -482,9 +483,20 @@ const PrimeDime = () => {
                             <Badge variant="secondary" className="text-xs">{index + 1}</Badge>
                             <CardTitle className="text-xl">{college.name}</CardTitle>
                           </div>
-                          <div className="flex gap-2 flex-wrap">
+                          <div className="flex gap-2 flex-wrap items-center">
                             <Badge variant="secondary">{college.division}</Badge>
                             <Badge variant="outline">{college.location}</Badge>
+                            {college.website && (
+                              <a
+                                href={college.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                Visit Website
+                              </a>
+                            )}
                           </div>
                         </div>
                       </div>
