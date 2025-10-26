@@ -490,7 +490,7 @@ const Dashboard = () => {
                   <CardContent>
                     {matches.length > 0 ? (
                       <div className="space-y-4">
-                        {matches.map((match) => (
+                        {matches.slice(0, 3).map((match) => (
                         <div key={match.id} className="p-4 rounded-lg border border-border hover:border-primary transition-colors">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
