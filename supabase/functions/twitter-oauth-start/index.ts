@@ -14,7 +14,11 @@ serve(async (req) => {
   try {
     const TWITTER_CLIENT_ID = Deno.env.get('TWITTER_CLIENT_ID');
     if (!TWITTER_CLIENT_ID) {
-      throw new Error('TWITTER_CLIENT_ID not configured');
+      console.error('[TWITTER-OAUTH] TWITTER_CLIENT_ID not configured');
+      return new Response(
+        JSON.stringify({ error: 'Service temporarily unavailable. Please contact support.' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const { redirectUri } = await req.json();
@@ -74,10 +78,9 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Twitter OAuth start error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[TWITTER-OAUTH] Error:', error);
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: 'Failed to initialize Twitter connection. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
