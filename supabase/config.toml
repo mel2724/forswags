@@ -92,3 +92,9 @@ verify_jwt = false
 
 [functions.send-waitlist-confirmation]
 verify_jwt = false  # Public endpoint for waitlist signups
+
+[functions.prime-dime-advisor]
+verify_jwt = true
+
+[functions.generate-prime-dime-recommendations]
+verify_jwt = true

@@ -915,42 +915,117 @@ export type Database = {
       college_match_prefs: {
         Row: {
           academic_priorities: string[] | null
+          academic_support_needed: boolean | null
           athlete_id: string
+          athletic_scholarships_important: boolean | null
+          backup_career_plan: string | null
+          campus_culture_important: boolean | null
+          campus_setting_preference: string | null
+          competition_level: string | null
+          consider_private_schools: boolean | null
+          conversation_completed: boolean | null
+          conversation_data: Json | null
           created_at: string
+          current_gpa: number | null
+          current_stats: string | null
+          fafsa_eligible: boolean | null
+          faith_based_preference: boolean | null
+          financial_aid_needed: boolean | null
           id: string
+          location_preference: string | null
+          major_interests: string | null
           max_distance_miles: number | null
           max_enrollment: number | null
           max_tuition: number | null
           min_enrollment: number | null
+          playing_time_preference: string | null
+          position: string | null
           preferred_divisions: string[] | null
           preferred_states: string[] | null
+          prestige_important: boolean | null
+          school_focus_preference: string | null
+          school_size_preference: string | null
+          sport: string | null
+          test_scores: string | null
           updated_at: string
+          weather_preference: string | null
+          willing_to_work: boolean | null
         }
         Insert: {
           academic_priorities?: string[] | null
+          academic_support_needed?: boolean | null
           athlete_id: string
+          athletic_scholarships_important?: boolean | null
+          backup_career_plan?: string | null
+          campus_culture_important?: boolean | null
+          campus_setting_preference?: string | null
+          competition_level?: string | null
+          consider_private_schools?: boolean | null
+          conversation_completed?: boolean | null
+          conversation_data?: Json | null
           created_at?: string
+          current_gpa?: number | null
+          current_stats?: string | null
+          fafsa_eligible?: boolean | null
+          faith_based_preference?: boolean | null
+          financial_aid_needed?: boolean | null
           id?: string
+          location_preference?: string | null
+          major_interests?: string | null
           max_distance_miles?: number | null
           max_enrollment?: number | null
           max_tuition?: number | null
           min_enrollment?: number | null
+          playing_time_preference?: string | null
+          position?: string | null
           preferred_divisions?: string[] | null
           preferred_states?: string[] | null
+          prestige_important?: boolean | null
+          school_focus_preference?: string | null
+          school_size_preference?: string | null
+          sport?: string | null
+          test_scores?: string | null
           updated_at?: string
+          weather_preference?: string | null
+          willing_to_work?: boolean | null
         }
         Update: {
           academic_priorities?: string[] | null
+          academic_support_needed?: boolean | null
           athlete_id?: string
+          athletic_scholarships_important?: boolean | null
+          backup_career_plan?: string | null
+          campus_culture_important?: boolean | null
+          campus_setting_preference?: string | null
+          competition_level?: string | null
+          consider_private_schools?: boolean | null
+          conversation_completed?: boolean | null
+          conversation_data?: Json | null
           created_at?: string
+          current_gpa?: number | null
+          current_stats?: string | null
+          fafsa_eligible?: boolean | null
+          faith_based_preference?: boolean | null
+          financial_aid_needed?: boolean | null
           id?: string
+          location_preference?: string | null
+          major_interests?: string | null
           max_distance_miles?: number | null
           max_enrollment?: number | null
           max_tuition?: number | null
           min_enrollment?: number | null
+          playing_time_preference?: string | null
+          position?: string | null
           preferred_divisions?: string[] | null
           preferred_states?: string[] | null
+          prestige_important?: boolean | null
+          school_focus_preference?: string | null
+          school_size_preference?: string | null
+          sport?: string | null
+          test_scores?: string | null
           updated_at?: string
+          weather_preference?: string | null
+          willing_to_work?: boolean | null
         }
         Relationships: [
           {
@@ -1083,6 +1158,38 @@ export type Database = {
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      college_recommendations: {
+        Row: {
+          athlete_id: string
+          created_at: string | null
+          id: string
+          recommendations: Json
+          updated_at: string | null
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string | null
+          id?: string
+          recommendations: Json
+          updated_at?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string | null
+          id?: string
+          recommendations?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "college_recommendations_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
             referencedColumns: ["id"]
           },
         ]

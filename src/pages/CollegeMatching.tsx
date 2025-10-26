@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CollegeMatchCard } from "@/components/CollegeMatchCard";
-import { Loader2, RefreshCw, Settings } from "lucide-react";
+import { Loader2, Trophy, MapPin, GraduationCap, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TierFeatureGuard } from "@/components/TierFeatureGuard";
+import { PrimeDimeAdvisor } from "@/components/PrimeDimeAdvisor";
+import { Badge } from "@/components/ui/badge";
 
 export default function CollegeMatching() {
   return (
@@ -21,16 +22,16 @@ function CollegeMatchingPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [athleteId, setAthleteId] = useState<string | null>(null);
-  const [matches, setMatches] = useState<any[]>([]);
-  const [savedMatches, setSavedMatches] = useState<any[]>([]);
+  const [showAdvisor, setShowAdvisor] = useState(false);
+  const [conversationCompleted, setConversationCompleted] = useState(false);
+  const [recommendations, setRecommendations] = useState<any>(null);
 
   useEffect(() => {
-    fetchAthleteAndMatches();
+    fetchAthleteAndRecommendations();
   }, []);
 
-  const fetchAthleteAndMatches = async () => {
+  const fetchAthleteAndRecommendations = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -48,13 +49,24 @@ function CollegeMatchingPage() {
       if (athleteError) throw athleteError;
       setAthleteId(athlete.id);
 
-      // Fetch matches
-      await fetchMatches(athlete.id);
+      // Check conversation status
+      const { data: prefs } = await supabase
+        .from('college_match_prefs')
+        .select('conversation_completed')
+        .eq('athlete_id', athlete.id)
+        .maybeSingle();
+
+      setConversationCompleted(prefs?.conversation_completed || false);
+
+      // Fetch recommendations if completed
+      if (prefs?.conversation_completed) {
+        await fetchRecommendations(athlete.id);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: "Failed to load Prime Dime matches",
+        description: "Failed to load Prime Dime data",
         variant: "destructive",
       });
     } finally {
@@ -62,47 +74,34 @@ function CollegeMatchingPage() {
     }
   };
 
-  const fetchMatches = async (athleteId: string) => {
+  const fetchRecommendations = async (athleteId: string) => {
     const { data, error } = await supabase
-      .from('college_matches')
-      .select(`
-        *,
-        schools (*)
-      `)
+      .from('college_recommendations')
+      .select('*')
       .eq('athlete_id', athleteId)
-      .order('match_score', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching recommendations:', error);
+      return;
+    }
 
-    setMatches(data || []);
-    setSavedMatches(data?.filter(m => m.is_saved) || []);
+    if (data) {
+      setRecommendations(data.recommendations);
+    }
   };
 
-  const handleAnalyzeMatches = async () => {
-    if (!athleteId) return;
+  const handleStartAdvisor = () => {
+    setShowAdvisor(true);
+  };
 
-    setIsAnalyzing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('request-prime-dime-analysis');
-
-      if (error) throw error;
-
-      toast({
-        title: "Analysis Requested",
-        description: "Our team is analyzing your profile. You'll be notified when your Prime Dime matches are ready (usually within 24 hours).",
-      });
-
-      // Refresh to show the "in progress" state
-      await fetchMatches(athleteId);
-    } catch (error: any) {
-      console.error('Error requesting analysis:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to request Prime Dime analysis",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAnalyzing(false);
+  const handleAdvisorComplete = async () => {
+    setShowAdvisor(false);
+    setConversationCompleted(true);
+    if (athleteId) {
+      await fetchRecommendations(athleteId);
     }
   };
 
@@ -116,121 +115,132 @@ function CollegeMatchingPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">The Prime Dime</h1>
-          <p className="text-muted-foreground">
-            Expert recommendations from our team based on your academic and athletic profile
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/college-preferences')}
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Preferences
-          </Button>
-          <Button
-            onClick={handleAnalyzeMatches}
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Analyze Matches
-              </>
-            )}
-          </Button>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">The Prime Dime</h1>
+        <p className="text-muted-foreground">
+          AI-powered college recommendations based on your unique profile and goals
+        </p>
       </div>
 
-      {matches.length === 0 ? (
+      {showAdvisor ? (
+        <PrimeDimeAdvisor 
+          athleteId={athleteId!} 
+          onComplete={handleAdvisorComplete}
+        />
+      ) : !conversationCompleted ? (
         <Card>
           <CardHeader>
-            <CardTitle>No Matches Yet</CardTitle>
+            <CardTitle>Welcome to The Prime Dime</CardTitle>
             <CardDescription>
-              Click "Analyze Matches" to get expert college recommendations from our team based on your profile.
+              Let's find your perfect college match! I'll ask you some questions about your athletic abilities, academic interests, financial needs, and lifestyle preferences to recommend the best colleges for you.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleAnalyzeMatches} disabled={isAnalyzing}>
-              {isAnalyzing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                'Start Analysis'
-              )}
-            </Button>
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <Trophy className="h-8 w-8 text-primary mb-2" />
+                  <h3 className="font-semibold mb-1">Athletic Fit</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Match your skill level and competition goals
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <GraduationCap className="h-8 w-8 text-secondary mb-2" />
+                  <h3 className="font-semibold mb-1">Academic Programs</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Find schools with your ideal majors and support
+                  </p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <MapPin className="h-8 w-8 text-accent mb-2" />
+                  <h3 className="font-semibold mb-1">Location & Culture</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Discover campuses where you'll thrive
+                  </p>
+                </div>
+              </div>
+              <Button onClick={handleStartAdvisor} size="lg" className="w-full">
+                Start Your Prime Dime Consultation
+              </Button>
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <Tabs defaultValue="all" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="all">
-              All Matches ({matches.length})
-            </TabsTrigger>
-            <TabsTrigger value="saved">
-              Saved ({savedMatches.length})
-            </TabsTrigger>
-            <TabsTrigger value="top">
-              Top Matches
-            </TabsTrigger>
-          </TabsList>
+      ) : recommendations ? (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your College Match Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{recommendations.summary}</p>
+            </CardContent>
+          </Card>
 
-          <TabsContent value="all" className="space-y-4">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {matches.map((match) => (
-                <CollegeMatchCard
-                  key={match.id}
-                  match={match}
-                  onSaveToggle={() => fetchMatches(athleteId!)}
-                />
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Your Top 10 College Recommendations</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {recommendations.colleges?.map((college: any, index: number) => (
+                <Card key={index} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-xl">{college.name}</CardTitle>
+                        <div className="flex gap-2 mt-2">
+                          <Badge variant="secondary">{college.division}</Badge>
+                          <Badge variant="outline">{college.location}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">{college.fit_reason}</p>
+                    {college.recruiter_twitter && (
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <ExternalLink className="h-4 w-4 text-primary" />
+                        <a
+                          href={`https://twitter.com/${college.recruiter_twitter.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-sm font-medium"
+                        >
+                          Contact Recruiter {college.recruiter_twitter}
+                        </a>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="saved" className="space-y-4">
-            {savedMatches.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  No saved colleges yet. Click the heart icon on any match to save it.
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {savedMatches.map((match) => (
-                  <CollegeMatchCard
-                    key={match.id}
-                    match={match}
-                    onSaveToggle={() => fetchMatches(athleteId!)}
-                  />
-                ))}
+          <Card className="bg-muted">
+            <CardHeader>
+              <CardTitle>Next Steps</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{recommendations.next_steps}</p>
+              <div className="flex gap-2 mt-4">
+                <Button onClick={() => {
+                  setConversationCompleted(false);
+                  setRecommendations(null);
+                  setShowAdvisor(true);
+                }}>
+                  Start New Consultation
+                </Button>
               </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="top" className="space-y-4">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {matches
-                .filter(m => m.match_score >= 80)
-                .map((match) => (
-                  <CollegeMatchCard
-                    key={match.id}
-                    match={match}
-                    onSaveToggle={() => fetchMatches(athleteId!)}
-                  />
-                ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Generating your personalized recommendations...
+            </p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
