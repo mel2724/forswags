@@ -34,6 +34,8 @@ const PrimeDime = () => {
   const [showAdvisor, setShowAdvisor] = useState(false);
   const [conversationCompleted, setConversationCompleted] = useState(false);
   const [recommendations, setRecommendations] = useState<any>(null);
+  const [generationError, setGenerationError] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { isFree, isLoading: membershipLoading } = useMembershipStatus();
 
   useEffect(() => {
@@ -93,21 +95,45 @@ const PrimeDime = () => {
   };
 
   const fetchRecommendations = async (athleteId: string) => {
-    const { data, error } = await supabase
-      .from('college_recommendations')
-      .select('*')
-      .eq('athlete_id', athleteId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    setIsGenerating(true);
+    setGenerationError(false);
+    
+    // Set a timeout to detect stuck generation
+    const timeout = setTimeout(() => {
+      setGenerationError(true);
+      setIsGenerating(false);
+    }, 60000); // 60 seconds timeout
+    
+    try {
+      const { data, error } = await supabase
+        .from('college_recommendations')
+        .select('*')
+        .eq('athlete_id', athleteId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching recommendations:', error);
-      return;
-    }
+      clearTimeout(timeout);
 
-    if (data) {
-      setRecommendations(data.recommendations);
+      if (error) {
+        console.error('Error fetching recommendations:', error);
+        setGenerationError(true);
+        setIsGenerating(false);
+        return;
+      }
+
+      if (data) {
+        setRecommendations(data.recommendations);
+        setIsGenerating(false);
+      } else {
+        // No data yet, keep checking
+        setTimeout(() => fetchRecommendations(athleteId), 3000);
+      }
+    } catch (error) {
+      clearTimeout(timeout);
+      console.error('Exception fetching recommendations:', error);
+      setGenerationError(true);
+      setIsGenerating(false);
     }
   };
 
@@ -118,9 +144,25 @@ const PrimeDime = () => {
   const handleAdvisorComplete = async () => {
     setShowAdvisor(false);
     setConversationCompleted(true);
+    setGenerationError(false);
     if (athleteId) {
       await fetchRecommendations(athleteId);
     }
+  };
+
+  const handleRetry = () => {
+    setGenerationError(false);
+    setRecommendations(null);
+    if (athleteId) {
+      fetchRecommendations(athleteId);
+    }
+  };
+
+  const handleRestart = () => {
+    setConversationCompleted(false);
+    setRecommendations(null);
+    setGenerationError(false);
+    setShowAdvisor(true);
   };
 
 
@@ -333,12 +375,35 @@ const PrimeDime = () => {
               </CardContent>
             </Card>
           </div>
+        ) : generationError ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <div className="text-destructive mb-4">
+                <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Generation Failed</h3>
+              <p className="text-muted-foreground mb-6">
+                We encountered an issue generating your recommendations. Please try again or restart the consultation.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={handleRetry} variant="default">
+                  Retry Generation
+                </Button>
+                <Button onClick={handleRestart} variant="outline">
+                  Restart Consultation
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-2">
                 Generating your personalized recommendations...
+              </p>
+              <p className="text-xs text-muted-foreground">
+                This may take up to 60 seconds
               </p>
             </CardContent>
           </Card>
