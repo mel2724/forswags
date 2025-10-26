@@ -190,10 +190,6 @@ export default function MembershipRecruiter() {
                     </li>
                     <li className="flex items-start">
                       <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Exclusive scouting events</span>
-                    </li>
-                    <li className="flex items-start">
-                      <Check className="h-5 w-5 text-secondary mr-2 flex-shrink-0 mt-0.5" />
                       <span>Analytics & insights</span>
                     </li>
                   </ul>

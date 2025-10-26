@@ -168,10 +168,6 @@ const ForRecruiters = () => {
                 </li>
                 <li className="flex items-center gap-3">
                   <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-semibold">Exclusive scouting events</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                   <span className="font-semibold">Early access to new athletes</span>
                 </li>
                 <li className="flex items-center gap-3">
