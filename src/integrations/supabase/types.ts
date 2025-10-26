@@ -3444,7 +3444,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      connected_accounts_status: {
+        Row: {
+          account_name: string | null
+          expires_at: string | null
+          id: string | null
+          platform: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_name?: string | null
+          expires_at?: string | null
+          id?: string | null
+          platform?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_name?: string | null
+          expires_at?: string | null
+          id?: string | null
+          platform?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_get_archived_media: {
@@ -3486,6 +3512,7 @@ export type Database = {
       check_profile_upload_rate_limit: { Args: never; Returns: boolean }
       check_stat_update_reminders: { Args: never; Returns: undefined }
       clean_old_contact_submissions: { Args: never; Returns: undefined }
+      cleanup_oauth_state: { Args: never; Returns: undefined }
       decrypt_oauth_token: {
         Args: { encrypted_token: string }
         Returns: string

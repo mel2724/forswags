@@ -6,6 +6,56 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation
+interface MessageRequest {
+  athleteId: string;
+  messages: Array<{ role: string; content: string }>;
+}
+
+function validateRequest(data: any): MessageRequest {
+  if (!data.athleteId || typeof data.athleteId !== 'string') {
+    throw new Error('Athlete ID is required');
+  }
+  
+  // Basic UUID validation
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(data.athleteId)) {
+    throw new Error('Invalid athlete ID format');
+  }
+  
+  if (!Array.isArray(data.messages)) {
+    throw new Error('Messages must be an array');
+  }
+  
+  // Validate messages array
+  for (const msg of data.messages) {
+    if (!msg.role || !msg.content) {
+      throw new Error('Invalid message format');
+    }
+    
+    if (typeof msg.content !== 'string') {
+      throw new Error('Message content must be a string');
+    }
+    
+    const trimmedContent = msg.content.trim();
+    if (trimmedContent.length === 0) {
+      throw new Error('Message cannot be empty');
+    }
+    
+    if (trimmedContent.length > 2000) {
+      throw new Error('Message too long (maximum 2000 characters)');
+    }
+    
+    // Update with trimmed content
+    msg.content = trimmedContent;
+  }
+  
+  return {
+    athleteId: data.athleteId,
+    messages: data.messages
+  };
+}
+
 const ALL_QUESTIONS = [
   // ATHLETICS
   { id: 1, text: "What sport and position do you play?", profileField: 'sport_position' },
@@ -92,7 +142,25 @@ serve(async (req) => {
   }
 
   try {
-    const { athleteId, messages } = await req.json();
+    const requestBody = await req.json();
+    
+    // Validate input
+    let validatedInput: MessageRequest;
+    try {
+      validatedInput = validateRequest(requestBody);
+    } catch (validationError) {
+      console.error('Input validation failed:', validationError);
+      return new Response(
+        JSON.stringify({ 
+          error: validationError instanceof Error ? validationError.message : 'Invalid input',
+          message: 'I apologize, but there was an issue with your message. Please try again with a shorter message.',
+          completed: false
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { athleteId, messages } = validatedInput;
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

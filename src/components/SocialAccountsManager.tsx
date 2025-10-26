@@ -11,21 +11,21 @@ interface SocialAccount {
   id: string;
   platform: string;
   account_name: string;
-  connected_at: string;
+  updated_at: string;
 }
 
 export const SocialAccountsManager = () => {
   const queryClient = useQueryClient();
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Fetch connected accounts
+  // Fetch connected accounts status (no access tokens exposed to client)
   const { data: accounts, isLoading, error: queryError } = useQuery({
     queryKey: ["connected-accounts"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("connected_accounts")
-        .select("id, platform, account_name, connected_at")
-        .order("connected_at", { ascending: false });
+        .from("connected_accounts_status")
+        .select("*")
+        .order("updated_at", { ascending: false });
 
       if (error) throw error;
       return data as SocialAccount[];
