@@ -50,6 +50,7 @@ export const PostTemplatesLibrary = ({ onTemplateSelect }: PostTemplatesLibraryP
 
   const templateTypes = [
     { value: 'all', label: 'All Templates' },
+    { value: 'prime_dime', label: 'Prime Dime' },
     { value: 'offer', label: 'Offers' },
     { value: 'commitment', label: 'Commitments' },
     { value: 'achievement', label: 'Achievements' },
@@ -70,6 +71,7 @@ export const PostTemplatesLibrary = ({ onTemplateSelect }: PostTemplatesLibraryP
 
   const getTypeColor = (type: string) => {
     switch (type) {
+      case 'prime_dime': return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
       case 'offer': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       case 'commitment': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'achievement': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
@@ -111,7 +113,7 @@ export const PostTemplatesLibrary = ({ onTemplateSelect }: PostTemplatesLibraryP
           </div>
 
           <Tabs value={selectedType} onValueChange={setSelectedType}>
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9">
               {templateTypes.map((type) => (
                 <TabsTrigger key={type.value} value={type.value} className="text-xs">
                   {type.label}

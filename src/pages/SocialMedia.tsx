@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target, Hash, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SocialMediaGraphicGenerator } from "@/components/SocialMediaGraphicGenerator";
 import { ContentCalendar } from "@/components/ContentCalendar";
 import { AICaptionGenerator } from "@/components/AICaptionGenerator";
@@ -82,11 +82,20 @@ export default function SocialMedia() {
   const [loading, setLoading] = useState(true);
   const [athleteInfo, setAthleteInfo] = useState({ name: "", sport: "" });
   const [postContent, setPostContent] = useState("");
+  const [activeTab, setActiveTab] = useState("generator");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchAthleteInfo();
-  }, []);
+    
+    // Check if we're coming from Prime Dime page with matches
+    const state = location.state as { primeDimeMatches?: any[] };
+    if (state?.primeDimeMatches && state.primeDimeMatches.length > 0) {
+      setActiveTab("templates");
+      generatePrimeDimePost(state.primeDimeMatches);
+    }
+  }, [location]);
 
   const fetchAthleteInfo = async () => {
     try {
@@ -191,6 +200,22 @@ export default function SocialMedia() {
     });
   };
 
+  const generatePrimeDimePost = (matches: any[]) => {
+    const postText = `🎯 Excited to share my Prime Dime college matches! 🏆
+
+After working with ForSWAGs' expert team, I've identified my top college fits:
+${matches.map((college: any, index: number) => 
+  `\n${index + 1}. ${college.name} - ${college.match_score}% match`
+).join('')}
+
+These schools align perfectly with my athletic, academic, and personal goals. Ready to take the next step in my recruiting journey! 💪
+
+#CollegeRecruiting #StudentAthlete #ForSWAGs #PrimeDime #RecruitingJourney`;
+    
+    setPostContent(postText);
+    toast.success("Prime Dime post template loaded!");
+  };
+
   const addHashtag = (hashtag: string) => {
     // Trim and validate
     const trimmedHashtag = hashtag.trim();
@@ -230,7 +255,7 @@ export default function SocialMedia() {
         </p>
       </div>
 
-      <Tabs defaultValue="generator" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-2 h-auto p-2">
           <TabsTrigger value="generator" className="flex-1">
             <Sparkles className="mr-2 h-4 w-4" />
