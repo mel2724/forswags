@@ -38,7 +38,21 @@ export default function RecruiterProfile() {
 
   const fetchProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        if (authError.message?.includes("quota") || authError.message?.includes("storage")) {
+          toast({
+            title: "Storage Error",
+            description: "Browser storage is full. Please clear your browser cache and reload.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        throw authError;
+      }
+      
       if (!user) {
         navigate("/auth");
         return;
@@ -90,8 +104,15 @@ export default function RecruiterProfile() {
           notes: profileData.notes || "",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching profile:", error);
+      if (error?.message?.includes("quota") || error?.message?.includes("storage")) {
+        toast({
+          title: "Storage Error",
+          description: "Browser storage is full. Please clear your browser cache.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

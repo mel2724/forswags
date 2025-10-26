@@ -107,60 +107,80 @@ const Profile = () => {
 
   useEffect(() => {
     const loadProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-
-      setUserId(session.user.id);
-      setEmail(session.user.email || "");
-
-      // Load profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .maybeSingle();
-
-      if (profileData) {
-        setFullName(profileData.full_name || "");
-        setPhone(profileData.phone || "");
-        setAvatarUrl(profileData.avatar_url || null);
-      }
-
-      // Load athlete data
-      const { data: athleteData } = await supabase
-        .from("athletes")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-
-      if (athleteData) {
-        setAthleteId(athleteData.id);
-        setUsername(athleteData.username || "");
-        setSport(athleteData.sport || "");
-        setPosition(athleteData.position || "");
-        setWeight(athleteData.weight_lb?.toString() || "");
-        setHighSchool(athleteData.high_school || "");
-        setGradYear(athleteData.graduation_year?.toString() || "");
-        setGpa(athleteData.gpa?.toString() || "");
-        setSatScore(athleteData.sat_score?.toString() || "");
-        setActScore(athleteData.act_score?.toString() || "");
-        setHighlightsUrl(athleteData.highlights_url || "");
-        setBio(athleteData.bio || "");
-
-        // Convert height from total inches to feet and inches
-        if (athleteData.height_in) {
-          const feet = Math.floor(athleteData.height_in / 12);
-          const inches = athleteData.height_in % 12;
-          setHeightFeet(feet.toString());
-          setHeightInches(inches.toString());
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          if (sessionError.message?.includes("quota") || sessionError.message?.includes("storage")) {
+            toast.error("Browser storage is full. Please clear your browser cache and reload the page.");
+            setLoading(false);
+            return;
+          }
+          throw sessionError;
         }
-      }
+        
+        if (!session) {
+          navigate("/auth");
+          return;
+        }
 
-      setLoading(false);
+        setUserId(session.user.id);
+        setEmail(session.user.email || "");
+
+        // Load profile
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        if (profileData) {
+          setFullName(profileData.full_name || "");
+          setPhone(profileData.phone || "");
+          setAvatarUrl(profileData.avatar_url || null);
+        }
+
+        // Load athlete data
+        const { data: athleteData } = await supabase
+          .from("athletes")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (athleteData) {
+          setAthleteId(athleteData.id);
+          setUsername(athleteData.username || "");
+          setSport(athleteData.sport || "");
+          setPosition(athleteData.position || "");
+          setWeight(athleteData.weight_lb?.toString() || "");
+          setHighSchool(athleteData.high_school || "");
+          setGradYear(athleteData.graduation_year?.toString() || "");
+          setGpa(athleteData.gpa?.toString() || "");
+          setSatScore(athleteData.sat_score?.toString() || "");
+          setActScore(athleteData.act_score?.toString() || "");
+          setHighlightsUrl(athleteData.highlights_url || "");
+          setBio(athleteData.bio || "");
+
+          // Convert height from total inches to feet and inches
+          if (athleteData.height_in) {
+            const feet = Math.floor(athleteData.height_in / 12);
+            const inches = athleteData.height_in % 12;
+            setHeightFeet(feet.toString());
+            setHeightInches(inches.toString());
+          }
+        }
+
+        setLoading(false);
+      } catch (error: any) {
+        console.error("Error loading profile:", error);
+        if (error?.message?.includes("quota") || error?.message?.includes("storage")) {
+          toast.error("Browser storage is full. Please clear your browser cache and reload the page.");
+        } else {
+          toast.error("Failed to load profile. Please try refreshing the page.");
+        }
+        setLoading(false);
+      }
     };
 
     loadProfile();

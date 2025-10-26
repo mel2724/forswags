@@ -47,7 +47,21 @@ export default function CoachProfile() {
 
   const fetchProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        if (authError.message?.includes("quota") || authError.message?.includes("storage")) {
+          toast({
+            title: "Storage Error",
+            description: "Browser storage is full. Please clear your browser cache and reload.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        throw authError;
+      }
+      
       if (!user) {
         navigate("/auth");
         return;
@@ -73,11 +87,19 @@ export default function CoachProfile() {
       }
     } catch (error: any) {
       console.error("Error fetching profile:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile",
-        variant: "destructive",
-      });
+      if (error?.message?.includes("quota") || error?.message?.includes("storage")) {
+        toast({
+          title: "Storage Error",
+          description: "Browser storage is full. Please clear your browser cache.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load profile",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
