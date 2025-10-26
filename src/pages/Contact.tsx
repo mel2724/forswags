@@ -320,7 +320,7 @@ export default function Contact() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <a
-                  href="https://instagram.com/forswags"
+                  href="https://instagram.com/teamforswags"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors group"
@@ -330,12 +330,12 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold">Instagram</p>
-                    <p className="text-sm text-muted-foreground">@forswags</p>
+                    <p className="text-sm text-muted-foreground">@teamforswags</p>
                   </div>
                 </a>
 
                 <a
-                  href="https://facebook.com/forswags"
+                  href="https://facebook.com/ForSWAGs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors group"
@@ -345,7 +345,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold">Facebook</p>
-                    <p className="text-sm text-muted-foreground">/forswags</p>
+                    <p className="text-sm text-muted-foreground">/ForSWAGs</p>
                   </div>
                 </a>
 
