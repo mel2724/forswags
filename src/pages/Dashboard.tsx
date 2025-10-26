@@ -44,6 +44,7 @@ const Dashboard = () => {
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [needsStatsUpdate, setNeedsStatsUpdate] = useState(false);
   const [needsHighlightsUpdate, setNeedsHighlightsUpdate] = useState(false);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -186,6 +187,16 @@ const Dashboard = () => {
           }
         }
       }
+
+      // Check for unread notifications
+      const { data: notificationsData } = await supabase
+        .from("notifications")
+        .select("id, is_read")
+        .eq("user_id", effectiveUserId)
+        .eq("is_read", false)
+        .limit(1);
+      
+      setHasUnreadNotifications((notificationsData?.length || 0) > 0);
 
       // Sync subscription status from Stripe
       try {
@@ -335,6 +346,13 @@ const Dashboard = () => {
           </p>
         </div>
 
+        {/* Notifications - Show only if there are unread notifications */}
+        {hasUnreadNotifications && (
+          <div className="mb-6">
+            <NotificationCard />
+          </div>
+        )}
+
         {role === "athlete" && athlete ? (
           <div className="grid gap-6">
             {/* Profile Completion */}
@@ -377,9 +395,6 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Notifications Card */}
-            <NotificationCard />
 
             {/* Stats Overview */}
             <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
