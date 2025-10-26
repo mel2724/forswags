@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target, Hash, FileText } from "lucide-react";
+import { Sparkles, Share2, Facebook, Twitter, Instagram, Lightbulb, TrendingUp, Target, Hash, FileText, Linkedin } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SocialMediaGraphicGenerator } from "@/components/SocialMediaGraphicGenerator";
 import { ContentCalendar } from "@/components/ContentCalendar";
@@ -16,6 +16,16 @@ import { SocialAccountsManager } from "@/components/SocialAccountsManager";
 import { PostTemplatesLibrary } from "@/components/PostTemplatesLibrary";
 import { PressReleaseGenerator } from "@/components/PressReleaseGenerator";
 import { toast } from "sonner";
+
+type Platform = 'twitter' | 'instagram' | 'facebook' | 'tiktok' | 'linkedin';
+
+const PLATFORM_LIMITS = {
+  twitter: 280,
+  instagram: 2200,
+  facebook: 63206,
+  tiktok: 2200,
+  linkedin: 3000,
+};
 
 const FORSWAGS_TAG = "#ForSWAGsNation";
 const FORSWAGS_HANDLES = {
@@ -83,6 +93,7 @@ export default function SocialMedia() {
   const [athleteInfo, setAthleteInfo] = useState({ name: "", sport: "" });
   const [postContent, setPostContent] = useState("");
   const [activeTab, setActiveTab] = useState("generator");
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('instagram');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -92,8 +103,8 @@ export default function SocialMedia() {
     // Check if we're coming from Prime Dime page with matches
     const state = location.state as { primeDimeMatches?: any[] };
     if (state?.primeDimeMatches && state.primeDimeMatches.length > 0) {
-      setActiveTab("templates");
-      generatePrimeDimePost(state.primeDimeMatches);
+      setActiveTab("post");
+      // Don't auto-generate - let user select platform first
     }
   }, [location]);
 
@@ -200,20 +211,117 @@ export default function SocialMedia() {
     });
   };
 
-  const generatePrimeDimePost = (matches: any[]) => {
-    const postText = `🎯 Excited to share my Prime Dime college matches! 🏆
+  const generatePlatformSpecificPost = (matches: any[], platform: Platform) => {
+    const collegeList = matches.slice(0, 3).map((c: any) => c.name);
+    
+    let postText = '';
+    
+    switch (platform) {
+      case 'twitter':
+        // Ultra-concise for 280 char limit
+        postText = `🎯 Top college matches:\n1. ${collegeList[0]}\n2. ${collegeList[1]}\nReady for the next level! #D1Bound #RecruitMe`;
+        break;
+        
+      case 'instagram':
+        // Visual-first, emoji-heavy
+        postText = `🎯✨ MY TOP 3 PRIME DIME COLLEGE MATCHES! ✨🎯
 
-After working with ForSWAGs' expert team, I've identified my top college fits:
-${matches.map((college: any, index: number) => 
-  `\n${index + 1}. ${college.name}`
-).join('')}
+After working with @ForSWAGs expert team, I found my perfect fits:
 
-These schools align perfectly with my athletic, academic, and personal goals. Ready to take the next step in my recruiting journey! 💪
+🏆 ${collegeList[0]}
+🏆 ${collegeList[1]}
+🏆 ${collegeList[2]}
 
-#CollegeRecruiting #StudentAthlete #ForSWAGs #PrimeDime #RecruitingJourney`;
+These schools align perfectly with my athletic, academic, and personal goals! 💪
+
+Ready to take the next step in my recruiting journey! 🔥
+
+👇 Comment your favorite school below!
+
+#PrimeDime #CollegeRecruiting #D1Bound #RecruitMe #StudentAthlete #NextLevel #ForSWAGs`;
+        break;
+        
+      case 'facebook':
+        // Longer narrative style
+        postText = `🎯 Excited to Share My College Journey Update!
+
+After months of hard work both on the field and in the classroom, I'm thrilled to announce that I've completed my Prime Dime college analysis with ForSWAGs!
+
+Through their comprehensive evaluation process, we've identified my top 3 college matches:
+
+✅ ${collegeList[0]}
+✅ ${collegeList[1]}
+✅ ${collegeList[2]}
+
+Each of these schools offers exactly what I'm looking for - the right balance of athletic competition, academic programs, campus culture, and personal fit.
+
+I'm incredibly grateful to my family, coaches, and the ForSWAGs team for their support throughout this process. The next chapter is going to be amazing!
+
+Stay tuned for more updates on my recruiting journey! 🏆💪
+
+#CollegeRecruiting #StudentAthlete #PrimeDime #RecruitingJourney`;
+        break;
+        
+      case 'tiktok':
+        // Casual, Gen-Z style
+        postText = `POV: You just found your dream colleges 🎯✨
+
+My top 3 Prime Dime matches:
+1. ${collegeList[0]} 🏆
+2. ${collegeList[1]} 🏆
+3. ${collegeList[2]} 🏆
+
+Not me actually finding the perfect fit schools 😭💪
+
+Big thanks to @ForSWAGs for the analysis! The recruiting journey is getting real! 🔥
+
+Who else is on their college search journey? Drop your sport below! 👇
+
+#CollegeRecruiting #StudentAthlete #PrimeDime #D1Bound #CollegeBound #ForYouPage`;
+        break;
+        
+      case 'linkedin':
+        // Professional tone
+        postText = `🎓 College Search Milestone: Prime Dime Analysis Complete
+
+I am pleased to announce the completion of my comprehensive college matching analysis through ForSWAGs' Prime Dime program. After careful evaluation of athletic opportunities, academic offerings, and institutional fit, I have identified my top three target schools:
+
+• ${collegeList[0]}
+• ${collegeList[1]}
+• ${collegeList[2]}
+
+This data-driven approach has provided valuable insights into programs that align with both my immediate athletic goals and long-term career aspirations. Each institution offers strong programs in my intended field of study, competitive athletic opportunities at my skill level, and campus environments that match my personal values.
+
+I look forward to continuing this journey and am grateful for the guidance of my coaches, family, and the ForSWAGs team throughout this process.
+
+#StudentAthlete #CollegeRecruiting #CareerDevelopment #AthleticRecruiting #PrimeDime`;
+        break;
+    }
     
     setPostContent(postText);
-    toast.success("Prime Dime post template loaded!");
+    toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} post generated!`);
+  };
+
+  const handlePlatformChange = (platform: Platform) => {
+    setSelectedPlatform(platform);
+    
+    // If we have Prime Dime matches in state, regenerate the post
+    const state = location.state as { primeDimeMatches?: any[] };
+    if (state?.primeDimeMatches && state.primeDimeMatches.length > 0) {
+      generatePlatformSpecificPost(state.primeDimeMatches, platform);
+    }
+  };
+
+  const getCharacterCount = () => {
+    return postContent.length;
+  };
+
+  const getCharacterLimit = () => {
+    return PLATFORM_LIMITS[selectedPlatform];
+  };
+
+  const isOverLimit = () => {
+    return getCharacterCount() > getCharacterLimit();
   };
 
   const addHashtag = (hashtag: string) => {
@@ -310,23 +418,80 @@ These schools align perfectly with my athletic, academic, and personal goals. Re
                 Quick Post Creator
               </CardTitle>
               <CardDescription>
-                Write your post content and share directly to your favorite platforms
+                Select your platform and generate optimized content
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Platform Selector */}
+              <div className="space-y-3">
+                <Label>Select Platform</Label>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  <Button
+                    variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
+                    className="w-full"
+                    onClick={() => handlePlatformChange('twitter')}
+                  >
+                    <Twitter className="mr-2 h-4 w-4" />
+                    Twitter/X
+                  </Button>
+                  <Button
+                    variant={selectedPlatform === 'instagram' ? 'default' : 'outline'}
+                    className="w-full"
+                    onClick={() => handlePlatformChange('instagram')}
+                  >
+                    <Instagram className="mr-2 h-4 w-4" />
+                    Instagram
+                  </Button>
+                  <Button
+                    variant={selectedPlatform === 'facebook' ? 'default' : 'outline'}
+                    className="w-full"
+                    onClick={() => handlePlatformChange('facebook')}
+                  >
+                    <Facebook className="mr-2 h-4 w-4" />
+                    Facebook
+                  </Button>
+                  <Button
+                    variant={selectedPlatform === 'tiktok' ? 'default' : 'outline'}
+                    className="w-full"
+                    onClick={() => handlePlatformChange('tiktok')}
+                  >
+                    <Share2 className="mr-2 h-4 w-4" />
+                    TikTok
+                  </Button>
+                  <Button
+                    variant={selectedPlatform === 'linkedin' ? 'default' : 'outline'}
+                    className="w-full"
+                    onClick={() => handlePlatformChange('linkedin')}
+                  >
+                    <Linkedin className="mr-2 h-4 w-4" />
+                    LinkedIn
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Character limit: {getCharacterLimit().toLocaleString()}</span>
+                  <span className={isOverLimit() ? 'text-destructive font-semibold' : ''}>
+                    {getCharacterCount()} / {getCharacterLimit().toLocaleString()}
+                  </span>
+                </div>
+                {isOverLimit() && (
+                  <p className="text-xs text-destructive">
+                    ⚠️ Your post exceeds the {selectedPlatform} character limit. Please shorten it.
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="postContent">Post Content</Label>
                 <Textarea
                   id="postContent"
-                  placeholder="Share your achievements, training updates, game highlights, or milestones..."
+                  placeholder={`Write your ${selectedPlatform} post here...`}
                   value={postContent}
                   onChange={(e) => setPostContent(e.target.value)}
-                  rows={6}
-                  className="resize-none"
-                  maxLength={2000}
+                  rows={10}
+                  className="resize-none font-mono text-sm"
                 />
                 <p className="text-xs text-muted-foreground">
-                  ForSWAGs branding (@ForSWAGs #ForSWAGsNation) will be automatically added
+                  Content is optimized for {selectedPlatform}. ForSWAGs branding included where appropriate.
                 </p>
               </div>
 

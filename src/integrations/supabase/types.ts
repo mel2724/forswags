@@ -2347,6 +2347,7 @@ export type Database = {
           id: string
           is_public: boolean | null
           name: string
+          platform: string | null
           suggested_hashtags: string[] | null
           template_type: string
           updated_at: string | null
@@ -2361,6 +2362,7 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           name: string
+          platform?: string | null
           suggested_hashtags?: string[] | null
           template_type: string
           updated_at?: string | null
@@ -2375,6 +2377,7 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           name?: string
+          platform?: string | null
           suggested_hashtags?: string[] | null
           template_type?: string
           updated_at?: string | null

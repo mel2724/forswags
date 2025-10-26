@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { FileText, Copy, Search, Sparkles } from "lucide-react";
+import { FileText, Copy, Search, Sparkles, Twitter, Instagram, Facebook, Linkedin } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PostTemplate {
@@ -14,6 +14,7 @@ interface PostTemplate {
   name: string;
   description?: string;
   template_type: string;
+  platform?: string;
   content_template: string;
   suggested_hashtags: string[];
   is_public: boolean;
@@ -83,6 +84,24 @@ export const PostTemplatesLibrary = ({ onTemplateSelect }: PostTemplatesLibraryP
     }
   };
 
+  const getPlatformIcon = (platform?: string) => {
+    if (!platform) return null;
+    
+    switch (platform) {
+      case 'twitter': return <Twitter className="h-3 w-3" />;
+      case 'instagram': return <Instagram className="h-3 w-3" />;
+      case 'facebook': return <Facebook className="h-3 w-3" />;
+      case 'linkedin': return <Linkedin className="h-3 w-3" />;
+      case 'tiktok': return <Sparkles className="h-3 w-3" />;
+      default: return null;
+    }
+  };
+
+  const getPlatformName = (platform?: string) => {
+    if (!platform) return null;
+    return platform.charAt(0).toUpperCase() + platform.slice(1);
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center p-8">Loading templates...</div>;
   }
@@ -128,13 +147,19 @@ export const PostTemplatesLibrary = ({ onTemplateSelect }: PostTemplatesLibraryP
                 <Card key={template.id} className="hover:bg-accent/50 transition-colors">
                   <CardContent className="pt-4">
                     <div className="space-y-3">
-                      <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between">
                         <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <h4 className="font-medium">{template.name}</h4>
                             <Badge className={`text-xs ${getTypeColor(template.template_type)}`}>
                               {template.template_type}
                             </Badge>
+                            {template.platform && (
+                              <Badge variant="outline" className="text-xs flex items-center gap-1">
+                                {getPlatformIcon(template.platform)}
+                                {getPlatformName(template.platform)}
+                              </Badge>
+                            )}
                             {template.is_public && (
                               <Badge variant="outline" className="text-xs">
                                 <Sparkles className="mr-1 h-3 w-3" />
