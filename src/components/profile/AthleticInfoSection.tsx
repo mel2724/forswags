@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Trophy, Ruler, Weight } from "lucide-react";
+import { TeamLogoUpload } from "@/components/TeamLogoUpload";
 
 const sports = [
   "Football", "Basketball", "Baseball", "Softball", "Soccer", 
@@ -26,6 +27,10 @@ interface AthleticInfoSectionProps {
   setHudlProfileUrl?: (value: string) => void;
   maxprepsProfileUrl?: string;
   setMaxprepsProfileUrl?: (value: string) => void;
+  userId?: string;
+  teamLogoUrl?: string | null;
+  setTeamLogoUrl?: (value: string | null) => void;
+  hasPremiumAccess?: boolean;
 }
 
 export const AthleticInfoSection = ({
@@ -43,6 +48,10 @@ export const AthleticInfoSection = ({
   setHudlProfileUrl,
   maxprepsProfileUrl,
   setMaxprepsProfileUrl,
+  userId,
+  teamLogoUrl,
+  setTeamLogoUrl,
+  hasPremiumAccess = false,
 }: AthleticInfoSectionProps) => {
   return (
     <Card className="bg-card/80 backdrop-blur border-2 border-secondary/20">
@@ -81,6 +90,18 @@ export const AthleticInfoSection = ({
         </div>
 
         <Separator />
+
+        {userId && setTeamLogoUrl && (
+          <>
+            <TeamLogoUpload
+              userId={userId}
+              currentLogoUrl={teamLogoUrl || null}
+              onLogoChange={setTeamLogoUrl}
+              hasPremiumAccess={hasPremiumAccess}
+            />
+            <Separator />
+          </>
+        )}
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">

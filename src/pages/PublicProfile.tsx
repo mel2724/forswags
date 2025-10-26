@@ -51,6 +51,7 @@ interface AthleteProfile {
   bio?: string;
   highlights_url?: string;
   profile_photo_url?: string;
+  team_logo_url?: string;
   committed?: boolean;
   committed_school?: string;
   being_recruited?: boolean;
@@ -275,12 +276,21 @@ export default function PublicProfile() {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              <Avatar className="h-32 w-32 border-4 border-primary">
-                <AvatarImage src={profile.profile_photo_url || undefined} />
-                <AvatarFallback className="text-4xl">
-                  {profile.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
-                </AvatarFallback>
-              </Avatar>
+              <div className="flex gap-4">
+                <Avatar className="h-32 w-32 border-4 border-primary">
+                  <AvatarImage src={profile.profile_photo_url || undefined} />
+                  <AvatarFallback className="text-4xl">
+                    {profile.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {profile.team_logo_url && (
+                  <Avatar className="h-24 w-24 border-2 border-border self-center">
+                    <AvatarImage src={profile.team_logo_url} alt="Team logo" />
+                    <AvatarFallback>Team</AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
 
               <div className="flex-1 space-y-4">
                 <div>

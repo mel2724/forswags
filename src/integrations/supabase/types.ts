@@ -414,6 +414,7 @@ export type Database = {
           signing_day_date: string | null
           sport: string
           squat_max: number | null
+          team_logo_url: string | null
           tier_based_visibility: boolean | null
           tiktok_handle: string | null
           twitter_handle: string | null
@@ -499,6 +500,7 @@ export type Database = {
           signing_day_date?: string | null
           sport: string
           squat_max?: number | null
+          team_logo_url?: string | null
           tier_based_visibility?: boolean | null
           tiktok_handle?: string | null
           twitter_handle?: string | null
@@ -584,6 +586,7 @@ export type Database = {
           signing_day_date?: string | null
           sport?: string
           squat_max?: number | null
+          team_logo_url?: string | null
           tier_based_visibility?: boolean | null
           tiktok_handle?: string | null
           twitter_handle?: string | null

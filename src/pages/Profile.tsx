@@ -104,6 +104,7 @@ const Profile = () => {
   const [actScore, setActScore] = useState("");
   const [highlightsUrl, setHighlightsUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [teamLogoUrl, setTeamLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -161,6 +162,7 @@ const Profile = () => {
           setActScore(athleteData.act_score?.toString() || "");
           setHighlightsUrl(athleteData.highlights_url || "");
           setBio(athleteData.bio || "");
+          setTeamLogoUrl(athleteData.team_logo_url || null);
 
           // Convert height from total inches to feet and inches
           if (athleteData.height_in) {
@@ -260,6 +262,7 @@ const Profile = () => {
           act_score: athleteData.act_score,
           highlights_url: athleteData.highlights_url,
           bio: athleteData.bio,
+          team_logo_url: teamLogoUrl,
         })
         .eq("id", athleteId);
 
@@ -342,6 +345,10 @@ const Profile = () => {
             setHeightInches={setHeightInches}
             weight={weight}
             setWeight={setWeight}
+            userId={userId || undefined}
+            teamLogoUrl={teamLogoUrl}
+            setTeamLogoUrl={setTeamLogoUrl}
+            hasPremiumAccess={hasPremiumProfile}
           />
 
           <AcademicInfoSection
