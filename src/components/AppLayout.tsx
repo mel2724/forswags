@@ -1,5 +1,5 @@
 import React from "react";
-import { ChatWidget } from "./ChatWidget";
+// import { ChatWidget } from "./ChatWidget"; // Temporarily disabled until launch
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,7 +11,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <main className="flex-1">
         {children}
       </main>
-      <ChatWidget />
+      {/* <ChatWidget /> */}
     </div>
   );
 }
