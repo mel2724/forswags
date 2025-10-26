@@ -384,7 +384,7 @@ export default function PublicProfile() {
                       Performance Stats
                     </CardTitle>
                     {profile.team_logo_url && (
-                      <Avatar className="h-16 w-16 border-2 border-border">
+                      <Avatar className="h-24 w-24 border-2 border-border">
                         <AvatarImage src={profile.team_logo_url} alt="Team logo" />
                         <AvatarFallback>Team</AvatarFallback>
                       </Avatar>
