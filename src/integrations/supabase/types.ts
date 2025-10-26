@@ -2051,6 +2051,30 @@ export type Database = {
           },
         ]
       }
+      next_steps_tasks: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          task_key: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          task_key: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          task_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_prefs: {
         Row: {
           channel: string

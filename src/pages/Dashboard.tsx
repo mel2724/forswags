@@ -41,6 +41,9 @@ const Dashboard = () => {
   const [stats, setStats] = useState<any[]>([]);
   const [membership, setMembership] = useState<any>(null);
   const [offers, setOffers] = useState<any[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const [needsStatsUpdate, setNeedsStatsUpdate] = useState(false);
+  const [needsHighlightsUpdate, setNeedsHighlightsUpdate] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -143,6 +146,36 @@ const Dashboard = () => {
             
             setStats(statsData || []);
 
+            // Check if stats need updating (last update > 30 days ago)
+            if (statsData && statsData.length > 0) {
+              const lastStatDate = new Date(statsData[0].created_at);
+              const daysSinceLastUpdate = Math.floor(
+                (Date.now() - lastStatDate.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              setNeedsStatsUpdate(daysSinceLastUpdate > 30);
+            } else {
+              setNeedsStatsUpdate(false);
+            }
+
+            // Check if highlights need updating (if URL exists but older than 90 days)
+            if (athleteData.highlights_url && athleteData.updated_at) {
+              const lastUpdate = new Date(athleteData.updated_at);
+              const daysSinceUpdate = Math.floor(
+                (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              setNeedsHighlightsUpdate(daysSinceUpdate > 90);
+            }
+
+            // Load completed tasks
+            const { data: tasksData } = await supabase
+              .from("next_steps_tasks")
+              .select("task_key")
+              .eq("user_id", effectiveUserId);
+            
+            if (tasksData) {
+              setCompletedTasks(new Set(tasksData.map(t => t.task_key)));
+            }
+
             // Get offers
             const { data: offersData } = await supabase
               .from("college_offers")
@@ -175,6 +208,25 @@ const Dashboard = () => {
 
     checkAuth();
   }, [navigate, getEffectiveUserId]);
+
+  const handleCompleteTask = async (taskKey: string) => {
+    try {
+      const { error } = await supabase
+        .from("next_steps_tasks")
+        .upsert({ 
+          user_id: user?.id, 
+          task_key: taskKey 
+        });
+
+      if (error) throw error;
+
+      setCompletedTasks(prev => new Set([...prev, taskKey]));
+      
+      toast.success("Task completed! Keep up the great work! 🎉");
+    } catch (error) {
+      console.error("Error completing task:", error);
+    }
+  };
 
   const profileCompleteness = () => {
     if (!athlete) return 0;
@@ -568,132 +620,303 @@ const Dashboard = () => {
                   <CardDescription>Maximize your recruiting potential</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {profileCompleteness() < 100 && (
-                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/profile")}>
+                  <div className="space-y-3">
+                    {/* Complete Profile */}
+                    {profileCompleteness() < 100 && !completedTasks.has('complete_profile') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
                         <div className="flex-shrink-0 mt-1">
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                             <User className="h-4 w-4 text-primary" />
                           </div>
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/profile")}>
                           <h5 className="font-semibold text-sm mb-1">Complete Your Profile</h5>
-                          <p className="text-xs text-muted-foreground">Add missing information to improve visibility</p>
+                          <p className="text-xs text-muted-foreground">Add missing information to improve visibility ({profileCompleteness()}% complete)</p>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('complete_profile');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
                       </div>
                     )}
 
-                    {!athlete.highlights_url && (
-                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/profile")}>
+                    {/* Upload Highlights */}
+                    {!athlete.highlights_url && !completedTasks.has('upload_highlights') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
                         <div className="flex-shrink-0 mt-1">
                           <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
                             <Video className="h-4 w-4 text-secondary" />
                           </div>
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/profile")}>
                           <h5 className="font-semibold text-sm mb-1">Upload Highlights</h5>
                           <p className="text-xs text-muted-foreground">Showcase your best plays to coaches</p>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('upload_highlights');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
                       </div>
                     )}
 
-                    {stats.length === 0 && (
-                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/stats")}>
+                    {/* Update Highlights (if stale) */}
+                    {needsHighlightsUpdate && !completedTasks.has('update_highlights') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-amber-500/20 bg-amber-500/5 hover:border-amber-500 transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                            <Video className="h-4 w-4 text-amber-500" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/profile")}>
+                          <h5 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                            Update Your Highlights
+                            <span className="text-xs text-amber-500">⚠️</span>
+                          </h5>
+                          <p className="text-xs text-muted-foreground">Your highlights haven't been updated in a while</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('update_highlights');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-amber-500 hover:bg-amber-500/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-amber-500" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Add Stats */}
+                    {stats.length === 0 && !completedTasks.has('add_stats') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
                         <div className="flex-shrink-0 mt-1">
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                             <BarChart3 className="h-4 w-4 text-primary" />
                           </div>
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/stats")}>
                           <h5 className="font-semibold text-sm mb-1">Add Your Stats</h5>
                           <p className="text-xs text-muted-foreground">Track your performance metrics</p>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('add_stats');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
                       </div>
                     )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/prime-dime")}>
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                          <Target className="h-4 w-4 text-secondary" />
+                    {/* Update Stats (if stale) */}
+                    {needsStatsUpdate && !completedTasks.has('update_stats') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-amber-500/20 bg-amber-500/5 hover:border-amber-500 transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                            <BarChart3 className="h-4 w-4 text-amber-500" />
+                          </div>
                         </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/stats")}>
+                          <h5 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                            Update Your Stats
+                            <span className="text-xs text-amber-500">⚠️</span>
+                          </h5>
+                          <p className="text-xs text-muted-foreground">Keep your stats current to stay visible to coaches</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('update_stats');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-amber-500 hover:bg-amber-500/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-amber-500" />
+                        </button>
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Start "Prime Dime" Consultation</h5>
-                        <p className="text-xs text-muted-foreground">Answer questions to get personalized college recommendations</p>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/media")}>
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Video className="h-4 w-4 text-primary" />
+                    {/* Start Prime Dime */}
+                    {!completedTasks.has('start_prime_dime') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Target className="h-4 w-4 text-secondary" />
+                          </div>
                         </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/prime-dime")}>
+                          <h5 className="font-semibold text-sm mb-1">Start "Prime Dime" Consultation</h5>
+                          <p className="text-xs text-muted-foreground">Get personalized college recommendations</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('start_prime_dime');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Media Gallery</h5>
-                        <p className="text-xs text-muted-foreground">Upload introduction and community videos</p>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/prime-dime")}>
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Star className="h-4 w-4 text-primary" />
+                    {/* Media Gallery */}
+                    {!completedTasks.has('media_gallery') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Video className="h-4 w-4 text-primary" />
+                          </div>
                         </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/media")}>
+                          <h5 className="font-semibold text-sm mb-1">Media Gallery</h5>
+                          <p className="text-xs text-muted-foreground">Upload introduction and community videos</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('media_gallery');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">View "Prime Dime"</h5>
-                        <p className="text-xs text-muted-foreground">Check your top 10 "Prime Dime" matches</p>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/courses")}>
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                          <GraduationCap className="h-4 w-4 text-secondary" />
+                    {/* Explore Courses */}
+                    {!completedTasks.has('explore_courses') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <GraduationCap className="h-4 w-4 text-secondary" />
+                          </div>
                         </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/courses")}>
+                          <h5 className="font-semibold text-sm mb-1">Playbook for Life</h5>
+                          <p className="text-xs text-muted-foreground">Master skills on and off the field</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('explore_courses');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Playbook for Life</h5>
-                        <p className="text-xs text-muted-foreground">Master skills on and off the field</p>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/badges")}>
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Award className="h-4 w-4 text-primary" />
+                    {/* Achievements */}
+                    {!completedTasks.has('view_achievements') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Award className="h-4 w-4 text-primary" />
+                          </div>
                         </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/badges")}>
+                          <h5 className="font-semibold text-sm mb-1">View Achievements</h5>
+                          <p className="text-xs text-muted-foreground">Track your badges and milestones</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('view_achievements');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">View Achievements</h5>
-                        <p className="text-xs text-muted-foreground">Track your badges and milestones</p>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/evaluations")}>
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                          <Star className="h-4 w-4 text-secondary" />
+                    {/* Coach Evaluations */}
+                    {!completedTasks.has('coach_evaluations') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Star className="h-4 w-4 text-secondary" />
+                          </div>
                         </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/evaluations")}>
+                          <h5 className="font-semibold text-sm mb-1">Coach Evaluations</h5>
+                          <p className="text-xs text-muted-foreground">Professional coach assessment</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('coach_evaluations');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Coach Evaluations</h5>
-                        <p className="text-xs text-muted-foreground">Professional coach assessment</p>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors cursor-pointer" onClick={() => navigate("/social")}>
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Share2 className="h-4 w-4 text-primary" />
+                    {/* Social Media */}
+                    {!completedTasks.has('social_media') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Share2 className="h-4 w-4 text-primary" />
+                          </div>
                         </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/social")}>
+                          <h5 className="font-semibold text-sm mb-1">Social Media</h5>
+                          <p className="text-xs text-muted-foreground">Create and share your content</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('social_media');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
                       </div>
-                      <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Social Media</h5>
-                        <p className="text-xs text-muted-foreground">Create and share your content</p>
+                    )}
+
+                    {/* Show message if all tasks completed */}
+                    {completedTasks.size > 0 && (
+                      profileCompleteness() >= 100 &&
+                      athlete.highlights_url &&
+                      stats.length > 0 &&
+                      !needsStatsUpdate &&
+                      !needsHighlightsUpdate &&
+                      completedTasks.size >= 9
+                    ) && (
+                      <div className="text-center py-8">
+                        <Trophy className="h-12 w-12 text-primary mx-auto mb-3" />
+                        <p className="font-semibold text-lg mb-1">Amazing Work!</p>
+                        <p className="text-sm text-muted-foreground">You've completed all your next steps. Keep up the momentum!</p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
