@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MapPin, MessageSquare, HelpCircle, Send, Loader2 } from "lucide-react";
+import { Mail, MapPin, MessageSquare, HelpCircle, Send, Loader2, Instagram, Facebook, Twitter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
@@ -308,6 +308,61 @@ export default function Contact() {
                     Yes! All contact information is kept private. Only athletic information is displayed on public profiles.
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">Follow Us</CardTitle>
+                <CardDescription>
+                  Connect with us on social media for updates and news
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <a
+                  href="https://instagram.com/forswags"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors group"
+                >
+                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <Instagram className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Instagram</p>
+                    <p className="text-sm text-muted-foreground">@forswags</p>
+                  </div>
+                </a>
+
+                <a
+                  href="https://facebook.com/forswags"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors group"
+                >
+                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <Facebook className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Facebook</p>
+                    <p className="text-sm text-muted-foreground">/forswags</p>
+                  </div>
+                </a>
+
+                <a
+                  href="https://x.com/forswags"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors group"
+                >
+                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <Twitter className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">X (Twitter)</p>
+                    <p className="text-sm text-muted-foreground">@forswags</p>
+                  </div>
+                </a>
               </CardContent>
             </Card>
           </div>
