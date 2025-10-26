@@ -335,7 +335,7 @@ export default function Contact() {
                 </a>
 
                 <a
-                  href="https://facebook.com/ForSWAGs"
+                  href="https://www.facebook.com/ForSWAGs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors group"
