@@ -158,11 +158,11 @@ const About = () => {
           <Card className="p-8 md:p-12 bg-card/50 backdrop-blur border-2 border-primary/20 max-w-5xl mx-auto">
             <div className="space-y-6 text-lg leading-relaxed text-foreground/90">
               <p>
-                The ForSWAGs team brings together <span className="font-bold text-primary">more than 50 years of combined experience in youth sports</span> and <span className="font-bold text-secondary">over 20 years in the educational field</span>. This unique blend of expertise allows us to understand the complete picture of what it takes for student-athletes to succeed at every level.
+                The ForSWAGs team brings together <span className="font-bold text-primary">hundreds of years of combined experience in youth sports</span> and <span className="font-bold text-secondary">over 20 years in the educational field</span>. This unique blend of expertise allows us to understand the complete picture of what it takes for student-athletes to succeed at every level.
               </p>
               
               <p>
-                Our passion goes beyond just scouting talent or tracking statistics. We are deeply committed to helping athletes connect with colleges and universities that will allow them to continue growing both athletically and academically. We understand that the right fit isn't just about athletic scholarships—it's about finding an environment where young athletes can thrive as students, competitors, and individuals.
+                Our passion is deeply rooted in providing a comprehensive platform that empowers athletes at every stage of their journey. We are committed to helping athletes connect with colleges and universities that will allow them to continue growing both athletically and academically. We understand that the right fit isn't just about athletic scholarships—it's about finding an environment where young athletes can thrive as students, competitors, and individuals.
               </p>
               
               <p>
