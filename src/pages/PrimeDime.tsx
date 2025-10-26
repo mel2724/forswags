@@ -10,6 +10,14 @@ import logoIcon from "@/assets/forswags-logo.png";
 import { useMembershipStatus } from "@/hooks/useMembershipStatus";
 import { PrimeDimeAdvisor } from "@/components/PrimeDimeAdvisor";
 import { generatePrimeDimePDF } from "@/lib/pdfGenerator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   ArrowLeft, 
   Trophy, 
@@ -26,7 +34,9 @@ import {
   ExternalLink,
   Download,
   Mail,
-  Phone
+  Phone,
+  Share2,
+  Copy
 } from "lucide-react";
 
 
@@ -43,6 +53,8 @@ const PrimeDime = () => {
   const [lastConsultationDate, setLastConsultationDate] = useState<Date | null>(null);
   const [canStartNewConsultation, setCanStartNewConsultation] = useState(true);
   const { isFree, isLoading: membershipLoading } = useMembershipStatus();
+  const [showSocialDialog, setShowSocialDialog] = useState(false);
+  const [socialPostText, setSocialPostText] = useState("");
 
   useEffect(() => {
     fetchAthleteAndRecommendations();
@@ -309,6 +321,35 @@ const PrimeDime = () => {
     }
   };
 
+  const handleGenerateSocialPost = () => {
+    if (!recommendations) return;
+
+    const topMatches = recommendations.colleges?.slice(0, 3) || [];
+    const matchNames = topMatches.map((college: any) => college.name).join(", ");
+    
+    const postText = `🎯 Excited to share my Prime Dime college matches! 🏆
+
+After working with ForSWAGs' expert team, I've identified my top college fits:
+${topMatches.map((college: any, index: number) => 
+  `\n${index + 1}. ${college.name} - ${college.match_score}% match`
+).join('')}
+
+These schools align perfectly with my athletic, academic, and personal goals. Ready to take the next step in my recruiting journey! 💪
+
+#CollegeRecruiting #StudentAthlete #ForSWAGs #PrimeDime #RecruitingJourney`;
+
+    setSocialPostText(postText);
+    setShowSocialDialog(true);
+  };
+
+  const handleCopyToClipboard = () => {
+    navigator.clipboard.writeText(socialPostText);
+    toast({
+      title: "Copied!",
+      description: "Social media post copied to clipboard",
+    });
+  };
+
 
   if (loading || membershipLoading) {
     return (
@@ -464,10 +505,16 @@ const PrimeDime = () => {
                   <CardTitle>Your College Match Profile</CardTitle>
                   <CardDescription className="mt-2">{recommendations.summary}</CardDescription>
                 </div>
-                <Button onClick={handleExport} variant="outline" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export List
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleGenerateSocialPost} variant="outline" size="sm">
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Share on Social
+                  </Button>
+                  <Button onClick={handleExport} variant="outline" size="sm">
+                    <Download className="mr-2 h-4 w-4" />
+                    Export List
+                  </Button>
+                </div>
               </CardHeader>
             </Card>
 
@@ -645,6 +692,34 @@ const PrimeDime = () => {
           </Card>
         )}
       </main>
+
+      {/* Social Media Post Dialog */}
+      <Dialog open={showSocialDialog} onOpenChange={setShowSocialDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Share Your Prime Dime Matches</DialogTitle>
+            <DialogDescription>
+              Share your top college matches on social media. Copy the text below and post it on your preferred platform.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea 
+              value={socialPostText}
+              onChange={(e) => setSocialPostText(e.target.value)}
+              className="min-h-[300px] font-mono text-sm"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowSocialDialog(false)}>
+                Close
+              </Button>
+              <Button onClick={handleCopyToClipboard}>
+                <Copy className="mr-2 h-4 w-4" />
+                Copy to Clipboard
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
