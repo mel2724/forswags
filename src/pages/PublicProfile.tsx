@@ -682,19 +682,6 @@ export default function PublicProfile() {
             </Card>
           )}
 
-          {/* Contact Information - Removed for Privacy */}
-          <Card className="border-primary/20">
-            <CardContent className="pt-6 text-center space-y-2">
-              <p className="text-sm font-medium">Interested in recruiting this athlete?</p>
-              <p className="text-xs text-muted-foreground">
-                Connect through our platform for direct communication
-              </p>
-              <Button onClick={() => navigate('/')} className="w-full">
-                Go to ForSWAGs
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Awards */}
           {profile.athletic_awards && profile.athletic_awards.length > 0 && (
             <Card>
@@ -717,6 +704,19 @@ export default function PublicProfile() {
             </Card>
           )}
         </div>
+
+        {/* Contact Information - Removed for Privacy */}
+        <Card className="border-primary/20 mt-6">
+          <CardContent className="pt-6 text-center space-y-2">
+            <p className="text-sm font-medium">Interested in recruiting this athlete?</p>
+            <p className="text-xs text-muted-foreground">
+              Connect through our platform for direct communication
+            </p>
+            <Button onClick={() => navigate('/')} className="w-full">
+              Go to ForSWAGs
+            </Button>
+          </CardContent>
+        </Card>
       </div>
       
       <Footer />
