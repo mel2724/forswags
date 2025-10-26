@@ -591,15 +591,15 @@ const Dashboard = () => {
                       </div>
                     )}
 
-                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/preferences")}>
+                    <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors cursor-pointer" onClick={() => navigate("/prime-dime")}>
                       <div className="flex-shrink-0 mt-1">
                         <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
                           <Target className="h-4 w-4 text-secondary" />
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h5 className="font-semibold text-sm mb-1">Set College Preferences</h5>
-                        <p className="text-xs text-muted-foreground">Define your ideal college criteria</p>
+                        <h5 className="font-semibold text-sm mb-1">Start Prime Dime Consultation</h5>
+                        <p className="text-xs text-muted-foreground">Answer 22 questions to get AI college recommendations</p>
                       </div>
                     </div>
 
