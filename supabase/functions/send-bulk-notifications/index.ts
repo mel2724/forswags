@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,7 +39,43 @@ serve(async (req) => {
       throw new Error('Unauthorized: Admin access required');
     }
 
-    const { title, message, type, link, targetUserTypes } = await req.json();
+    // Define validation schema
+    const notificationSchema = z.object({
+      title: z.string().trim().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
+      message: z.string().trim().min(1, 'Message is required').max(500, 'Message must be less than 500 characters'),
+      type: z.enum(['info', 'warning', 'success', 'announcement', 'reminder', 'feature', 'update'], {
+        errorMap: () => ({ message: 'Invalid notification type' })
+      }),
+      link: z.string().url('Invalid URL format').optional().nullable().or(z.literal('')),
+      targetUserTypes: z.array(
+        z.enum(['athlete', 'coach', 'recruiter', 'parent'], {
+          errorMap: () => ({ message: 'Invalid user type' })
+        })
+      ).min(1, 'At least one target user type is required')
+    });
+
+    // Parse and validate request body
+    const requestData = await req.json();
+    const validationResult = notificationSchema.safeParse(requestData);
+    
+    if (!validationResult.success) {
+      console.error('[SEND-BULK-NOTIFICATIONS] Validation error:', validationResult.error.errors);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Validation failed',
+          details: validationResult.error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message
+          }))
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
+
+    const { title, message, type, link, targetUserTypes } = validationResult.data;
 
     console.log('[SEND-BULK-NOTIFICATIONS] Request:', { title, type, targetUserTypes });
 
@@ -90,6 +127,34 @@ serve(async (req) => {
     targetUserIds = [...new Set(targetUserIds)];
 
     console.log('[SEND-BULK-NOTIFICATIONS] Sending to users:', targetUserIds.length);
+
+    // Add batch size limit to prevent database overload
+    if (targetUserIds.length > 10000) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Too many recipients',
+          details: 'Maximum 10,000 recipients allowed per bulk notification'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
+
+    // Ensure at least one recipient
+    if (targetUserIds.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'No recipients found',
+          details: 'The selected user types have no matching users'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
 
     // Create notification records for all target users
     const notifications = targetUserIds.map(userId => ({
