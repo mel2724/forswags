@@ -11,6 +11,38 @@ const logStep = (step: string, details?: any) => {
   console.log(`[PAYPAL-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// PayPal webhook IP ranges (for IP allowlisting)
+const PAYPAL_WEBHOOK_IPS = [
+  '64.4.250.0/23',   // 64.4.250.0 - 64.4.251.255
+  '64.4.252.0/22',   // 64.4.252.0 - 64.4.255.255
+  '66.211.168.0/22', // 66.211.168.0 - 66.211.171.255
+  '173.0.80.0/20',   // 173.0.80.0 - 173.0.95.255
+];
+
+// Check if IP is in PayPal's allowed ranges
+const isPayPalIP = (ip: string): boolean => {
+  if (!ip) return false;
+  
+  for (const range of PAYPAL_WEBHOOK_IPS) {
+    const [subnet, mask] = range.split('/');
+    const subnetParts = subnet.split('.').map(Number);
+    const ipParts = ip.split('.').map(Number);
+    
+    if (ipParts.length !== 4 || subnetParts.length !== 4) continue;
+    
+    const maskBits = parseInt(mask);
+    const subnetInt = (subnetParts[0] << 24) | (subnetParts[1] << 16) | (subnetParts[2] << 8) | subnetParts[3];
+    const ipInt = (ipParts[0] << 24) | (ipParts[1] << 16) | (ipParts[2] << 8) | ipParts[3];
+    const maskInt = (~0 << (32 - maskBits)) >>> 0;
+    
+    if ((subnetInt & maskInt) === (ipInt & maskInt)) {
+      return true;
+    }
+  }
+  
+  return false;
+};
+
 // Verify PayPal webhook signature
 const verifyPayPalSignature = async (
   headers: Headers, 
@@ -103,8 +135,42 @@ serve(async (req) => {
   try {
     logStep("Webhook received");
 
+    // Security Enhancement 1: IP Allowlist Check
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const clientIP = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
+    
+    if (clientIP !== 'unknown' && !isPayPalIP(clientIP)) {
+      logStep("Rejected webhook from unauthorized IP", { clientIP });
+      return new Response(
+        JSON.stringify({ error: "Forbidden - Invalid source IP" }), 
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    logStep("IP check passed", { clientIP });
+
     const body = await req.text();
     const event = JSON.parse(body);
+    
+    // Security Enhancement 2: Replay Attack Prevention
+    const transmissionId = req.headers.get('paypal-transmission-id');
+    
+    if (transmissionId) {
+      // Check if we've already processed this webhook
+      const { data: existingWebhook } = await supabaseClient
+        .from('processed_webhooks')
+        .select('id')
+        .eq('transmission_id', transmissionId)
+        .single();
+      
+      if (existingWebhook) {
+        logStep("Duplicate webhook detected - already processed", { transmissionId });
+        return new Response(
+          JSON.stringify({ received: true, message: "Already processed" }), 
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
     
     // Verify PayPal signature
     const isValidSignature = await verifyPayPalSignature(req.headers, body);
@@ -115,6 +181,17 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    // Store transmission ID to prevent replay attacks
+    if (transmissionId) {
+      await supabaseClient
+        .from('processed_webhooks')
+        .insert({
+          transmission_id: transmissionId,
+          event_type: event.event_type,
+        });
+    }
+    
     logStep("Event type", { type: event.event_type });
 
     // Handle different PayPal webhook events
