@@ -7,23 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function SecuritySettings() {
-  // NOTE: This client-side role check is for UX only (hiding/showing tabs)
-  // Real security is enforced server-side via RLS policies on underlying tables
-  // Even if a user manipulates the UI to show the admin tab, they cannot access
-  // admin-protected data without proper server-side authorization
-  const { data: userRoles } = useQuery({
-    queryKey: ["user-roles"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", (await supabase.auth.getUser()).data.user?.id || "");
-      return data || [];
-    },
-  });
-
-  const isAdmin = userRoles?.some(r => r.role === "admin");
-
+  // Security Audit is admin-only and protected by backend RLS/role checks
+  // No need for client-side role filtering - AdminLayout already protects /admin routes
   return (
     <div className="container max-w-6xl py-8">
       <div className="space-y-6">
@@ -39,7 +24,7 @@ export default function SecuritySettings() {
             <TabsTrigger value="2fa">Two-Factor Auth</TabsTrigger>
             <TabsTrigger value="activity">Activity Log</TabsTrigger>
             <TabsTrigger value="export">Data Export</TabsTrigger>
-            {isAdmin && <TabsTrigger value="audit">Security Audit</TabsTrigger>}
+            <TabsTrigger value="audit">Security Audit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="2fa" className="space-y-4">
@@ -54,11 +39,9 @@ export default function SecuritySettings() {
             <DataExport />
           </TabsContent>
 
-          {isAdmin && (
-            <TabsContent value="audit" className="space-y-4">
-              <SecurityAudit />
-            </TabsContent>
-          )}
+          <TabsContent value="audit" className="space-y-4">
+            <SecurityAudit />
+          </TabsContent>
         </Tabs>
       </div>
     </div>

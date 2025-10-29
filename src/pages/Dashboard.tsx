@@ -311,11 +311,6 @@ const Dashboard = () => {
             <Button variant="ghost" onClick={() => navigate("/badges")} className="text-primary hover:text-primary/80 font-bold">
               Badges
             </Button>
-            {role === "admin" && (
-              <Button variant="ghost" onClick={() => navigate("/admin")} className="text-primary hover:text-primary/80 font-bold">
-                Admin
-              </Button>
-            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -971,16 +966,6 @@ const Dashboard = () => {
               <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Achievements</h3>
               <p className="text-sm text-muted-foreground">Earn badges and track milestones</p>
             </Card>
-
-            {role === "admin" && (
-              <Card className="p-6 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary hover:shadow-xl hover:shadow-secondary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/admin")}>
-                <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-4 group-hover:bg-secondary/20 transition-colors">
-                  <Star className="h-8 w-8 text-secondary" />
-                </div>
-                <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Admin</h3>
-                <p className="text-sm text-muted-foreground">Platform management and settings</p>
-              </Card>
-            )}
           </div>
         )}
       </main>
