@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { logAIUsage } from "../_shared/logAIUsage.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,6 +19,11 @@ serve(async (req) => {
 
   try {
     console.log('Processing chat request...');
+    
+    // Extract client IP for logging
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || 
+                     req.headers.get("x-real-ip") || 
+                     "unknown";
     
     // Parse and validate request body
     let message, conversationId, sessionId;
@@ -192,12 +198,34 @@ serve(async (req) => {
       console.error('AI response error:', aiResponse.status, errorText);
       
       if (aiResponse.status === 429) {
+        // Log rate limit
+        await logAIUsage(supabase, {
+          function_name: "chat-assistant",
+          model_used: "google/gemini-2.5-flash",
+          session_id: sessionId || null,
+          request_type: "chat",
+          status: "rate_limit",
+          error_message: "Rate limit exceeded",
+          ip_address: clientIP,
+        });
+        
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }), 
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       if (aiResponse.status === 402) {
+        // Log insufficient credits
+        await logAIUsage(supabase, {
+          function_name: "chat-assistant",
+          model_used: "google/gemini-2.5-flash",
+          session_id: sessionId || null,
+          request_type: "chat",
+          status: "insufficient_credits",
+          error_message: "AI credits exhausted",
+          ip_address: clientIP,
+        });
+        
         return new Response(
           JSON.stringify({ error: 'AI credits exhausted. Please add credits to continue.' }), 
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -236,6 +264,18 @@ serve(async (req) => {
       .update({ last_message_at: new Date().toISOString() })
       .eq('id', conversation.id);
 
+    // Log successful AI usage
+    await logAIUsage(supabase, {
+      function_name: "chat-assistant",
+      model_used: "google/gemini-2.5-flash",
+      user_id: req.headers.get('x-user-id') || undefined,
+      session_id: sessionId || null,
+      request_type: "chat",
+      tokens_estimated: Math.ceil(assistantMessage.length / 4), // Rough estimate: 1 token ≈ 4 chars
+      status: "success",
+      ip_address: clientIP,
+    });
+
     return new Response(
       JSON.stringify({ 
         message: assistantMessage,
@@ -247,6 +287,25 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in chat-assistant function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    
+    // Log error
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        await logAIUsage(supabase, {
+          function_name: "chat-assistant",
+          model_used: "google/gemini-2.5-flash",
+          request_type: "chat",
+          status: "error",
+          error_message: errorMessage,
+        });
+      }
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return new Response(
       JSON.stringify({ error: errorMessage }), 
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

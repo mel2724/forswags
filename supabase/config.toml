@@ -99,7 +99,7 @@ verify_jwt = true
 [functions.generate-prime-dime-recommendations]
 verify_jwt = true
 
-[functions.check-secret-rotation]
+[functions.check-ai-usage-thresholds]
 verify_jwt = false
 
 [functions.admin-trigger-college-analysis]

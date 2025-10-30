@@ -41,6 +41,81 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage_alerts: {
+        Row: {
+          alert_message: string
+          alert_type: string
+          created_at: string
+          current_value: number
+          id: string
+          resolved: boolean | null
+          resolved_at: string | null
+          threshold_value: number
+        }
+        Insert: {
+          alert_message: string
+          alert_type: string
+          created_at?: string
+          current_value: number
+          id?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          threshold_value: number
+        }
+        Update: {
+          alert_message?: string
+          alert_type?: string
+          created_at?: string
+          current_value?: number
+          id?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          threshold_value?: number
+        }
+        Relationships: []
+      }
+      ai_usage_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          function_name: string
+          id: string
+          ip_address: string | null
+          model_used: string
+          request_type: string
+          session_id: string | null
+          status: string
+          tokens_estimated: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          function_name: string
+          id?: string
+          ip_address?: string | null
+          model_used: string
+          request_type: string
+          session_id?: string | null
+          status: string
+          tokens_estimated?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          function_name?: string
+          id?: string
+          ip_address?: string | null
+          model_used?: string
+          request_type?: string
+          session_id?: string | null
+          status?: string
+          tokens_estimated?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       alumni: {
         Row: {
           available_for_calls: boolean | null
@@ -3565,6 +3640,7 @@ export type Database = {
         Returns: boolean
       }
       can_user_login: { Args: { p_user_id: string }; Returns: Json }
+      check_ai_usage_thresholds: { Args: never; Returns: undefined }
       check_duplicate_athlete: {
         Args: {
           p_full_name: string
@@ -3586,6 +3662,18 @@ export type Database = {
       encrypt_oauth_token: { Args: { token: string }; Returns: string }
       end_impersonation_session: { Args: never; Returns: undefined }
       generate_claim_token: { Args: never; Returns: string }
+      get_daily_ai_usage: {
+        Args: never
+        Returns: {
+          date: string
+          estimated_tokens: number
+          failed_requests: number
+          rate_limited_requests: number
+          successful_requests: number
+          total_requests: number
+          unique_users: number
+        }[]
+      }
       get_engagement_stats: {
         Args: { p_days?: number; p_user_id: string }
         Returns: {
