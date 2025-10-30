@@ -673,7 +673,7 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
           </div>
 
           <div className="border rounded-lg p-4 bg-muted/20 flex items-center justify-center">
-            <canvas ref={canvasRef} className="max-w-full mx-auto" style={{ maxWidth: '500px', height: 'auto' }} />
+            <canvas ref={canvasRef} className="mx-auto" style={{ width: '500px', height: '500px' }} />
           </div>
         </CardContent>
       </Card>
