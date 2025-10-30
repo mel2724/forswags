@@ -242,7 +242,8 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
           });
           fabricCanvas.add(frameBg);
 
-          const scale = Math.min(360 / (img.width || 1), 360 / (img.height || 1));
+          // Use Math.max to ensure image covers the entire frame area
+          const scale = Math.max(360 / (img.width || 1), 360 / (img.height || 1));
           img.scale(scale);
           img.set({
             left: 350,
@@ -374,7 +375,8 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
     if (imageUrl) {
       await new Promise<void>((resolve) => {
         FabricImage.fromURL(imageUrl).then((img) => {
-          const scale = Math.min(400 / (img.width || 1), 400 / (img.height || 1));
+          // Use Math.max to ensure image covers the circular frame
+          const scale = Math.max(400 / (img.width || 1), 400 / (img.height || 1));
           img.scale(scale);
           img.set({
             left: 540,
@@ -440,7 +442,8 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
     if (imageUrl) {
       await new Promise<void>((resolve) => {
         FabricImage.fromURL(imageUrl).then((img) => {
-          const scale = Math.min(500 / (img.width || 1), 500 / (img.height || 1));
+          // Use Math.max to ensure image covers the designated area
+          const scale = Math.max(500 / (img.width || 1), 500 / (img.height || 1));
           img.scale(scale);
           img.set({
             left: 540,
