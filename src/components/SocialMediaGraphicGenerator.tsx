@@ -135,14 +135,14 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
       FabricImage.fromURL(logoFull).then((img) => {
         img.set({
           left: 540,
-          top: 1000,
+          top: 1020,
           originX: 'center',
           originY: 'center',
-          opacity: 0.9,
+          opacity: 0.85,
           selectable: false,
         });
         
-        const scale = 250 / (img.width || 1);
+        const scale = 180 / (img.width || 1);
         img.scale(scale);
         
         fabricCanvas.add(img);
@@ -154,49 +154,49 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
   const addCommitmentGraphic = async (imageUrl: string | null) => {
     if (!fabricCanvas) return;
 
-    const topRect = new Rect({
-      left: 0,
-      top: 0,
-      width: 1080,
-      height: 250,
-      fill: secondaryColor,
-      selectable: false,
-    });
-    fabricCanvas.add(topRect);
+      const topRect = new Rect({
+        left: 0,
+        top: 0,
+        width: 1080,
+        height: 250,
+        fill: secondaryColor,
+        selectable: false,
+      });
+      fabricCanvas.add(topRect);
 
-    const universityText = new Textbox("THE UNIVERSITY OF", {
-      left: 540,
-      top: 60,
-      width: 900,
-      fontSize: 32,
-      fontWeight: "700",
-      fill: "#ffffff",
-      textAlign: "center",
-      originX: "center",
-      fontFamily: "Arial, sans-serif",
-      selectable: false,
-    });
-    fabricCanvas.add(universityText);
+      const universityText = new Textbox("THE UNIVERSITY OF", {
+        left: 540,
+        top: 50,
+        width: 900,
+        fontSize: 28,
+        fontWeight: "700",
+        fill: primaryColor,
+        textAlign: "center",
+        originX: "center",
+        fontFamily: "Arial, sans-serif",
+        selectable: false,
+      });
+      fabricCanvas.add(universityText);
 
-    const schoolText = new Textbox(schoolName.toUpperCase(), {
-      left: 540,
-      top: 120,
-      width: 900,
-      fontSize: 72,
-      fontWeight: "900",
-      fill: "#ffffff",
-      textAlign: "center",
-      originX: "center",
-      fontFamily: "Impact, Arial Black, sans-serif",
-      shadow: new Shadow({ 
-        color: "rgba(0,0,0,0.3)", 
-        blur: 10, 
-        offsetX: 0, 
-        offsetY: 4 
-      }),
-      selectable: false,
-    });
-    fabricCanvas.add(schoolText);
+      const schoolText = new Textbox(schoolName.toUpperCase(), {
+        left: 540,
+        top: 110,
+        width: 900,
+        fontSize: 68,
+        fontWeight: "900",
+        fill: primaryColor,
+        textAlign: "center",
+        originX: "center",
+        fontFamily: "Impact, Arial Black, sans-serif",
+        shadow: new Shadow({ 
+          color: "rgba(0,0,0,0.3)", 
+          blur: 10, 
+          offsetX: 0, 
+          offsetY: 4 
+        }),
+        selectable: false,
+      });
+      fabricCanvas.add(schoolText);
 
     const committedBg = new Rect({
       left: 80,
@@ -672,8 +672,8 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
             </div>
           </div>
 
-          <div className="border rounded-lg p-4 bg-muted/20 flex items-center justify-center">
-            <canvas ref={canvasRef} className="mx-auto" style={{ width: '500px', height: '500px' }} />
+          <div className="border rounded-lg p-4 bg-muted/20 flex items-center justify-center overflow-auto">
+            <canvas ref={canvasRef} className="mx-auto max-w-full" style={{ width: '450px', height: '450px' }} />
           </div>
         </CardContent>
       </Card>
