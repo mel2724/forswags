@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Download, Upload, Image as ImageIcon } from "lucide-react";
-import logoFull from "@/assets/logo-full.jpeg";
+import logoFull from "@/assets/logo-text.png";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,14 +135,14 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
       FabricImage.fromURL(logoFull).then((img) => {
         img.set({
           left: 540,
-          top: 1020,
+          top: 1000,
           originX: 'center',
           originY: 'center',
-          opacity: 0.6,
+          opacity: 0.9,
           selectable: false,
         });
         
-        const scale = 100 / (img.width || 1);
+        const scale = 250 / (img.width || 1);
         img.scale(scale);
         
         fabricCanvas.add(img);
