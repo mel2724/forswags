@@ -477,18 +477,24 @@ export const SocialMediaGraphicGenerator = ({ athleteName = "", athleteSport = "
   const downloadGraphic = () => {
     if (!fabricCanvas) return;
 
-    const dataURL = fabricCanvas.toDataURL({
-      format: "png",
-      quality: 1.0,
-      multiplier: 2,
-    });
+    // Force a render to ensure all elements are drawn
+    fabricCanvas.renderAll();
 
-    const link = document.createElement("a");
-    link.download = `${selectedTemplate.type}-${schoolName.replace(/\s+/g, "-")}.png`;
-    link.href = dataURL;
-    link.click();
+    // Small delay to ensure rendering completes
+    setTimeout(() => {
+      const dataURL = fabricCanvas.toDataURL({
+        format: "png",
+        quality: 1.0,
+        multiplier: 2,
+      });
 
-    toast.success("Graphic downloaded!");
+      const link = document.createElement("a");
+      link.download = `${selectedTemplate.type}-${schoolName.replace(/\s+/g, "-")}.png`;
+      link.href = dataURL;
+      link.click();
+
+      toast.success("Graphic downloaded!");
+    }, 100);
   };
 
   if (isLoading) {
