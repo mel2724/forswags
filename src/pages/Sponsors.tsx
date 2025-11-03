@@ -48,7 +48,7 @@ const Sponsors = () => {
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">
             Help us empower the next generation of student athletes with life skills beyond the game
           </p>
-          <Button size="lg" className="btn-hero" onClick={() => window.location.href = "mailto:sponsors@forswags.com"}>
+          <Button size="lg" className="btn-hero" onClick={() => window.location.href = "mailto:partnerships@forswags.com"}>
             Become a Sponsor
           </Button>
         </div>
@@ -325,10 +325,10 @@ const Sponsors = () => {
             Your sponsorship doesn't just support a platform—it transforms lives. Together, we can ensure every student athlete has the tools to succeed in life, not just in sports.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="btn-hero" onClick={() => window.location.href = "mailto:sponsors@forswags.com"}>
+            <Button size="lg" className="btn-hero" onClick={() => window.location.href = "mailto:partnerships@forswags.com"}>
               Become a Sponsor
             </Button>
-            <Button size="lg" variant="outline" onClick={() => window.location.href = "mailto:sponsors@forswags.com?subject=Request Sponsorship Information"}>
+            <Button size="lg" variant="outline" onClick={() => window.location.href = "mailto:partnerships@forswags.com?subject=Request Sponsorship Information"}>
               Request Information
             </Button>
           </div>

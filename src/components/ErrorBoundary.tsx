@@ -52,8 +52,8 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
               <p className="text-sm text-muted-foreground">
                 If this error persists, please contact our technical support team at{' '}
-                <a href="mailto:techsupport@forswags.com" className="text-primary hover:underline">
-                  techsupport@forswags.com
+                <a href="mailto:tech@forswags.com" className="text-primary hover:underline">
+                  tech@forswags.com
                 </a>
               </p>
               <Button onClick={this.handleReset} className="w-full">

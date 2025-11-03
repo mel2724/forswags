@@ -134,8 +134,8 @@ serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'ForSWAGs Errors <onboarding@resend.dev>',
-            to: ['techsupport@forswags.com'],
+            from: 'ForSWAGs Errors <noreply@updates.forswags.com>',
+            to: ['tech@forswags.com'],
             subject: 'Renewal Reminder Error - ForSWAGs',
             html: `
               <h2>Renewal Reminder Error</h2>

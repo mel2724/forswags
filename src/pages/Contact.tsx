@@ -234,8 +234,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold">Email Support</p>
-                    <a href="mailto:support@forswags.org" className="text-muted-foreground hover:text-primary transition-colors">
-                      support@forswags.org
+                    <a href="mailto:support@forswags.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      support@forswags.com
                     </a>
                     <p className="text-xs text-muted-foreground mt-1">
                       We typically respond within 24 hours
@@ -249,8 +249,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold">Technical Support</p>
-                    <a href="mailto:techsupport@forswags.com" className="text-muted-foreground hover:text-primary transition-colors">
-                      techsupport@forswags.com
+                    <a href="mailto:tech@forswags.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      tech@forswags.com
                     </a>
                     <p className="text-xs text-muted-foreground mt-1">
                       For technical issues and error reports

@@ -106,7 +106,7 @@ function wrapInLayout(content: string): string {
     </div>
     <div class="footer">
       <p>© ${new Date().getFullYear()} ForSWAGs. All rights reserved.</p>
-      <p>Questions? Contact us at support@forswags.com</p>
+      <p>Need help? Contact ForSWAGs Support at support@forswags.com</p>
     </div>
   </div>
 </body>
@@ -178,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       await resend.emails.send({
         from: "ForSWAGs Errors <noreply@updates.forswags.com>",
-        to: ["techsupport@forswags.com"],
+        to: ["tech@forswags.com"],
         subject: "Email Send Error - ForSWAGs",
         html: `
           <h2>Email Send Error</h2>

@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
       : 'search athlete profiles, manage watchlists, and streamline your scouting process';
 
     const emailResponse = await resend.emails.send({
-      from: "ForSWAGs <coach@updates.forswags.com>",
+      from: "ForSWAGs <noreply@updates.forswags.com>",
       to: [email],
       subject: `You're on the Waitlist! - ${roleTitle}`,
       html: `

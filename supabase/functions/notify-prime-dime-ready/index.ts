@@ -107,7 +107,7 @@ serve(async (req) => {
 
         // Send email
         const { error: emailError } = await resend.emails.send({
-          from: "ForSWAGs <notifications@forswags.com>",
+          from: "ForSWAGs <noreply@updates.forswags.com>",
           to: [profile.email],
           subject: "🏆 Your \"Prime Dime\" College Matches Are Ready!",
           html: emailHtml,
@@ -175,7 +175,7 @@ serve(async (req) => {
       const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
       await resend.emails.send({
         from: "ForSWAGs Errors <noreply@updates.forswags.com>",
-        to: ["techsupport@forswags.com"],
+        to: ["tech@forswags.com"],
         subject: "\"Prime Dime\" Notification Error - ForSWAGs",
         html: `
           <h2>"Prime Dime" Notification Error</h2>

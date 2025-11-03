@@ -107,10 +107,10 @@ serve(async (req) => {
               'Authorization': `Bearer ${resendApiKey}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              from: 'ForSWAGs Errors <noreply@updates.forswags.com>',
-              to: ['techsupport@forswags.com'],
-              subject: '"Prime Dime" Analysis Trigger Error - ForSWAGs',
+          body: JSON.stringify({
+            from: 'ForSWAGs Errors <noreply@updates.forswags.com>',
+            to: ['tech@forswags.com'],
+            subject: '"Prime Dime" Analysis Trigger Error - ForSWAGs',
               html: `
                 <h2>"Prime Dime" Analysis Trigger Error</h2>
                 <p><strong>Athlete ID:</strong> ${athlete.id}</p>

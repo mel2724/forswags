@@ -142,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       await supabase.functions.invoke('send-notification-email', {
         body: {
-          to: 'techsupport@forswags.com',
+          to: 'tech@forswags.com',
           template: 'badge_earned', // Using existing template for error format
           subject: 'Consent Renewal Email Error - ForSWAGs',
           variables: {
