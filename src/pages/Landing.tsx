@@ -6,6 +6,7 @@ import { Trophy, GraduationCap, Target, Users, Star, Zap, Award, BarChart3, Meda
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import heroImage from "@/assets/hero5.png";
 
 export default function Landing() {
   // Use direct navigation to avoid Router context dependency
@@ -56,8 +57,12 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/10 to-background sports-pattern"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)]"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-primary/40 to-background/80"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.2),transparent_50%)]"></div>
         
         <div className="container mx-auto px-4 py-20 text-center relative z-10">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 glow-text">
