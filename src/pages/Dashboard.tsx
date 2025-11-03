@@ -311,6 +311,9 @@ const Dashboard = () => {
             <Button variant="ghost" onClick={() => navigate("/badges")} className="text-primary hover:text-primary/80 font-bold">
               Badges
             </Button>
+            <Button variant="ghost" onClick={() => navigate("/membership/athlete")} className="text-primary hover:text-primary/80 font-bold">
+              Membership
+            </Button>
           </nav>
 
           <div className="flex items-center gap-2">
