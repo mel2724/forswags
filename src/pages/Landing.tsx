@@ -58,7 +58,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat md:bg-[length:auto_80vh] lg:bg-[length:auto_70vh]"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${heroImage})` }}
         ></div>
         <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-primary/40 to-background/80"></div>
