@@ -56,220 +56,122 @@ export default function Landing() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] lg:min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90">
-        <div className="container mx-auto px-4 py-16 lg:py-20 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Left Content */}
-            <div className="text-white space-y-6 lg:space-y-8">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-                Don't wait for luck.
-                <br />
-                <span className="block mt-2">Take control of your future.</span>
-              </h1>
-              
-              <p className="text-lg sm:text-xl lg:text-2xl text-white/90 max-w-xl">
-                Get your recruitment profile in front of top coaches with FORSWAGS
-              </p>
-              
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 text-base sm:text-lg px-8 py-6 font-semibold shadow-lg hover:shadow-xl transition-all"
-                onClick={() => navigateTo("/auth")}
-              >
-                Join the ForSwags family
-                <Zap className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Right Image */}
-            <div className="relative lg:block hidden">
-              <div className="relative">
-                <img 
-                  src={heroImage} 
-                  alt="Student athlete in action" 
-                  className="w-full h-auto max-w-lg ml-auto relative z-10"
-                />
-              </div>
-            </div>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-primary/40 to-background/80"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.2),transparent_50%)]"></div>
+        
+        <div className="container mx-auto px-4 py-20 text-center relative z-10">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 glow-text">
+            DOMINATE
+            <br />
+            <span className="text-gradient-accent">THE GAME</span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-foreground/80 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 font-medium">
+            The ultimate platform for student-athletes to showcase talent, get recruited, and reach the next level
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+            <Button 
+              size="lg" 
+              className="btn-accent text-lg px-10 py-7 text-base font-bold uppercase tracking-wide"
+              onClick={() => navigateTo("/auth")}
+            >
+              <Zap className="mr-2 h-5 w-5" />
+              Start Your Journey
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Features Section 1 */}
-      <section className="py-16 lg:py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative order-2 lg:order-1">
-              <div className="aspect-[4/3] bg-muted rounded-2xl overflow-hidden">
-                <Video className="w-full h-full object-cover text-muted-foreground/20 p-20" />
-              </div>
-            </div>
-            
-            <div className="space-y-6 order-1 lg:order-2">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-                Get Noticed by College Coaches
-              </h2>
-              <p className="text-xl sm:text-2xl font-semibold text-primary">
-                Blast Your Film to Thousands Instantly!
-              </p>
-              <ul className="space-y-4">
-                <li className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center mt-1">
-                    <Target className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium">Tired of cold-calling coaches?</p>
-                    <p className="text-muted-foreground">Reach them all effortlessly with our platform.</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center mt-1">
-                    <Target className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium">Filter through thousands of schools</p>
-                    <p className="text-muted-foreground">Find your perfect fit based on your skills and goals.</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center mt-1">
-                    <Target className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium">Get detailed analytics</p>
-                    <p className="text-muted-foreground">See which coaches are most interested in your talent.</p>
-                  </div>
-                </li>
-              </ul>
-              <Button 
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg font-semibold"
-                onClick={() => navigateTo("/auth")}
-              >
-                Join Swags Now
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section 2 */}
-      <section className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-                Unlock Your Recruiting Dream!
-              </h2>
-              <p className="text-xl sm:text-2xl font-semibold text-primary">
-                Get Contact Info for Every College Coach.
-              </p>
-              <ul className="space-y-4">
-                <li className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center mt-1">
-                    <Users className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium">Forget tedious research</p>
-                    <p className="text-muted-foreground">Access complete coach contact info instantly.</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center mt-1">
-                    <Users className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium">Tired of generic searches?</p>
-                    <p className="text-muted-foreground">Narrow down your options with powerful filters.</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center mt-1">
-                    <Users className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-lg font-medium">No more endless questionnaires</p>
-                    <p className="text-muted-foreground">Find programs actively seeking your talent.</p>
-                  </div>
-                </li>
-              </ul>
-              <Button 
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg font-semibold"
-                onClick={() => navigateTo("/auth")}
-              >
-                Join Swags Now
-              </Button>
-            </div>
-
-            <div className="relative">
-              <div className="aspect-[4/3] bg-muted rounded-2xl overflow-hidden">
-                <BarChart3 className="w-full h-full object-cover text-muted-foreground/20 p-20" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-16 lg:py-24 bg-background">
-        <div className="container mx-auto px-4">
+      {/* Features Section */}
+      <section id="features" className="py-24 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-card/30 to-background"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              How Does It Work?
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
+              <span className="text-gradient-primary">Level Up</span> Your Game
             </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to get recruited and dominate your sport
+            </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <GraduationCap className="w-8 h-8 text-white" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
+              <div className="p-3 bg-primary/10 rounded-lg w-fit mb-6 group-hover:bg-primary/20 transition-colors">
+                <Video className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-xl font-bold">Build Your Winning Profile</h3>
-              <p className="text-muted-foreground">
-                Create your athletic profile and showcase your skills, stats, and experience.
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Pro Coach Evaluations</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Get professionally scouted by experienced coaches with detailed video analysis and performance feedback
               </p>
-            </div>
+            </Card>
 
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <Star className="w-8 h-8 text-white" />
+            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary/50 transition-all duration-300 hover:-translate-y-2 group">
+              <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
+                <Brain className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-xl font-bold">Get Seen by Thousands</h3>
-              <p className="text-muted-foreground">
-                Unlock access to 90% of active college coaches across the nation.
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Expert "Prime Dime" Matching</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Our expert team personally reviews your profile to find your perfect college fit based on athletics, academics, and personal preferences
               </p>
-            </div>
+            </Card>
 
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <Target className="w-8 h-8 text-white" />
+            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
+              <div className="p-3 bg-primary/10 rounded-lg w-fit mb-6 group-hover:bg-primary/20 transition-colors">
+                <BookOpen className="h-10 w-10 text-primary" />
               </div>
-              <h3 className="text-xl font-bold">Find Your Perfect Fit</h3>
-              <p className="text-muted-foreground">
-                Utilize powerful targeting tools to filter coaches based on your preferences.
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Life Skills Training</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Our Playbook for Life teaches leadership, character development, and real-world skills beyond athletics
               </p>
-            </div>
+            </Card>
 
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <Share2 className="w-8 h-8 text-white" />
+            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary/50 transition-all duration-300 hover:-translate-y-2 group">
+              <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
+                <Share2 className="h-10 w-10 text-secondary" />
               </div>
-              <h3 className="text-xl font-bold">Promotion</h3>
-              <p className="text-muted-foreground">
-                Get FREE social media promotion to maximize your exposure and attract coaches.
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Social Media Tools</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                AI-generated captions, custom graphics, and press releases help you build your brand and get noticed
               </p>
-            </div>
+            </Card>
+
+            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:-translate-y-2 group">
+              <div className="p-3 bg-primary/10 rounded-lg w-fit mb-6 group-hover:bg-primary/20 transition-colors">
+                <TrendingUp className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">National Exposure</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Public athlete profiles visible to college recruiters nationwide—showcase your talent 24/7
+              </p>
+            </Card>
+
+            <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary/50 transition-all duration-300 hover:-translate-y-2 group">
+              <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-6 group-hover:bg-secondary/20 transition-colors">
+                <Sparkles className="h-10 w-10 text-secondary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 uppercase tracking-tight">Holistic Rankings</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Unique ranking system that evaluates both athletic ability and life skills—no traditional star ratings
+              </p>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section id="pricing" className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              Start Winning Today
+            <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase tracking-tight">
+              Start <span className="text-gradient-accent">Winning</span> Today
             </h2>
             <p className="text-xl text-muted-foreground mb-8">Choose the plan that fits your goals</p>
             
@@ -295,8 +197,8 @@ export default function Landing() {
           {/* Athlete Plans */}
           {selectedRole === "athlete" && (
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              <Card className="p-8 bg-card border-2 border-border hover:border-primary/50 transition-all duration-300 shadow-sm">
-                <h3 className="text-2xl font-bold mb-4">Starter</h3>
+              <Card className="p-8 bg-card/50 backdrop-blur border-2 border-border hover:border-primary/50 transition-all duration-300">
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Starter</h3>
                 <div className="mb-6">
                   <div className="text-5xl font-black mb-2">FREE</div>
                   <div className="text-sm text-muted-foreground uppercase">Forever</div>
@@ -326,11 +228,11 @@ export default function Landing() {
                 </Button>
               </Card>
 
-              <Card className="p-8 bg-primary text-white relative transform scale-105 shadow-xl border-4 border-primary">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-primary px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+              <Card className="p-8 bg-gradient-to-b from-primary/10 to-card/50 backdrop-blur border-4 border-primary relative transform scale-105 shadow-2xl">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-secondary to-secondary-glow text-black px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
                   ⚡ Most Popular
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Pro Monthly</h3>
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-primary">Pro Monthly</h3>
                 <div className="mb-6">
                   <div className="text-5xl font-black mb-2">
                     $14<span className="text-3xl">.99</span>
@@ -339,70 +241,70 @@ export default function Landing() {
                 </div>
                 <ul className="space-y-4 mb-8 text-sm">
                   <li className="flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-white flex-shrink-0" />
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Full athlete profile & highlights</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-white flex-shrink-0" />
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Unlimited training courses</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-white flex-shrink-0" />
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Coach evaluations & feedback</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-white flex-shrink-0" />
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Expert "Prime Dime" matching</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-white flex-shrink-0" />
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Performance analytics</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Zap className="h-5 w-5 text-white flex-shrink-0" />
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Free parent account included</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-white text-primary hover:bg-white/90 font-semibold" onClick={() => navigateTo("/auth")}>
+                <Button className="w-full btn-hero" onClick={() => navigateTo("/auth")}>
                   Start Training
                 </Button>
               </Card>
 
-              <Card className="p-8 bg-card border-2 border-border hover:border-primary/50 transition-all duration-300 shadow-sm">
-                <h3 className="text-2xl font-bold mb-4">Championship</h3>
+              <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/30 hover:border-secondary/50 transition-all duration-300">
+                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide">Championship</h3>
                 <div className="mb-6">
-                  <div className="text-5xl font-black mb-2">
+                  <div className="text-5xl font-black mb-2 text-gradient-accent">
                     $97
                   </div>
-                  <div className="text-sm text-primary font-bold">Per Year · Save $82!</div>
+                  <div className="text-sm text-secondary uppercase font-bold">Per Year · Save $82!</div>
                 </div>
                 <ul className="space-y-4 mb-8 text-sm">
                   <li className="flex items-center gap-3">
-                    <Award className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Everything in Pro</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Award className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Priority coach support</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Award className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Advanced analytics dashboard</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Award className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Exclusive training content</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Award className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Direct recruiter messaging</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <Award className="h-5 w-5 text-primary flex-shrink-0" />
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Free parent account included</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold" onClick={() => navigateTo("/auth")}>
+                <Button className="w-full btn-accent" onClick={() => navigateTo("/auth")}>
                   Go Championship
                 </Button>
               </Card>
@@ -412,10 +314,10 @@ export default function Landing() {
           {/* Parent Plans */}
           {selectedRole === "parent" && (
             <div className="max-w-2xl mx-auto">
-              <Card className="p-12 bg-card border-2 border-primary shadow-lg">
+              <Card className="p-12 bg-gradient-to-b from-primary/10 to-card/50 backdrop-blur border-4 border-primary shadow-2xl">
                 <div className="text-center mb-8">
                   <Users className="h-16 w-16 text-primary mx-auto mb-4" />
-                  <h3 className="text-3xl font-bold mb-4 text-primary">Parent Access</h3>
+                  <h3 className="text-3xl font-bold mb-4 uppercase tracking-wide text-primary">Parent Access</h3>
                   <div className="mb-6">
                     <div className="text-6xl font-black mb-2">FREE</div>
                     <div className="text-lg text-muted-foreground">With Paid Student Athlete Account</div>
