@@ -57,10 +57,7 @@ export default function AdminEvaluations() {
         .from("evaluations")
         .select(`
           *,
-          athletes!inner(
-            user_id,
-            profiles!athletes_user_id_fkey(full_name)
-          ),
+          athletes!inner(user_id),
           coach_profile:coach_profiles(full_name),
           requested_coach_profile:coach_profiles!evaluations_requested_coach_id_fkey(full_name, is_active)
         `)
@@ -68,15 +65,32 @@ export default function AdminEvaluations() {
 
       if (error) throw error;
 
-      const formattedData = (data || []).map((item: any) => ({
-        ...item,
-        athlete: {
-          user_id: item.athletes?.user_id,
-        },
-        athlete_profile: {
-          full_name: item.athletes?.profiles?.full_name || "Unknown",
-        },
-      }));
+      // Get unique user IDs to fetch profiles
+      const userIds = [...new Set((data || []).map((item: any) => item.athletes?.user_id).filter(Boolean))];
+      
+      // Fetch profiles for all users
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of user_id to profile
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const formattedData = (data || []).map((item: any) => {
+        const profile = profileMap.get(item.athletes?.user_id);
+        return {
+          ...item,
+          athlete: {
+            user_id: item.athletes?.user_id,
+          },
+          athlete_profile: {
+            full_name: profile?.full_name || "Unknown",
+          },
+        };
+      });
 
       setEvaluations(formattedData);
     } catch (error: any) {

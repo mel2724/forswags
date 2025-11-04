@@ -73,6 +73,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { title: "Coach Applications", url: "/admin/coach-applications", icon: Clipboard },
       { title: "Evaluations", url: "/admin/evaluations", icon: FileVideo },
+      { title: "Payment Verification", url: "/admin/evaluation-payments", icon: DollarSign },
     ],
   },
   {
