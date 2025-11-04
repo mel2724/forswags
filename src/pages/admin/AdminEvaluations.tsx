@@ -5,8 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, Clock, Loader2, UserCheck } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Loader2, UserCheck, XCircle, DollarSign } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface Evaluation {
   id: string;
@@ -18,6 +30,9 @@ interface Evaluation {
   requested_coach_id: string | null;
   coach_id: string | null;
   admin_assigned: boolean;
+  stripe_payment_intent_id: string | null;
+  cancelled_at: string | null;
+  cancellation_reason: string | null;
   athlete: {
     user_id: string;
   };
@@ -44,6 +59,13 @@ export default function AdminEvaluations() {
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [refundingId, setRefundingId] = useState<string | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
+  const [cancellationReason, setCancellationReason] = useState("");
+  const [refundReason, setRefundReason] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -160,11 +182,102 @@ export default function AdminEvaluations() {
     }
   };
 
+  const handleCancelEvaluation = async () => {
+    if (!selectedEvaluation) return;
+    
+    setCancellingId(selectedEvaluation.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from("evaluations")
+        .update({
+          status: "cancelled",
+          cancelled_at: new Date().toISOString(),
+          cancelled_by: user?.id,
+          cancellation_reason: cancellationReason,
+        })
+        .eq("id", selectedEvaluation.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Evaluation Cancelled",
+        description: "The evaluation has been cancelled successfully",
+      });
+
+      fetchEvaluations();
+      setCancelDialogOpen(false);
+      setCancellationReason("");
+      setSelectedEvaluation(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel evaluation",
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const handleRefundEvaluation = async () => {
+    if (!selectedEvaluation || !selectedEvaluation.stripe_payment_intent_id) {
+      toast({
+        title: "Error",
+        description: "Cannot process refund - payment information not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRefundingId(selectedEvaluation.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-refund", {
+        body: {
+          payment_intent_id: selectedEvaluation.stripe_payment_intent_id,
+          reason: refundReason,
+          user_id: selectedEvaluation.athlete.user_id,
+        },
+      });
+
+      if (error) throw error;
+
+      // Update evaluation with refund info
+      await supabase
+        .from("evaluations")
+        .update({
+          status: "refunded",
+        })
+        .eq("id", selectedEvaluation.id);
+
+      toast({
+        title: "Refund Processed",
+        description: `Refund of $${data.amount} has been processed successfully`,
+      });
+
+      fetchEvaluations();
+      setRefundDialogOpen(false);
+      setRefundReason("");
+      setSelectedEvaluation(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process refund",
+        variant: "destructive",
+      });
+    } finally {
+      setRefundingId(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; icon: any; variant: "secondary" | "default" | "destructive" }> = {
       pending: { label: "Pending", icon: Clock, variant: "secondary" },
       in_progress: { label: "In Progress", icon: AlertCircle, variant: "default" },
       completed: { label: "Completed", icon: CheckCircle, variant: "default" },
+      cancelled: { label: "Cancelled", icon: XCircle, variant: "destructive" },
+      refunded: { label: "Refunded", icon: DollarSign, variant: "destructive" },
     };
     const config = variants[status] || variants.pending;
     const Icon = config.icon;
@@ -338,6 +451,38 @@ export default function AdminEvaluations() {
             </Select>
           </div>
         )}
+
+        {evaluation.status !== "cancelled" && evaluation.status !== "refunded" && evaluation.status !== "completed" && (
+          <div className="pt-4 flex gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                setSelectedEvaluation(evaluation);
+                setCancelDialogOpen(true);
+              }}
+              disabled={cancellingId === evaluation.id}
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Cancel Evaluation
+            </Button>
+            
+            {evaluation.stripe_payment_intent_id && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedEvaluation(evaluation);
+                  setRefundDialogOpen(true);
+                }}
+                disabled={refundingId === evaluation.id}
+              >
+                <DollarSign className="h-4 w-4 mr-2" />
+                Issue Refund
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -358,6 +503,79 @@ export default function AdminEvaluations() {
           Assign coaches to evaluations and monitor progress
         </p>
       </div>
+
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Evaluation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this evaluation? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-4">
+            <Label htmlFor="cancellation-reason">Reason for cancellation</Label>
+            <Textarea
+              id="cancellation-reason"
+              placeholder="Enter reason for cancelling this evaluation..."
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelEvaluation}
+              disabled={cancellingId !== null || !cancellationReason.trim()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {cancellingId ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                "Cancel Evaluation"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Issue Refund</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will process a full refund to the customer's payment method. The evaluation will be marked as refunded.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-4">
+            <Label htmlFor="refund-reason">Reason for refund</Label>
+            <Textarea
+              id="refund-reason"
+              placeholder="Enter reason for issuing this refund..."
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRefundEvaluation}
+              disabled={refundingId !== null || !refundReason.trim()}
+            >
+              {refundingId ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Process Refund"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {needsAssignmentEvaluations.length > 0 && (
         <Card className="border-destructive">

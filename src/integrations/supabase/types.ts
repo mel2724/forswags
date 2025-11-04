@@ -1694,6 +1694,9 @@ export type Database = {
         Row: {
           admin_assigned: boolean | null
           athlete_id: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           claimed_at: string | null
           coach_id: string | null
           completed_at: string | null
@@ -1705,15 +1708,20 @@ export type Database = {
           previous_evaluation_id: string | null
           purchased_at: string
           rating: number | null
+          refund_id: string | null
           requested_coach_id: string | null
           scores: Json | null
           status: Database["public"]["Enums"]["evaluation_status"]
+          stripe_payment_intent_id: string | null
           updated_at: string
           video_url: string | null
         }
         Insert: {
           admin_assigned?: boolean | null
           athlete_id: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           claimed_at?: string | null
           coach_id?: string | null
           completed_at?: string | null
@@ -1725,15 +1733,20 @@ export type Database = {
           previous_evaluation_id?: string | null
           purchased_at?: string
           rating?: number | null
+          refund_id?: string | null
           requested_coach_id?: string | null
           scores?: Json | null
           status?: Database["public"]["Enums"]["evaluation_status"]
+          stripe_payment_intent_id?: string | null
           updated_at?: string
           video_url?: string | null
         }
         Update: {
           admin_assigned?: boolean | null
           athlete_id?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           claimed_at?: string | null
           coach_id?: string | null
           completed_at?: string | null
@@ -1745,9 +1758,11 @@ export type Database = {
           previous_evaluation_id?: string | null
           purchased_at?: string
           rating?: number | null
+          refund_id?: string | null
           requested_coach_id?: string | null
           scores?: Json | null
           status?: Database["public"]["Enums"]["evaluation_status"]
+          stripe_payment_intent_id?: string | null
           updated_at?: string
           video_url?: string | null
         }
@@ -1764,6 +1779,13 @@ export type Database = {
             columns: ["previous_evaluation_id"]
             isOneToOne: false
             referencedRelation: "evaluations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_refund_id_fkey"
+            columns: ["refund_id"]
+            isOneToOne: false
+            referencedRelation: "refunds"
             referencedColumns: ["id"]
           },
           {
@@ -3794,7 +3816,12 @@ export type Database = {
         | "recruiter"
         | "admin"
         | "alumni"
-      evaluation_status: "pending" | "in_progress" | "completed"
+      evaluation_status:
+        | "pending"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+        | "refunded"
       payment_status: "pending" | "completed" | "failed" | "refunded"
       subscription_plan:
         | "free"
@@ -3930,7 +3957,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["athlete", "parent", "coach", "recruiter", "admin", "alumni"],
-      evaluation_status: ["pending", "in_progress", "completed"],
+      evaluation_status: [
+        "pending",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "refunded",
+      ],
       payment_status: ["pending", "completed", "failed", "refunded"],
       subscription_plan: [
         "free",

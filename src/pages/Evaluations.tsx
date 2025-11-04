@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Evaluation {
   id: string;
-  status: "pending" | "in_progress" | "completed";
+  status: "pending" | "in_progress" | "completed" | "cancelled" | "refunded";
   rating: number | null;
   feedback: string | null;
   purchased_at: string;

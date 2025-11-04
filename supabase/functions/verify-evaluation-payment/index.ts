@@ -46,8 +46,10 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Retrieve the checkout session
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    // Retrieve the checkout session with payment intent
+    const session = await stripe.checkout.sessions.retrieve(session_id, {
+      expand: ['payment_intent']
+    });
 
     console.log("[VERIFY-EVALUATION-PAYMENT] Session status:", session.payment_status);
 
@@ -76,6 +78,11 @@ serve(async (req) => {
         }
       }
 
+      // Get payment intent ID
+      const paymentIntentId = typeof session.payment_intent === 'string' 
+        ? session.payment_intent 
+        : session.payment_intent?.id;
+
       // Create evaluation record
       const { data: evaluation, error: evalError } = await supabaseClient
         .from("evaluations")
@@ -88,6 +95,7 @@ serve(async (req) => {
           requested_coach_id: requestedCoachId,
           coach_id: assignedCoachId,
           admin_assigned: false,
+          stripe_payment_intent_id: paymentIntentId,
         })
         .select()
         .single();
