@@ -23,32 +23,69 @@ export default function MembershipRecruiter() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    checkSubscription();
+    const initSubscription = async () => {
+      // Check if user is authenticated first
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setCheckingStatus(false);
+        toast({
+          title: "Authentication required",
+          description: "Please log in to view subscription status.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
 
-    const status = searchParams.get("subscription");
-    if (status === "success") {
-      toast({
-        title: "Success!",
-        description: "Your subscription has been activated.",
-      });
-      setTimeout(() => checkSubscription(), 2000);
-    } else if (status === "canceled") {
-      toast({
-        title: "Canceled",
-        description: "Subscription purchase was canceled.",
-        variant: "destructive",
-      });
-    }
+      checkSubscription();
+
+      const status = searchParams.get("subscription");
+      if (status === "success") {
+        toast({
+          title: "Success!",
+          description: "Your subscription has been activated.",
+        });
+        setTimeout(() => checkSubscription(), 2000);
+      } else if (status === "canceled") {
+        toast({
+          title: "Canceled",
+          description: "Subscription purchase was canceled.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initSubscription();
   }, [searchParams]);
 
   const checkSubscription = async () => {
+    if (checkingStatus) return; // Prevent duplicate calls
+    
     setCheckingStatus(true);
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No active session");
+      }
+
+      const { data, error } = await supabase.functions.invoke("check-subscription", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
       if (error) throw error;
       setSubscriptionStatus(data);
     } catch (error: any) {
       console.error("Error checking subscription:", error);
+      if (error.message?.includes("Authentication") || error.message?.includes("session")) {
+        toast({
+          title: "Session expired",
+          description: "Please log in again.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+      }
     } finally {
       setCheckingStatus(false);
     }
