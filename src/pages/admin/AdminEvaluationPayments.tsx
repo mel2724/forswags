@@ -88,7 +88,7 @@ export default function AdminEvaluationPayments() {
                 disabled={loading}
               />
               <p className="text-sm text-muted-foreground">
-                The session ID starts with "cs_" and can be found in the Stripe dashboard
+                The session ID must start with <span className="font-mono font-semibold">cs_</span> (not pm_ or pi_) and can be found in the Stripe dashboard under Payments → Checkout Sessions
               </p>
             </div>
 

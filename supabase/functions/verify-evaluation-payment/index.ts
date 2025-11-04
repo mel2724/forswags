@@ -35,6 +35,11 @@ serve(async (req) => {
       throw new Error("Session ID is required");
     }
 
+    // Validate session ID format
+    if (!session_id.startsWith("cs_")) {
+      throw new Error("Invalid session ID format. Session IDs must start with 'cs_' (e.g., cs_test_...). You may have entered a payment method ID (pm_) or payment intent ID (pi_) instead.");
+    }
+
     console.log("[VERIFY-EVALUATION-PAYMENT] Verifying session:", session_id);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
