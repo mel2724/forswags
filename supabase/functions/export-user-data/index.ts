@@ -119,16 +119,37 @@ serve(async (req: Request) => {
     const exportData = JSON.stringify(userData, null, 2);
     const exportBlob = new Blob([exportData], { type: "application/json" });
 
-    // In a real implementation, you would upload this to storage
-    // For now, we'll just return the data directly
-    const exportUrl = `data:application/json;base64,${btoa(exportData)}`;
+    // Upload to secure storage bucket
+    const fileName = `exports/${user.id}/${exportRequest.id}.json`;
+    const { error: uploadError } = await supabase.storage
+      .from('user-data-exports')
+      .upload(fileName, exportBlob, {
+        contentType: 'application/json',
+        cacheControl: '3600',
+      });
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      throw new Error(`Failed to upload export: ${uploadError.message}`);
+    }
+
+    // Generate signed URL with 7-day expiration
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from('user-data-exports')
+      .createSignedUrl(fileName, 7 * 24 * 60 * 60); // 7 days
+
+    if (signedUrlError || !signedUrlData) {
+      console.error('Signed URL error:', signedUrlError);
+      throw new Error('Failed to generate download URL');
+    }
 
     // Update export request
     await supabase
       .from("data_export_requests")
       .update({
         status: "completed",
-        export_url: exportUrl,
+        export_url: signedUrlData.signedUrl,
+        storage_path: fileName,
         completed_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
       })
