@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { logAIUsage } from '../_shared/logAIUsage.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,24 +26,36 @@ serve(async (req) => {
     // Verify admin access
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
+      console.error('No authenticated user found');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const { data: roles } = await supabaseClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
+    console.log('Checking admin access for user:', user.id);
 
-    if (!roles || roles.role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+    // Use the has_role function for proper security
+    const { data: isAdmin, error: roleError } = await supabaseClient
+      .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+
+    if (roleError) {
+      console.error('Error checking admin role:', roleError);
+      return new Response(JSON.stringify({ error: 'Failed to verify admin access' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!isAdmin) {
+      console.error('User is not an admin:', user.id);
+      return new Response(JSON.stringify({ error: 'Forbidden: Admin access required' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log('Admin access verified');
 
     const { weeksAhead = 4 } = await req.json().catch(() => ({}));
 
@@ -124,6 +137,15 @@ Return ONLY the post text, no hashtags.`;
       if (aiResponse.ok) {
         const aiData = await aiResponse.json();
         const generatedCopy = aiData.choices[0].message.content;
+
+        // Log AI usage
+        await logAIUsage(supabaseClient, {
+          function_name: 'generate-social-calendar',
+          model_used: 'google/gemini-2.5-flash',
+          user_id: user.id,
+          request_type: 'social_calendar_generation',
+          status: 'success',
+        });
 
         const suggestedHashtags = [
           '#ForSWAGs',
