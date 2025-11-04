@@ -60,27 +60,38 @@ serve(async (req) => {
 
     // For each athlete, get their profile picture and info
     for (const athleteId of athleteIds) {
-      const { data: athlete } = await supabaseClient
+      // First get athlete info
+      const { data: athlete, error: athleteError } = await supabaseClient
         .from('athletes')
         .select(`
           *,
-          profiles:user_id (full_name, avatar_url),
-          media_assets!inner (url, media_type, title)
+          profiles:user_id (full_name, avatar_url)
         `)
         .eq('id', athleteId)
-        .eq('media_assets.media_type', 'profile_picture')
-        .order('media_assets.created_at', { foreignTable: 'media_assets', ascending: false })
-        .limit(1)
         .single();
 
-      if (!athlete || !athlete.media_assets || athlete.media_assets.length === 0) {
+      if (athleteError || !athlete) {
+        console.warn(`Athlete ${athleteId} not found:`, athleteError);
+        continue;
+      }
+
+      // Then get their profile picture
+      const { data: mediaAssets, error: mediaError } = await supabaseClient
+        .from('media_assets')
+        .select('url, media_type, title')
+        .eq('athlete_id', athleteId)
+        .eq('media_type', 'profile_picture')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (mediaError || !mediaAssets || mediaAssets.length === 0) {
         console.warn(`No profile picture found for athlete ${athleteId}`);
         continue;
       }
 
       try {
         // Download the image
-        const imageUrl = athlete.media_assets[0].url;
+        const imageUrl = mediaAssets[0].url;
         const imageResponse = await fetch(imageUrl);
         
         if (!imageResponse.ok) {
