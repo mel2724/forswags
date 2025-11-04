@@ -116,7 +116,16 @@ export default function MembershipRecruiter() {
   const handleManageSubscription = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("No active session");
+      }
+
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
       if (error) throw error;
 
       if (data?.url) {
@@ -124,9 +133,13 @@ export default function MembershipRecruiter() {
       }
     } catch (error: any) {
       console.error("Portal error:", error);
+      const errorMessage = error.message?.includes("configuration") || error.error?.includes("configuration")
+        ? "Subscription management is being set up. Please contact support."
+        : "Failed to open customer portal. Please try again.";
+      
       toast({
         title: "Error",
-        description: "Failed to open customer portal",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
