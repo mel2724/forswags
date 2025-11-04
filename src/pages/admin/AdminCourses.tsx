@@ -150,9 +150,10 @@ export default function AdminCourses() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => navigate(`/courses/${course.id}`)}
+                          onClick={() => navigate(`/admin/courses/${course.id}`)}
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 mr-1" />
+                          Manage
                         </Button>
                         <Button
                           size="sm"

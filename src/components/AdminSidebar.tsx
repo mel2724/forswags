@@ -29,6 +29,7 @@ const items = [
   { title: "AI Usage", url: "/admin/ai-usage", icon: Activity },
   { title: "Rankings", url: "/admin/rankings", icon: TrendingUp },
   { title: "Courses", url: "/admin/courses", icon: GraduationCap },
+  { title: "Playbook Dashboard", url: "/admin/playbook-dashboard", icon: School },
   { title: "Coach Applications", url: "/admin/coach-applications", icon: Clipboard },
   { title: "Evaluations", url: "/admin/evaluations", icon: FileVideo },
   { title: "Sponsors", url: "/admin/sponsors", icon: DollarSign },
