@@ -59,8 +59,6 @@ export default function MembershipAthlete() {
   }, [searchParams]);
 
   const checkSubscription = async () => {
-    if (checkingStatus) return; // Prevent duplicate calls
-    
     setCheckingStatus(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
