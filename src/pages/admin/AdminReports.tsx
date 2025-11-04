@@ -44,6 +44,15 @@ export default function AdminReports() {
   // Recruiters filters
   const [recruitersData, setRecruitersData] = useState<any[]>([]);
 
+  // Courses & Learning filters
+  const [coursesData, setCoursesData] = useState<any[]>([]);
+  const [courseFilters, setCourseFilters] = useState({
+    courseId: "",
+    dateFrom: "",
+    dateTo: "",
+    reportType: "overview", // overview, completion, engagement, bookmarks, dropoff
+  });
+
   useEffect(() => {
     fetchAllReports();
   }, []);
@@ -56,6 +65,7 @@ export default function AdminReports() {
         fetchEvaluations(),
         fetchCoaches(),
         fetchRecruiters(),
+        fetchCourses(),
       ]);
     } catch (error) {
       console.error("Error fetching reports:", error);
@@ -262,6 +272,132 @@ export default function AdminReports() {
     }
   };
 
+  const fetchCourses = async () => {
+    try {
+      // Fetch courses with progress data
+      const { data: courses, error: coursesError } = await supabase
+        .from("courses")
+        .select(`
+          id,
+          title,
+          description,
+          is_published,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
+
+      if (coursesError) throw coursesError;
+
+      // Fetch all course progress
+      let progressQuery = supabase
+        .from("course_progress")
+        .select(`
+          id,
+          user_id,
+          course_id,
+          progress_percentage,
+          started_at,
+          completed_at,
+          completed_lessons
+        `);
+
+      if (courseFilters.dateFrom) {
+        progressQuery = progressQuery.gte("started_at", courseFilters.dateFrom);
+      }
+      if (courseFilters.dateTo) {
+        progressQuery = progressQuery.lte("started_at", courseFilters.dateTo);
+      }
+
+      const { data: progressData, error: progressError } = await progressQuery;
+      if (progressError) throw progressError;
+
+      // Fetch bookmarks
+      const { data: bookmarksData } = await supabase
+        .from("course_bookmarks")
+        .select("id, user_id, lesson_id, created_at");
+
+      // Fetch modules and lessons for detailed reports
+      const { data: modulesData } = await supabase
+        .from("modules")
+        .select(`
+          id,
+          course_id,
+          title,
+          order_index
+        `);
+
+      const { data: lessonsData } = await supabase
+        .from("lessons")
+        .select(`
+          id,
+          module_id,
+          title,
+          duration_minutes,
+          order_index
+        `);
+
+      // Calculate statistics for each course
+      const coursesWithStats = (courses || []).map((course: any) => {
+        const courseProgress = progressData?.filter((p: any) => p.course_id === course.id) || [];
+        const courseModules = modulesData?.filter((m: any) => m.course_id === course.id) || [];
+        const courseLessonIds = courseModules.flatMap((m: any) =>
+          (lessonsData || []).filter((l: any) => l.module_id === m.id).map((l: any) => l.id)
+        );
+        const courseBookmarks = bookmarksData?.filter((b: any) =>
+          courseLessonIds.includes(b.lesson_id)
+        ) || [];
+
+        const enrolledCount = courseProgress.length;
+        const completedCount = courseProgress.filter((p: any) => p.completed_at).length;
+        const inProgressCount = courseProgress.filter((p: any) => !p.completed_at && p.progress_percentage > 0).length;
+        const avgProgress = enrolledCount > 0
+          ? courseProgress.reduce((sum: number, p: any) => sum + (p.progress_percentage || 0), 0) / enrolledCount
+          : 0;
+        
+        const completedProgress = courseProgress.filter((p: any) => p.completed_at);
+        const avgCompletionTime = completedProgress.length > 0
+          ? completedProgress.reduce((sum: number, p: any) => {
+              const start = new Date(p.started_at).getTime();
+              const end = new Date(p.completed_at).getTime();
+              return sum + (end - start);
+            }, 0) / completedProgress.length / (1000 * 60 * 60 * 24) // Convert to days
+          : 0;
+
+        return {
+          ...course,
+          stats: {
+            enrolledCount,
+            completedCount,
+            inProgressCount,
+            completionRate: enrolledCount > 0 ? (completedCount / enrolledCount) * 100 : 0,
+            avgProgress: avgProgress.toFixed(1),
+            avgCompletionDays: avgCompletionTime.toFixed(1),
+            bookmarksCount: courseBookmarks.length,
+            modulesCount: courseModules.length,
+            lessonsCount: courseLessonIds.length,
+          },
+          progress: courseProgress,
+          modules: courseModules,
+          lessons: lessonsData?.filter((l: any) =>
+            courseModules.some((m: any) => m.id === l.module_id)
+          ),
+          bookmarks: courseBookmarks,
+        };
+      });
+
+      // Filter by specific course if selected
+      let filteredData = coursesWithStats;
+      if (courseFilters.courseId) {
+        filteredData = coursesWithStats.filter((c: any) => c.id === courseFilters.courseId);
+      }
+
+      setCoursesData(filteredData);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      throw error;
+    }
+  };
+
   const exportToCSV = (data: any[], filename: string, columns: string[]) => {
     setExportingData(true);
     try {
@@ -318,9 +454,10 @@ export default function AdminReports() {
       </div>
 
       <Tabs defaultValue="athletes" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="athletes">Athletes ({athletesData.length})</TabsTrigger>
           <TabsTrigger value="evaluations">Evaluations ({evaluationsData.length})</TabsTrigger>
+          <TabsTrigger value="courses">Courses ({coursesData.length})</TabsTrigger>
           <TabsTrigger value="coaches">Coaches ({coachesData.length})</TabsTrigger>
           <TabsTrigger value="recruiters">Recruiters ({recruitersData.length})</TabsTrigger>
         </TabsList>
@@ -604,6 +741,415 @@ export default function AdminReports() {
                   </TableBody>
                 </Table>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Courses & Learning Tab */}
+        <TabsContent value="courses" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>Playbook for Life - Course Reports</CardTitle>
+                  <CardDescription>Analyze course engagement, completion rates, and learning patterns</CardDescription>
+                </div>
+                <Button
+                  onClick={() =>
+                    exportToCSV(
+                      coursesData,
+                      "courses_report",
+                      ["title", "stats.enrolledCount", "stats.completedCount", "stats.completionRate", "stats.avgProgress", "stats.avgCompletionDays", "stats.modulesCount", "stats.lessonsCount"]
+                    )
+                  }
+                  disabled={exportingData || coursesData.length === 0}
+                >
+                  {exportingData ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Export CSV
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Select
+                  value={courseFilters.courseId || "all"}
+                  onValueChange={(value) => {
+                    setCourseFilters({ ...courseFilters, courseId: value === "all" ? "" : value });
+                    fetchCourses();
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Courses</SelectItem>
+                    {coursesData.map((course: any) => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={courseFilters.reportType}
+                  onValueChange={(value) => {
+                    setCourseFilters({ ...courseFilters, reportType: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Report Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="overview">Overview</SelectItem>
+                    <SelectItem value="completion">Completion Details</SelectItem>
+                    <SelectItem value="engagement">Engagement Metrics</SelectItem>
+                    <SelectItem value="bookmarks">Bookmark Analysis</SelectItem>
+                    <SelectItem value="lessons">Lesson Performance</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Input
+                  type="date"
+                  placeholder="From Date"
+                  value={courseFilters.dateFrom}
+                  onChange={(e) => {
+                    setCourseFilters({ ...courseFilters, dateFrom: e.target.value });
+                    fetchCourses();
+                  }}
+                />
+
+                <Input
+                  type="date"
+                  placeholder="To Date"
+                  value={courseFilters.dateTo}
+                  onChange={(e) => {
+                    setCourseFilters({ ...courseFilters, dateTo: e.target.value });
+                    fetchCourses();
+                  }}
+                />
+              </div>
+
+              {/* Overview Report */}
+              {courseFilters.reportType === "overview" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">Total Enrollments</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {coursesData.reduce((sum, c) => sum + (c.stats?.enrolledCount || 0), 0)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">Total Completions</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {coursesData.reduce((sum, c) => sum + (c.stats?.completedCount || 0), 0)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">Avg Completion Rate</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {coursesData.length > 0
+                            ? (coursesData.reduce((sum, c) => sum + (c.stats?.completionRate || 0), 0) / coursesData.length).toFixed(1)
+                            : 0}%
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium">Total Bookmarks</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {coursesData.reduce((sum, c) => sum + (c.stats?.bookmarksCount || 0), 0)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Course Title</TableHead>
+                          <TableHead>Published</TableHead>
+                          <TableHead>Modules</TableHead>
+                          <TableHead>Lessons</TableHead>
+                          <TableHead>Enrolled</TableHead>
+                          <TableHead>In Progress</TableHead>
+                          <TableHead>Completed</TableHead>
+                          <TableHead>Completion Rate</TableHead>
+                          <TableHead>Avg Progress</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {coursesData.map((course: any) => (
+                          <TableRow key={course.id}>
+                            <TableCell className="font-medium">{course.title}</TableCell>
+                            <TableCell>
+                              <Badge variant={course.is_published ? "default" : "secondary"}>
+                                {course.is_published ? "Yes" : "No"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{course.stats.modulesCount}</TableCell>
+                            <TableCell>{course.stats.lessonsCount}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{course.stats.enrolledCount}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{course.stats.inProgressCount}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="default">{course.stats.completedCount}</Badge>
+                            </TableCell>
+                            <TableCell>{course.stats.completionRate.toFixed(1)}%</TableCell>
+                            <TableCell>{course.stats.avgProgress}%</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
+              {/* Completion Details Report */}
+              {courseFilters.reportType === "completion" && (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Course Title</TableHead>
+                        <TableHead>Total Enrolled</TableHead>
+                        <TableHead>Completed</TableHead>
+                        <TableHead>Completion Rate</TableHead>
+                        <TableHead>Avg Time to Complete</TableHead>
+                        <TableHead>Fastest Completion</TableHead>
+                        <TableHead>Slowest Completion</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {coursesData.map((course: any) => {
+                        const completedProgress = course.progress?.filter((p: any) => p.completed_at) || [];
+                        const completionTimes = completedProgress.map((p: any) => {
+                          const start = new Date(p.started_at).getTime();
+                          const end = new Date(p.completed_at).getTime();
+                          return (end - start) / (1000 * 60 * 60 * 24); // days
+                        });
+                        const fastest = completionTimes.length > 0 ? Math.min(...completionTimes) : 0;
+                        const slowest = completionTimes.length > 0 ? Math.max(...completionTimes) : 0;
+
+                        return (
+                          <TableRow key={course.id}>
+                            <TableCell className="font-medium">{course.title}</TableCell>
+                            <TableCell>{course.stats.enrolledCount}</TableCell>
+                            <TableCell>{course.stats.completedCount}</TableCell>
+                            <TableCell>
+                              <Badge variant={course.stats.completionRate > 50 ? "default" : "secondary"}>
+                                {course.stats.completionRate.toFixed(1)}%
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{course.stats.avgCompletionDays} days</TableCell>
+                            <TableCell>{fastest > 0 ? fastest.toFixed(1) : "N/A"} days</TableCell>
+                            <TableCell>{slowest > 0 ? slowest.toFixed(1) : "N/A"} days</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Engagement Metrics Report */}
+              {courseFilters.reportType === "engagement" && (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Course Title</TableHead>
+                        <TableHead>Active Learners</TableHead>
+                        <TableHead>Engagement Rate</TableHead>
+                        <TableHead>Avg Progress</TableHead>
+                        <TableHead>Bookmarks</TableHead>
+                        <TableHead>Started This Month</TableHead>
+                        <TableHead>Completed This Month</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {coursesData.map((course: any) => {
+                        const thisMonth = new Date();
+                        thisMonth.setDate(1);
+                        const startedThisMonth = course.progress?.filter((p: any) =>
+                          new Date(p.started_at) >= thisMonth
+                        ).length || 0;
+                        const completedThisMonth = course.progress?.filter((p: any) =>
+                          p.completed_at && new Date(p.completed_at) >= thisMonth
+                        ).length || 0;
+                        const activeLearners = course.stats.enrolledCount - course.stats.completedCount;
+                        const engagementRate = course.stats.enrolledCount > 0
+                          ? ((course.stats.inProgressCount + course.stats.completedCount) / course.stats.enrolledCount) * 100
+                          : 0;
+
+                        return (
+                          <TableRow key={course.id}>
+                            <TableCell className="font-medium">{course.title}</TableCell>
+                            <TableCell>{activeLearners}</TableCell>
+                            <TableCell>
+                              <Badge variant={engagementRate > 70 ? "default" : "secondary"}>
+                                {engagementRate.toFixed(1)}%
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{course.stats.avgProgress}%</TableCell>
+                            <TableCell>{course.stats.bookmarksCount}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{startedThisMonth}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="default">{completedThisMonth}</Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Bookmark Analysis Report */}
+              {courseFilters.reportType === "bookmarks" && (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Course Title</TableHead>
+                        <TableHead>Total Bookmarks</TableHead>
+                        <TableHead>Unique Users</TableHead>
+                        <TableHead>Avg Bookmarks per User</TableHead>
+                        <TableHead>Most Bookmarked Lesson</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {coursesData.map((course: any) => {
+                        const uniqueUsers = new Set(course.bookmarks?.map((b: any) => b.user_id) || []).size;
+                        const avgBookmarks = uniqueUsers > 0 ? (course.stats.bookmarksCount / uniqueUsers).toFixed(1) : 0;
+                        
+                        // Find most bookmarked lesson
+                        const lessonBookmarkCounts = course.bookmarks?.reduce((acc: any, b: any) => {
+                          acc[b.lesson_id] = (acc[b.lesson_id] || 0) + 1;
+                          return acc;
+                        }, {}) || {};
+                        const mostBookmarkedLessonId = Object.keys(lessonBookmarkCounts).reduce((a, b) =>
+                          lessonBookmarkCounts[a] > lessonBookmarkCounts[b] ? a : b, null
+                        );
+                        const mostBookmarkedLesson = course.lessons?.find((l: any) => l.id === mostBookmarkedLessonId);
+
+                        return (
+                          <TableRow key={course.id}>
+                            <TableCell className="font-medium">{course.title}</TableCell>
+                            <TableCell>{course.stats.bookmarksCount}</TableCell>
+                            <TableCell>{uniqueUsers}</TableCell>
+                            <TableCell>{avgBookmarks}</TableCell>
+                            <TableCell>
+                              {mostBookmarkedLesson ? (
+                                <div className="space-y-1">
+                                  <div className="text-sm">{mostBookmarkedLesson.title}</div>
+                                  <Badge variant="outline">{lessonBookmarkCounts[mostBookmarkedLessonId]} bookmarks</Badge>
+                                </div>
+                              ) : (
+                                "N/A"
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Lesson Performance Report */}
+              {courseFilters.reportType === "lessons" && (
+                <div className="space-y-4">
+                  {coursesData.map((course: any) => (
+                    <Card key={course.id}>
+                      <CardHeader>
+                        <CardTitle>{course.title}</CardTitle>
+                        <CardDescription>{course.stats.lessonsCount} lessons across {course.stats.modulesCount} modules</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="rounded-md border">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Module</TableHead>
+                                <TableHead>Lesson</TableHead>
+                                <TableHead>Duration</TableHead>
+                                <TableHead>Completion Count</TableHead>
+                                <TableHead>Bookmarks</TableHead>
+                                <TableHead>Type</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {course.modules?.map((module: any) => {
+                                const moduleLessons = course.lessons?.filter((l: any) => l.module_id === module.id) || [];
+                                return moduleLessons.map((lesson: any, idx: number) => {
+                                  const lessonCompletions = course.progress?.filter((p: any) =>
+                                    p.completed_lessons?.includes(lesson.id)
+                                  ).length || 0;
+                                  const lessonBookmarks = course.bookmarks?.filter((b: any) =>
+                                    b.lesson_id === lesson.id
+                                  ).length || 0;
+
+                                  return (
+                                    <TableRow key={lesson.id}>
+                                      {idx === 0 && (
+                                        <TableCell rowSpan={moduleLessons.length} className="font-medium">
+                                          {module.title}
+                                        </TableCell>
+                                      )}
+                                      <TableCell>{lesson.title}</TableCell>
+                                      <TableCell>{lesson.duration_minutes ? `${lesson.duration_minutes} min` : "N/A"}</TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{lessonCompletions}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="secondary">{lessonBookmarks}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        {lesson.is_scorm_content ? (
+                                          <Badge>SCORM</Badge>
+                                        ) : lesson.video_url ? (
+                                          <Badge variant="outline">Video</Badge>
+                                        ) : (
+                                          <Badge variant="secondary">Text</Badge>
+                                        )}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                });
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
