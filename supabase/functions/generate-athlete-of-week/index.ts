@@ -34,10 +34,11 @@ serve(async (req) => {
     const { data: roles } = await supabaseClient
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
-      .single();
+      .eq('user_id', user.id);
 
-    if (!roles || roles.role !== 'admin') {
+    const isAdmin = roles?.some(r => r.role === 'admin');
+    
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
