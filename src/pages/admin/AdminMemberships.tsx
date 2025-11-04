@@ -7,13 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, CreditCard, TrendingUp, Users, DollarSign, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { STRIPE_PRODUCTS, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
 
 interface MembershipData {
   user_id: string;
   email: string;
   full_name: string | null;
-  product_id: string | null;
+  plan: string | null;
   subscribed: boolean;
   subscription_end: string | null;
   created_at: string;
@@ -33,14 +32,12 @@ export default function AdminMemberships() {
   // Stats
   const totalMembers = memberships.length;
   const activeSubscriptions = memberships.filter(m => m.subscribed).length;
-  const athleteMembers = memberships.filter(m => {
-    const tier = getMembershipTier(m.product_id);
-    return tier?.role === "athlete";
-  }).length;
-  const recruiterMembers = memberships.filter(m => {
-    const tier = getMembershipTier(m.product_id);
-    return tier?.role === "recruiter";
-  }).length;
+  const athleteMembers = memberships.filter(m => 
+    m.plan && (m.plan.includes('pro_') || m.plan.includes('championship_'))
+  ).length;
+  const recruiterMembers = memberships.filter(m => 
+    m.plan && m.plan.includes('recruiter_')
+  ).length;
 
   useEffect(() => {
     fetchMemberships();
@@ -50,47 +47,39 @@ export default function AdminMemberships() {
     try {
       setLoading(true);
 
-      // Fetch all profiles
-      const { data: profilesData, error: profilesError } = await supabase
+      // Fetch all profiles with their memberships
+      const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, full_name, created_at")
+        .select(`
+          id,
+          email,
+          full_name,
+          created_at,
+          memberships (
+            plan,
+            status,
+            end_date
+          )
+        `)
         .order("created_at", { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (error) throw error;
 
-      // For each profile, check their subscription status
-      const membershipPromises = (profilesData || []).map(async (profile) => {
-        try {
-          const { data: subData } = await supabase.functions.invoke("check-subscription", {
-            headers: {
-              Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            },
-          });
-
-          return {
-            user_id: profile.id,
-            email: profile.email,
-            full_name: profile.full_name,
-            product_id: subData?.product_id || null,
-            subscribed: subData?.subscribed || false,
-            subscription_end: subData?.subscription_end || null,
-            created_at: profile.created_at,
-          };
-        } catch (error) {
-          console.error(`Error fetching subscription for ${profile.email}:`, error);
-          return {
-            user_id: profile.id,
-            email: profile.email,
-            full_name: profile.full_name,
-            product_id: null,
-            subscribed: false,
-            subscription_end: null,
-            created_at: profile.created_at,
-          };
-        }
+      const membershipData = (data || []).map((profile: any) => {
+        const membership = profile.memberships?.[0];
+        const isActive = membership?.status === 'active';
+        
+        return {
+          user_id: profile.id,
+          email: profile.email,
+          full_name: profile.full_name,
+          plan: membership?.plan || null,
+          subscribed: isActive,
+          subscription_end: membership?.end_date || null,
+          created_at: profile.created_at,
+        };
       });
 
-      const membershipData = await Promise.all(membershipPromises);
       setMemberships(membershipData);
     } catch (error) {
       console.error("Error fetching memberships:", error);
@@ -121,8 +110,10 @@ export default function AdminMemberships() {
     );
 
     return filtered.sort((a, b) => {
-      let aValue: any = a[sortField];
-      let bValue: any = b[sortField];
+      // Map plan to product_id for sorting if needed
+      const fieldToSort = sortField === "product_id" ? "plan" : sortField;
+      let aValue: any = fieldToSort === "plan" ? a.plan : a[sortField];
+      let bValue: any = fieldToSort === "plan" ? b.plan : b[sortField];
 
       // Handle null values
       if (aValue === null) return 1;
@@ -146,26 +137,21 @@ export default function AdminMemberships() {
   };
 
   const getMembershipBadge = (membership: MembershipData) => {
-    if (!membership.subscribed || !membership.product_id) {
+    if (!membership.subscribed || !membership.plan) {
       return <Badge variant="outline">Free</Badge>;
     }
 
-    const tier = getMembershipTier(membership.product_id);
-    if (!tier) return <Badge variant="outline">Unknown</Badge>;
+    const plan = membership.plan;
 
-    if (tier.role === "athlete") {
-      if (tier.tier === "monthly") {
-        return <Badge className="bg-primary">Pro Monthly</Badge>;
-      } else if (tier.tier === "yearly") {
-        return <Badge className="bg-secondary">Championship Yearly</Badge>;
-      }
-    } else if (tier.role === "recruiter") {
-      if (tier.tier === "monthly") {
-        return <Badge className="bg-purple-600">Recruiter Monthly</Badge>;
-      } else if (tier.tier === "yearly") {
-        return <Badge className="bg-purple-800">Recruiter Yearly</Badge>;
-      }
-    } else if (tier.role === "parent") {
+    if (plan === "pro_monthly") {
+      return <Badge className="bg-primary">Pro Monthly</Badge>;
+    } else if (plan === "championship_yearly") {
+      return <Badge className="bg-secondary">Championship Yearly</Badge>;
+    } else if (plan === "recruiter_monthly") {
+      return <Badge className="bg-purple-600">Recruiter Monthly</Badge>;
+    } else if (plan === "recruiter_yearly") {
+      return <Badge className="bg-purple-800">Recruiter Yearly</Badge>;
+    } else if (plan === "parent_free") {
       return <Badge variant="secondary">Parent</Badge>;
     }
 
@@ -274,17 +260,7 @@ export default function AdminMemberships() {
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
-                    <TableHead>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 p-2"
-                        onClick={() => handleSort("product_id")}
-                      >
-                        Plan
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
-                      </Button>
-                    </TableHead>
+                    <TableHead>Plan</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>
                       <Button
