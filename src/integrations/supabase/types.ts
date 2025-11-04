@@ -352,7 +352,7 @@ export type Database = {
           {
             foreignKeyName: "athlete_promotion_history_athlete_id_fkey"
             columns: ["athlete_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "athletes"
             referencedColumns: ["id"]
           },
