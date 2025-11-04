@@ -128,6 +128,9 @@ serve(async (req) => {
 
     console.log('[SEND-BULK-NOTIFICATIONS] Sending to users:', targetUserIds.length);
 
+    // Create campaign ID for tracking
+    const campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     // Add batch size limit to prevent database overload
     if (targetUserIds.length > 10000) {
       return new Response(
@@ -164,6 +167,7 @@ serve(async (req) => {
       type,
       link: link || null,
       is_read: false,
+      campaign_id: campaignId,
     }));
 
     const { error: insertError } = await supabaseClient
@@ -174,12 +178,31 @@ serve(async (req) => {
       throw insertError;
     }
 
+    // Create campaign tracking record
+    const { error: campaignError } = await supabaseClient
+      .from('notification_campaigns')
+      .insert({
+        campaign_id: campaignId,
+        title,
+        message,
+        type,
+        link: link || null,
+        target_user_types: targetUserTypes,
+        sent_count: targetUserIds.length,
+      });
+
+    if (campaignError) {
+      console.error('[SEND-BULK-NOTIFICATIONS] Campaign tracking error:', campaignError);
+      // Don't fail the request if campaign tracking fails
+    }
+
     console.log('[SEND-BULK-NOTIFICATIONS] Successfully sent notifications');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        count: targetUserIds.length 
+        count: targetUserIds.length,
+        campaign_id: campaignId
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

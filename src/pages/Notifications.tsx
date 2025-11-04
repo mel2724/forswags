@@ -124,11 +124,27 @@ const Notifications = () => {
     }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if not already
     if (!notification.is_read) {
       markAsRead(notification.id);
     }
+    
+    // Track viewed_at timestamp for analytics
+    await supabase
+      .from("notifications")
+      .update({ viewed_at: new Date().toISOString() })
+      .eq("id", notification.id)
+      .is("viewed_at", null);
+
+    // Track click if there's a link
     if (notification.link) {
+      await supabase
+        .from("notifications")
+        .update({ clicked_at: new Date().toISOString() })
+        .eq("id", notification.id)
+        .is("clicked_at", null);
+      
       navigate(notification.link);
     }
   };

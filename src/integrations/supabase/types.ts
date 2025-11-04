@@ -2172,6 +2172,51 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_campaigns: {
+        Row: {
+          campaign_id: string
+          clicked_count: number | null
+          created_at: string | null
+          id: string
+          link: string | null
+          message: string
+          sent_at: string | null
+          sent_count: number | null
+          target_user_types: string[]
+          title: string
+          type: string
+          viewed_count: number | null
+        }
+        Insert: {
+          campaign_id: string
+          clicked_count?: number | null
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          sent_at?: string | null
+          sent_count?: number | null
+          target_user_types: string[]
+          title: string
+          type: string
+          viewed_count?: number | null
+        }
+        Update: {
+          campaign_id?: string
+          clicked_count?: number | null
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          sent_at?: string | null
+          sent_count?: number | null
+          target_user_types?: string[]
+          title?: string
+          type?: string
+          viewed_count?: number | null
+        }
+        Relationships: []
+      }
       notification_prefs: {
         Row: {
           channel: string
@@ -2207,6 +2252,8 @@ export type Database = {
       }
       notifications: {
         Row: {
+          campaign_id: string | null
+          clicked_at: string | null
           created_at: string
           id: string
           is_read: boolean | null
@@ -2215,8 +2262,11 @@ export type Database = {
           title: string
           type: string
           user_id: string
+          viewed_at: string | null
         }
         Insert: {
+          campaign_id?: string | null
+          clicked_at?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
@@ -2225,8 +2275,11 @@ export type Database = {
           title: string
           type: string
           user_id: string
+          viewed_at?: string | null
         }
         Update: {
+          campaign_id?: string | null
+          clicked_at?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
@@ -2235,6 +2288,7 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+          viewed_at?: string | null
         }
         Relationships: []
       }
