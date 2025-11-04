@@ -332,7 +332,7 @@ const Dashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-5xl font-black mb-2 uppercase tracking-tight">
-            Welcome back, {profile?.full_name?.split(' ')[0] || "Athlete"}!
+            Welcome back, {athlete?.full_name?.split(' ')[0] || profile?.full_name?.split(' ')[0] || "Athlete"}!
           </h1>
           <p className="text-muted-foreground flex items-center gap-2">
             <Badge variant="secondary" className="uppercase font-bold">
