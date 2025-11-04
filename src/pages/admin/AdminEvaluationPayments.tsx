@@ -10,6 +10,7 @@ import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 export default function AdminEvaluationPayments() {
   const [sessionId, setSessionId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleVerifyPayment = async (e: React.FormEvent) => {
@@ -33,12 +34,15 @@ export default function AdminEvaluationPayments() {
       if (error) throw error;
 
       if (data.success) {
+        const message = `✓ Payment verified successfully! Evaluation ${data.evaluation_id} has been created.`;
+        setSuccessMessage(message);
         toast({
           title: "Payment Verified",
           description: `Evaluation ${data.evaluation_id} has been created successfully`,
         });
         setSessionId("");
       } else {
+        setSuccessMessage(null);
         toast({
           title: "Verification Failed",
           description: data.message || "Payment not completed",
@@ -47,6 +51,7 @@ export default function AdminEvaluationPayments() {
       }
     } catch (error: any) {
       console.error("Error verifying payment:", error);
+      setSuccessMessage(null);
       toast({
         title: "Error",
         description: error.message || "Failed to verify payment",
@@ -65,6 +70,14 @@ export default function AdminEvaluationPayments() {
           Manually verify Stripe payment sessions for evaluations that failed to complete
         </p>
       </div>
+
+      {successMessage && (
+        <Card className="border-green-500 bg-green-50 dark:bg-green-950">
+          <CardContent className="pt-6">
+            <p className="text-green-700 dark:text-green-300 font-medium">{successMessage}</p>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
