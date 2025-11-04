@@ -85,12 +85,12 @@ export function Header() {
           </NavigationMenu>
 
           <Button asChild className="btn-hero ml-2">
-            <a href="/auth">Sign Up</a>
+            <a href="/auth">Log-in</a>
           </Button>
         </nav>
 
         <Button asChild className="md:hidden btn-hero">
-          <a href="/auth">Sign Up</a>
+          <a href="/auth">Log-in</a>
         </Button>
       </div>
     </header>
