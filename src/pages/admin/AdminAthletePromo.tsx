@@ -113,6 +113,11 @@ export default function AdminAthletePromo() {
 
       if (error) throw error;
       
+      // Check if response is an error (JSON) instead of a ZIP file
+      if (data && typeof data === 'object' && 'error' in data) {
+        throw new Error(data.error);
+      }
+      
       // Create blob and download
       const blob = new Blob([data], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);

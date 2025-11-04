@@ -122,6 +122,19 @@ serve(async (req) => {
       }
     }
 
+    // Check if we found any media
+    if (manifestData.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'No profile pictures found for the selected athletes. Please ensure athletes have profile pictures uploaded before creating a media pack.' 
+        }), 
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Add manifest.json
     zip.file('manifest.json', JSON.stringify(manifestData, null, 2));
 
