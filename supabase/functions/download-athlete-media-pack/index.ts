@@ -138,13 +138,13 @@ ForSWAGs - Athlete Management System`;
     zip.file('README.txt', readme);
 
     // Generate the ZIP file
-    const zipBlob = await zip.generateAsync({ type: 'arraybuffer' });
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
 
     const filename = weekStartDate 
       ? `athlete_media_pack_week_${weekStartDate.replace(/\//g, '-')}.zip`
       : `athlete_media_pack_${new Date().toISOString().split('T')[0]}.zip`;
 
-    return new Response(zipBlob as BodyInit, {
+    return new Response(zipBlob, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/zip',
