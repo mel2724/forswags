@@ -47,36 +47,51 @@ export default function AdminMemberships() {
     try {
       setLoading(true);
 
-      // Fetch all profiles with their memberships
+      // Fetch all memberships with profile data
       const { data, error } = await supabase
-        .from("profiles")
-        .select(`
-          id,
-          email,
-          full_name,
-          created_at,
-          memberships (
-            plan,
-            status,
-            end_date
-          )
-        `)
+        .from("memberships")
+        .select("user_id, plan, status, end_date")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      const membershipData = (data || []).map((profile: any) => {
-        const membership = profile.memberships?.[0];
-        const isActive = membership?.status === 'active';
+      // Get unique user IDs
+      const userIds = [...new Set(data?.map(m => m.user_id) || [])];
+
+      // Fetch profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, email, full_name, created_at")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of profiles
+      const profilesMap = new Map(
+        profilesData?.map(p => [p.id, p]) || []
+      );
+
+      // Create a map of latest membership per user
+      const membershipMap = new Map();
+      data?.forEach(m => {
+        if (!membershipMap.has(m.user_id)) {
+          membershipMap.set(m.user_id, m);
+        }
+      });
+
+      // Combine data
+      const membershipData = Array.from(membershipMap.entries()).map(([userId, membership]) => {
+        const profile = profilesMap.get(userId);
+        const isActive = membership.status === 'active';
         
         return {
-          user_id: profile.id,
-          email: profile.email,
-          full_name: profile.full_name,
-          plan: membership?.plan || null,
+          user_id: userId,
+          email: profile?.email || 'Unknown',
+          full_name: profile?.full_name || null,
+          plan: membership.plan || null,
           subscribed: isActive,
-          subscription_end: membership?.end_date || null,
-          created_at: profile.created_at,
+          subscription_end: membership.end_date || null,
+          created_at: profile?.created_at || new Date().toISOString(),
         };
       });
 
