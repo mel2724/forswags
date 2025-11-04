@@ -75,23 +75,35 @@ serve(async (req) => {
         continue;
       }
 
-      // Then get their profile picture
+      // Then get their media - try profile picture first, then any media type
       const { data: mediaAssets, error: mediaError } = await supabaseClient
         .from('media_assets')
         .select('url, media_type, title')
         .eq('athlete_id', athleteId)
-        .eq('media_type', 'profile_picture')
         .order('created_at', { ascending: false })
         .limit(1);
 
-      if (mediaError || !mediaAssets || mediaAssets.length === 0) {
-        console.warn(`No profile picture found for athlete ${athleteId}`);
+      let imageUrl: string | null = null;
+      let mediaType: string = 'unknown';
+
+      // Try media assets first
+      if (!mediaError && mediaAssets && mediaAssets.length > 0) {
+        imageUrl = mediaAssets[0].url;
+        mediaType = mediaAssets[0].media_type || 'media';
+      } 
+      // Fall back to profile avatar_url
+      else if (athlete.profiles?.avatar_url) {
+        imageUrl = athlete.profiles.avatar_url;
+        mediaType = 'avatar';
+      }
+
+      if (!imageUrl) {
+        console.warn(`No media found for athlete ${athleteId}`);
         continue;
       }
 
       try {
         // Download the image
-        const imageUrl = mediaAssets[0].url;
         const imageResponse = await fetch(imageUrl);
         
         if (!imageResponse.ok) {
@@ -114,6 +126,7 @@ serve(async (req) => {
           sport: athlete.sport,
           position: athlete.position,
           graduation_year: athlete.graduation_year,
+          media_type: mediaType,
           filename: filename,
           original_url: imageUrl,
         });
