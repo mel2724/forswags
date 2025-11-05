@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, RefreshCw, Trash2, Trophy, Upload } from "lucide-react";
+import { Plus, RefreshCw, Trash2, Download, Lock, Unlock, Loader2, Trophy } from "lucide-react";
 
 interface RankingEntry {
   id: string;
@@ -20,6 +20,7 @@ interface RankingEntry {
   national_rank: number | null;
   composite_score: number | null;
   last_calculated: string;
+  is_manual_override?: boolean;
   athletes: {
     sport: string;
     position: string | null;
@@ -228,13 +229,71 @@ export default function AdminRankings() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            onClick={async () => {
+              setLoading(true);
+              try {
+                const { data, error } = await supabase.functions.invoke('scrape-external-rankings', {
+                  body: { sport: 'football' }
+                });
+                if (error) throw error;
+                toast({
+                  title: "Import Complete",
+                  description: `Imported ${data.athletes_imported} athletes from external sources`,
+                });
+                loadData();
+              } catch (error: any) {
+                toast({
+                  title: "Import Failed",
+                  description: error.message,
+                  variant: "destructive",
+                });
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading || calculating}
+            variant="outline"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Import Top 100
+          </Button>
+          <Button 
+            onClick={async () => {
+              setCalculating(true);
+              try {
+                const { data, error } = await supabase.functions.invoke('merge-rankings', {
+                  body: { sport: 'football', preserveOverrides: true }
+                });
+                if (error) throw error;
+                toast({
+                  title: "Merge Complete",
+                  description: `Updated ${data.rankings_updated} rankings (preserved ${data.preserved_overrides} manual overrides)`,
+                });
+                loadData();
+              } catch (error: any) {
+                toast({
+                  title: "Merge Failed",
+                  description: error.message,
+                  variant: "destructive",
+                });
+              } finally {
+                setCalculating(false);
+              }
+            }}
+            disabled={loading || calculating}
+            variant="outline"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Merge & Calculate
+          </Button>
           <Button onClick={handleRecalculateRankings} disabled={calculating} variant="outline">
             {calculating ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
-            Recalculate All
+            Recalculate Internal
           </Button>
           <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
             <DialogTrigger asChild>
@@ -384,11 +443,16 @@ export default function AdminRankings() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      {ranking.overall_rank ? (
-                        <Badge variant="outline">#{ranking.overall_rank}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
+                      <div className="flex items-center justify-center gap-2">
+                        {ranking.overall_rank ? (
+                          <Badge variant="outline">#{ranking.overall_rank}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                        {ranking.is_manual_override && (
+                          <Lock className="h-3 w-3 text-amber-500" />
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       {ranking.position_rank ? (
@@ -418,13 +482,55 @@ export default function AdminRankings() {
                       {new Date(ranking.last_calculated).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteRanking(ranking.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const { data: { user } } = await supabase.auth.getUser();
+                              const { error } = await supabase
+                                .from('rankings')
+                                .update({ 
+                                  is_manual_override: !ranking.is_manual_override,
+                                  overridden_at: new Date().toISOString(),
+                                  overridden_by: user?.id
+                                })
+                                .eq('id', ranking.id);
+                              
+                              if (!error) {
+                                toast({
+                                  title: ranking.is_manual_override ? "Unlocked" : "Locked",
+                                  description: ranking.is_manual_override 
+                                    ? "Ranking will be recalculated on next merge"
+                                    : "Ranking is now locked from automatic updates"
+                                });
+                                loadData();
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to toggle lock status",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          title={ranking.is_manual_override ? "Unlock ranking" : "Lock ranking"}
+                        >
+                          {ranking.is_manual_override ? (
+                            <Unlock className="h-4 w-4 text-amber-500" />
+                          ) : (
+                            <Lock className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteRanking(ranking.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

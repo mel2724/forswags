@@ -34,7 +34,12 @@ function RankingsPage() {
       position: string | null;
       graduation_year: number | null;
       high_school: string | null;
+      city?: string | null;
+      state?: string | null;
       user_id: string;
+      committed_school_id?: string | null;
+      commitment_date?: string | null;
+      commitment_status?: string | null;
     } | null;
     profiles?: {
       full_name: string | null;
@@ -47,6 +52,7 @@ function RankingsPage() {
   const [loading, setLoading] = useState(true);
   const [sportFilter, setSportFilter] = useState<string>("all");
   const [gradYearFilter, setGradYearFilter] = useState<string>("all");
+  const [committedSchools, setCommittedSchools] = useState<Record<string, { name: string; logo_url: string }>>({});
 
   useEffect(() => {
     loadRankings();
@@ -75,6 +81,29 @@ function RankingsPage() {
       }));
 
       setRankings(rankingsWithProfiles || []);
+
+      // Load committed schools
+      const uniqueSchoolIds = [...new Set(
+        rankingsData
+          ?.map(r => r.athletes?.committed_school_id)
+          .filter(Boolean)
+      )] as string[];
+
+      if (uniqueSchoolIds.length > 0) {
+        const { data: schools } = await supabase
+          .from('schools')
+          .select('id, name, logo_url')
+          .in('id', uniqueSchoolIds);
+
+        const schoolsMap: Record<string, { name: string; logo_url: string }> = {};
+        schools?.forEach(school => {
+          schoolsMap[school.id] = {
+            name: school.name,
+            logo_url: school.logo_url || ''
+          };
+        });
+        setCommittedSchools(schoolsMap);
+      }
     } catch (error: any) {
       toast.error("Failed to load rankings");
       console.error(error);
@@ -135,7 +164,7 @@ function RankingsPage() {
         
         <div className="flex-1 min-w-0">
           <h4 className="font-bold truncate">{ranking.profiles?.full_name || "Unknown Athlete"}</h4>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
             <span>{ranking.athletes?.sport}</span>
             {ranking.athletes?.position && (
               <>
@@ -147,6 +176,23 @@ function RankingsPage() {
               <>
                 <span>•</span>
                 <span>Class of {ranking.athletes.graduation_year}</span>
+              </>
+            )}
+            {ranking.athletes?.committed_school_id && committedSchools[ranking.athletes.committed_school_id] && (
+              <>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  {committedSchools[ranking.athletes.committed_school_id].logo_url && (
+                    <img 
+                      src={committedSchools[ranking.athletes.committed_school_id].logo_url}
+                      alt={committedSchools[ranking.athletes.committed_school_id].name}
+                      className="h-4 w-4 rounded-full object-cover"
+                    />
+                  )}
+                  <Badge variant="secondary" className="text-xs px-1 py-0">
+                    {committedSchools[ranking.athletes.committed_school_id].name}
+                  </Badge>
+                </div>
               </>
             )}
           </div>
