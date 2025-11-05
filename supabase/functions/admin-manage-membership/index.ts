@@ -57,84 +57,119 @@ serve(async (req) => {
 
     switch (action) {
       case "get_details": {
-        // Get user email
-        const { data: profileData, error: profileError } = await supabaseClient
-          .from("profiles")
-          .select("email")
-          .eq("id", userId)
-          .single();
+        try {
+          // Get user email
+          const { data: profileData, error: profileError } = await supabaseClient
+            .from("profiles")
+            .select("email")
+            .eq("id", userId)
+            .single();
 
-        if (profileError || !profileData) {
-          throw new Error("User not found");
-        }
+          if (profileError || !profileData) {
+            logStep("Profile not found", { userId, error: profileError });
+            throw new Error("User not found");
+          }
 
-        // Find customer in Stripe
-        const customers = await stripe.customers.list({ email: profileData.email, limit: 1 });
-        if (customers.data.length === 0) {
-          return new Response(
-            JSON.stringify({ error: "No Stripe customer found" }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
-          );
-        }
+          logStep("Profile found", { email: profileData.email });
 
-        const customer = customers.data[0];
-        logStep("Customer found", { customerId: customer.id });
+          // Find customer in Stripe
+          const customers = await stripe.customers.list({ email: profileData.email, limit: 1 });
+          if (customers.data.length === 0) {
+            logStep("No Stripe customer", { email: profileData.email });
+            return new Response(
+              JSON.stringify({ error: "No Stripe customer found" }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+            );
+          }
 
-        // Get subscriptions
-        const subscriptions = await stripe.subscriptions.list({
-          customer: customer.id,
-          limit: 10,
-        });
+          const customer = customers.data[0];
+          logStep("Customer found", { customerId: customer.id });
 
-        // Get payment methods
-        const paymentMethods = await stripe.paymentMethods.list({
-          customer: customer.id,
-          type: "card",
-        });
+          // Get subscriptions with error handling
+          let subscriptions: Stripe.ApiList<Stripe.Subscription> = { data: [] as Stripe.Subscription[] } as any;
+          try {
+            subscriptions = await stripe.subscriptions.list({
+              customer: customer.id,
+              limit: 10,
+            });
+            logStep("Subscriptions fetched", { count: subscriptions.data.length });
+          } catch (subError) {
+            const errorMsg = subError instanceof Error ? subError.message : String(subError);
+            logStep("Subscription fetch error", { error: errorMsg });
+          }
 
-        // Get recent invoices
-        const invoices = await stripe.invoices.list({
-          customer: customer.id,
-          limit: 5,
-        });
+          // Get payment methods with error handling
+          let paymentMethods: Stripe.ApiList<Stripe.PaymentMethod> = { data: [] as Stripe.PaymentMethod[] } as any;
+          try {
+            paymentMethods = await stripe.paymentMethods.list({
+              customer: customer.id,
+              type: "card",
+            });
+            logStep("Payment methods fetched", { count: paymentMethods.data.length });
+          } catch (pmError) {
+            const errorMsg = pmError instanceof Error ? pmError.message : String(pmError);
+            logStep("Payment method fetch error", { error: errorMsg });
+          }
 
-        return new Response(
-          JSON.stringify({
+          // Get recent invoices with error handling
+          let invoices: Stripe.ApiList<Stripe.Invoice> = { data: [] as Stripe.Invoice[] } as any;
+          try {
+            invoices = await stripe.invoices.list({
+              customer: customer.id,
+              limit: 5,
+            });
+            logStep("Invoices fetched", { count: invoices.data.length });
+          } catch (invError) {
+            const errorMsg = invError instanceof Error ? invError.message : String(invError);
+            logStep("Invoice fetch error", { error: errorMsg });
+          }
+
+          const responseData = {
             customer: {
               id: customer.id,
               email: customer.email,
               created: customer.created,
             },
-            subscriptions: subscriptions.data.map(sub => ({
+            subscriptions: subscriptions.data.map((sub: any) => ({
               id: sub.id,
               status: sub.status,
               current_period_end: sub.current_period_end,
               current_period_start: sub.current_period_start,
               cancel_at_period_end: sub.cancel_at_period_end,
-              items: sub.items.data.map(item => ({
+              items: sub.items.data.map((item: any) => ({
                 price_id: item.price.id,
-                product_id: item.price.product,
-                amount: item.price.unit_amount,
-                interval: item.price.recurring?.interval,
+                product_id: typeof item.price.product === 'string' ? item.price.product : item.price.product?.id,
+                amount: item.price.unit_amount || 0,
+                interval: item.price.recurring?.interval || 'month',
               })),
             })),
-            payment_methods: paymentMethods.data.map(pm => ({
+            payment_methods: paymentMethods.data.map((pm: any) => ({
               id: pm.id,
-              brand: pm.card?.brand,
-              last4: pm.card?.last4,
-              exp_month: pm.card?.exp_month,
-              exp_year: pm.card?.exp_year,
+              brand: pm.card?.brand || 'unknown',
+              last4: pm.card?.last4 || '0000',
+              exp_month: pm.card?.exp_month || 0,
+              exp_year: pm.card?.exp_year || 0,
             })),
-            invoices: invoices.data.map(inv => ({
+            invoices: invoices.data.map((inv: any) => ({
               id: inv.id,
               status: inv.status,
-              amount: inv.amount_paid,
+              amount: inv.amount_paid || 0,
               created: inv.created,
-              invoice_pdf: inv.invoice_pdf,
+              invoice_pdf: inv.invoice_pdf || null,
             })),
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-        );
+          };
+
+          logStep("Response prepared", { hasData: true });
+
+          return new Response(
+            JSON.stringify(responseData),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+          );
+        } catch (detailsError) {
+          const errorMsg = detailsError instanceof Error ? detailsError.message : String(detailsError);
+          logStep("Error in get_details", { error: errorMsg });
+          throw detailsError;
+        }
       }
 
       case "cancel_subscription": {
