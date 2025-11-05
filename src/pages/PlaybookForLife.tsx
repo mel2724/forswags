@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, PlayCircle, Award, TrendingUp } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, PlayCircle, Award, TrendingUp, Heart } from "lucide-react";
 import { VideoPlaylist } from "@/components/VideoPlaylist";
 import logoIcon from "@/assets/forswags-logo.png";
 import { toast } from "sonner";
@@ -17,15 +18,27 @@ interface Module {
   video_count: number;
 }
 
+interface FavoriteVideo {
+  id: string;
+  title: string;
+  description: string | null;
+  video_url: string;
+  duration_minutes: number | null;
+  module_id: string;
+  module_title: string;
+}
+
 const PlaybookForLife = () => {
   const navigate = useNavigate();
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [favoriteVideos, setFavoriteVideos] = useState<FavoriteVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalVideos: 0,
     completedVideos: 0,
     badgesEarned: 0,
+    favoriteVideos: 0,
   });
 
   useEffect(() => {
@@ -106,12 +119,42 @@ const PlaybookForLife = () => {
               .then(res => res.data?.map(b => b.id) || [])
           );
 
+        // Load favorite videos
+        const { data: favorites } = await supabase
+          .from("video_favorites")
+          .select(`
+            lesson_id,
+            lessons!inner(
+              id,
+              title,
+              description,
+              video_url,
+              duration_minutes,
+              module_id,
+              modules!inner(title)
+            )
+          `)
+          .eq("user_id", user.id);
+
+        const formattedFavorites = favorites?.map((f: any) => ({
+          id: f.lessons.id,
+          title: f.lessons.title,
+          description: f.lessons.description,
+          video_url: f.lessons.video_url,
+          duration_minutes: f.lessons.duration_minutes,
+          module_id: f.lessons.module_id,
+          module_title: f.lessons.modules.title,
+        })) || [];
+
+        setFavoriteVideos(formattedFavorites);
+
         const totalVideos = formattedModules.reduce((sum, m) => sum + m.video_count, 0);
 
         setStats({
           totalVideos,
           completedVideos: completions?.length || 0,
           badgesEarned: badges?.length || 0,
+          favoriteVideos: formattedFavorites.length,
         });
       }
     } catch (error) {
@@ -227,11 +270,18 @@ const PlaybookForLife = () => {
           </div>
         </div>
 
-        {/* Topics Grid */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-6">Life Skills Topics</h2>
-          
-          {modules.length === 0 ? (
+        {/* Topics and Favorites Tabs */}
+        <Tabs defaultValue="topics" className="mb-8">
+          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-6">
+            <TabsTrigger value="topics">Life Skills Topics</TabsTrigger>
+            <TabsTrigger value="favorites" className="gap-2">
+              <Heart className="h-4 w-4" />
+              My Favorites ({stats.favoriteVideos})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="topics">
+            {modules.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <PlayCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -240,35 +290,89 @@ const PlaybookForLife = () => {
                   Video topics are being added. Check back soon!
                 </p>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {modules.map((module) => (
-                <Card 
-                  key={module.id}
-                  className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary/50"
-                  onClick={() => setSelectedModule(module.id)}
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-start justify-between gap-2">
-                      <span>{module.title}</span>
-                      <Badge variant="secondary">{module.video_count}</Badge>
-                    </CardTitle>
-                    {module.description && (
-                      <CardDescription>{module.description}</CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <Button className="w-full gap-2">
-                      <PlayCircle className="h-4 w-4" />
-                      Watch Videos
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {modules.map((module) => (
+                  <Card 
+                    key={module.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary/50"
+                    onClick={() => setSelectedModule(module.id)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-start justify-between gap-2">
+                        <span>{module.title}</span>
+                        <Badge variant="secondary">{module.video_count}</Badge>
+                      </CardTitle>
+                      {module.description && (
+                        <CardDescription>{module.description}</CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      <Button className="w-full gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        Watch Videos
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="favorites">
+            {favoriteVideos.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-semibold mb-2">No Favorites Yet</h3>
+                  <p className="text-muted-foreground">
+                    Click the heart icon on videos you love to save them here
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {favoriteVideos.map((video) => (
+                  <Card 
+                    key={video.id}
+                    className="hover:shadow-lg transition-shadow border-2 hover:border-primary/50"
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <Badge variant="outline">{video.module_title}</Badge>
+                        <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                      </div>
+                      <CardTitle className="text-lg">{video.title}</CardTitle>
+                      {video.description && (
+                        <CardDescription className="line-clamp-2">
+                          {video.description}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        {video.duration_minutes && (
+                          <span className="text-sm text-muted-foreground">
+                            {video.duration_minutes} min
+                          </span>
+                        )}
+                        <Button 
+                          size="sm"
+                          onClick={() => setSelectedModule(video.module_id)}
+                          className="gap-2"
+                        >
+                          <PlayCircle className="h-4 w-4" />
+                          Watch
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
 
         {/* Badge Milestones */}
         <Card className="bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5">

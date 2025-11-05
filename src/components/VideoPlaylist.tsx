@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, ExternalLink, PlayCircle, Clock } from "lucide-react";
+import { CheckCircle2, ExternalLink, PlayCircle, Clock, Heart } from "lucide-react";
 import { toast } from "sonner";
 
 interface Video {
@@ -26,6 +26,7 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
+  const [favoritedVideos, setFavoritedVideos] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [totalCompletions, setTotalCompletions] = useState(0);
   const videoRef = useRef<HTMLIFrameElement>(null);
@@ -34,6 +35,7 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
   useEffect(() => {
     loadVideos();
     loadCompletions();
+    loadFavorites();
   }, [moduleId]);
 
   useEffect(() => {
@@ -77,6 +79,68 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
       setTotalCompletions(completed.size);
     } catch (error) {
       console.error("Error loading completions:", error);
+    }
+  };
+
+  const loadFavorites = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("video_favorites")
+        .select("lesson_id")
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      
+      const favorites = new Set(data?.map(f => f.lesson_id) || []);
+      setFavoritedVideos(favorites);
+    } catch (error) {
+      console.error("Error loading favorites:", error);
+    }
+  };
+
+  const toggleFavorite = async (videoId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const isFavorited = favoritedVideos.has(videoId);
+
+      if (isFavorited) {
+        // Remove favorite
+        const { error } = await supabase
+          .from("video_favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("lesson_id", videoId);
+
+        if (error) throw error;
+
+        setFavoritedVideos(prev => {
+          const next = new Set(prev);
+          next.delete(videoId);
+          return next;
+        });
+        toast.success("Removed from favorites");
+      } else {
+        // Add favorite
+        const { error } = await supabase
+          .from("video_favorites")
+          .insert({
+            user_id: user.id,
+            lesson_id: videoId,
+          });
+
+        if (error) throw error;
+
+        setFavoritedVideos(prev => new Set([...prev, videoId]));
+        toast.success("Added to favorites");
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      toast.error("Failed to update favorites");
     }
   };
 
@@ -145,6 +209,7 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
 
   const currentVideo = videos[currentVideoIndex];
   const isCompleted = completedVideos.has(currentVideo.id);
+  const isFavorited = favoritedVideos.has(currentVideo.id);
   const completionPercentage = Math.round((completedVideos.size / videos.length) * 100);
 
   return (
@@ -174,12 +239,24 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
                   </CardDescription>
                 )}
               </div>
-              {isCompleted && (
-                <Badge variant="default" className="gap-1">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Completed
-                </Badge>
-              )}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => toggleFavorite(currentVideo.id)}
+                  className="relative"
+                >
+                  <Heart 
+                    className={`h-5 w-5 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`}
+                  />
+                </Button>
+                {isCompleted && (
+                  <Badge variant="default" className="gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Completed
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -254,6 +331,7 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
                 {videos.map((video, index) => {
                   const isActive = index === currentVideoIndex;
                   const isVideoCompleted = completedVideos.has(video.id);
+                  const isVideoFavorited = favoritedVideos.has(video.id);
                   
                   return (
                     <button
@@ -278,11 +356,16 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`font-medium text-sm line-clamp-2 ${
-                            isActive ? 'text-primary-foreground' : ''
-                          }`}>
-                            {video.title}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className={`font-medium text-sm line-clamp-2 flex-1 ${
+                              isActive ? 'text-primary-foreground' : ''
+                            }`}>
+                              {video.title}
+                            </p>
+                            {isVideoFavorited && (
+                              <Heart className="h-4 w-4 fill-red-500 text-red-500 flex-shrink-0" />
+                            )}
+                          </div>
                           {video.duration_minutes && (
                             <p className={`text-xs mt-1 ${
                               isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'
