@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, CreditCard, TrendingUp, Users, DollarSign, ArrowUpDown } from "lucide-react";
+import { Search, CreditCard, TrendingUp, Users, DollarSign, ArrowUpDown, Eye, ExternalLink, RefreshCw, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { MembershipDetailsDialog } from "@/components/admin/MembershipDetailsDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface MembershipData {
   user_id: string;
@@ -27,6 +29,8 @@ export default function AdminMemberships() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email: string; name: string | null } | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
 
   // Stats
@@ -117,12 +121,51 @@ export default function AdminMemberships() {
     }
   };
 
+  const handleSyncAll = async () => {
+    toast({
+      title: "Syncing...",
+      description: "This may take a moment for all users",
+    });
+
+    let synced = 0;
+    for (const membership of memberships) {
+      try {
+        const { data } = await supabase.functions.invoke("admin-manage-membership", {
+          body: { action: "sync_with_stripe", userId: membership.user_id },
+        });
+        if (data?.synced) synced++;
+      } catch (error) {
+        console.error(`Failed to sync ${membership.email}:`, error);
+      }
+    }
+
+    toast({
+      title: "Sync Complete",
+      description: `Synced ${synced} of ${memberships.length} memberships`,
+    });
+
+    fetchMemberships();
+  };
+
   const getSortedAndFilteredMemberships = () => {
     let filtered = memberships.filter(
       (m) =>
         m.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Apply tab filter
+    if (activeTab === "active") {
+      filtered = filtered.filter(m => m.subscribed);
+    } else if (activeTab === "free") {
+      filtered = filtered.filter(m => !m.subscribed);
+    } else if (activeTab === "issues") {
+      filtered = filtered.filter(m => {
+        if (!m.subscription_end) return false;
+        const daysUntilEnd = Math.ceil((new Date(m.subscription_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        return daysUntilEnd <= 7 && daysUntilEnd >= 0;
+      });
+    }
 
     return filtered.sort((a, b) => {
       // Map plan to product_id for sorting if needed
@@ -231,8 +274,16 @@ export default function AdminMemberships() {
       {/* Search and Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Memberships</CardTitle>
-          <CardDescription>View and sort all user memberships</CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>All Memberships</CardTitle>
+              <CardDescription>View and manage user memberships</CardDescription>
+            </div>
+            <Button onClick={handleSyncAll} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Sync All with Stripe
+            </Button>
+          </div>
           <div className="flex items-center gap-2 mt-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -249,8 +300,21 @@ export default function AdminMemberships() {
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">Loading memberships...</div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
+            <>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+                <TabsList>
+                  <TabsTrigger value="all">All ({memberships.length})</TabsTrigger>
+                  <TabsTrigger value="active">Active ({activeSubscriptions})</TabsTrigger>
+                  <TabsTrigger value="free">Free ({memberships.length - activeSubscriptions})</TabsTrigger>
+                  <TabsTrigger value="issues">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Payment Issues
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="rounded-md border">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>
@@ -299,12 +363,13 @@ export default function AdminMemberships() {
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </Button>
                     </TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedMemberships.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         No memberships found
                       </TableCell>
                     </TableRow>
@@ -329,15 +394,43 @@ export default function AdminMemberships() {
                         <TableCell>
                           {new Date(membership.created_at).toLocaleDateString()}
                         </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                setSelectedUser({
+                                  id: membership.user_id,
+                                  email: membership.email,
+                                  name: membership.full_name,
+                                })
+                              }
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
+
+      {selectedUser && (
+        <MembershipDetailsDialog
+          open={!!selectedUser}
+          onOpenChange={(open) => !open && setSelectedUser(null)}
+          userId={selectedUser.id}
+          userEmail={selectedUser.email}
+          userName={selectedUser.name}
+        />
+      )}
     </div>
   );
 }
