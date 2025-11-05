@@ -341,10 +341,13 @@ export function MembershipDetailsDialog({
                             <span className="font-semibold">${(inv.amount / 100).toFixed(2)}</span>
                             {getStatusBadge(inv.status)}
                             {inv.invoice_pdf && (
-                              <Button variant="ghost" size="sm" asChild>
-                                <a href={inv.invoice_pdf} target="_blank" rel="noopener noreferrer">
-                                  <FileText className="h-4 w-4" />
-                                </a>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => window.open(inv.invoice_pdf, '_blank', 'noopener,noreferrer')}
+                              >
+                                <FileText className="h-4 w-4 mr-1" />
+                                <span className="text-xs">PDF</span>
                               </Button>
                             )}
                           </div>
