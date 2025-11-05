@@ -429,8 +429,11 @@ export type Database = {
           claim_token: string | null
           claim_token_expires_at: string | null
           club_team_name: string | null
+          commitment_date: string | null
+          commitment_status: string | null
           committed: boolean | null
           committed_school: string | null
+          committed_school_id: string | null
           community_involvement: string | null
           consent_expires_at: string | null
           consent_ip_address: unknown
@@ -515,8 +518,11 @@ export type Database = {
           claim_token?: string | null
           claim_token_expires_at?: string | null
           club_team_name?: string | null
+          commitment_date?: string | null
+          commitment_status?: string | null
           committed?: boolean | null
           committed_school?: string | null
+          committed_school_id?: string | null
           community_involvement?: string | null
           consent_expires_at?: string | null
           consent_ip_address?: unknown
@@ -601,8 +607,11 @@ export type Database = {
           claim_token?: string | null
           claim_token_expires_at?: string | null
           club_team_name?: string | null
+          commitment_date?: string | null
+          commitment_status?: string | null
           committed?: boolean | null
           committed_school?: string | null
+          committed_school_id?: string | null
           community_involvement?: string | null
           consent_expires_at?: string | null
           consent_ip_address?: unknown
@@ -674,6 +683,13 @@ export type Database = {
           weight_lb?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "athletes_committed_school_id_fkey"
+            columns: ["committed_school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "athletes_user_id_profiles_fkey"
             columns: ["user_id"]
@@ -1800,6 +1816,75 @@ export type Database = {
           },
         ]
       }
+      external_rankings: {
+        Row: {
+          athlete_name: string
+          commitment_date: string | null
+          committed_school_logo_url: string | null
+          committed_school_name: string | null
+          created_at: string
+          external_athlete_id: string | null
+          graduation_year: number | null
+          high_school: string | null
+          id: string
+          image_url: string | null
+          last_updated: string
+          overall_rank: number | null
+          position: string | null
+          position_rank: number | null
+          profile_url: string | null
+          rating: number | null
+          source: string
+          sport: string
+          state: string | null
+          state_rank: number | null
+        }
+        Insert: {
+          athlete_name: string
+          commitment_date?: string | null
+          committed_school_logo_url?: string | null
+          committed_school_name?: string | null
+          created_at?: string
+          external_athlete_id?: string | null
+          graduation_year?: number | null
+          high_school?: string | null
+          id?: string
+          image_url?: string | null
+          last_updated?: string
+          overall_rank?: number | null
+          position?: string | null
+          position_rank?: number | null
+          profile_url?: string | null
+          rating?: number | null
+          source: string
+          sport: string
+          state?: string | null
+          state_rank?: number | null
+        }
+        Update: {
+          athlete_name?: string
+          commitment_date?: string | null
+          committed_school_logo_url?: string | null
+          committed_school_name?: string | null
+          created_at?: string
+          external_athlete_id?: string | null
+          graduation_year?: number | null
+          high_school?: string | null
+          id?: string
+          image_url?: string | null
+          last_updated?: string
+          overall_rank?: number | null
+          position?: string | null
+          position_rank?: number | null
+          profile_url?: string | null
+          rating?: number | null
+          source?: string
+          sport?: string
+          state?: string | null
+          state_rank?: number | null
+        }
+        Relationships: []
+      }
       hashtag_performance: {
         Row: {
           clicks: number | null
@@ -2862,9 +2947,13 @@ export type Database = {
           composite_score: number | null
           created_at: string
           id: string
+          is_manual_override: boolean | null
           last_calculated: string
           national_rank: number | null
           overall_rank: number | null
+          overridden_at: string | null
+          overridden_by: string | null
+          override_reason: string | null
           position_rank: number | null
           state_rank: number | null
           updated_at: string
@@ -2874,9 +2963,13 @@ export type Database = {
           composite_score?: number | null
           created_at?: string
           id?: string
+          is_manual_override?: boolean | null
           last_calculated?: string
           national_rank?: number | null
           overall_rank?: number | null
+          overridden_at?: string | null
+          overridden_by?: string | null
+          override_reason?: string | null
           position_rank?: number | null
           state_rank?: number | null
           updated_at?: string
@@ -2886,9 +2979,13 @@ export type Database = {
           composite_score?: number | null
           created_at?: string
           id?: string
+          is_manual_override?: boolean | null
           last_calculated?: string
           national_rank?: number | null
           overall_rank?: number | null
+          overridden_at?: string | null
+          overridden_by?: string | null
+          override_reason?: string | null
           position_rank?: number | null
           state_rank?: number | null
           updated_at?: string
@@ -3091,6 +3188,8 @@ export type Database = {
           id: string
           location_city: string | null
           location_state: string | null
+          logo_cache_updated: string | null
+          logo_url: string | null
           majors: string | null
           min_gpa: number | null
           name: string
@@ -3120,6 +3219,8 @@ export type Database = {
           id?: string
           location_city?: string | null
           location_state?: string | null
+          logo_cache_updated?: string | null
+          logo_url?: string | null
           majors?: string | null
           min_gpa?: number | null
           name: string
@@ -3149,6 +3250,8 @@ export type Database = {
           id?: string
           location_city?: string | null
           location_state?: string | null
+          logo_cache_updated?: string | null
+          logo_url?: string | null
           majors?: string | null
           min_gpa?: number | null
           name?: string
@@ -3808,6 +3911,15 @@ export type Database = {
       encrypt_oauth_token: { Args: { token: string }; Returns: string }
       end_impersonation_session: { Args: never; Returns: undefined }
       generate_claim_token: { Args: never; Returns: string }
+      get_blended_ranking_score: {
+        Args: {
+          p_athlete_id: string
+          p_graduation_year: number
+          p_position: string
+          p_sport: string
+        }
+        Returns: Json
+      }
       get_daily_ai_usage: {
         Args: never
         Returns: {
