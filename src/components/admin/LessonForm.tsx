@@ -10,10 +10,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 const lessonSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
   content: z.string().max(10000, "Content must be less than 10000 characters").optional(),
+  description: z.string().max(500, "Description must be less than 500 characters").optional(),
   lesson_type: z.enum(["scorm", "video", "text"]),
   duration_minutes: z.number().int().positive().optional().nullable(),
   order_index: z.number().int().min(0, "Order must be 0 or greater"),
   video_url: z.string().url("Must be a valid URL").optional().nullable(),
+  external_link: z.string().url("Must be a valid URL").optional().nullable(),
 });
 
 export type LessonFormData = z.infer<typeof lessonSchema>;
@@ -31,10 +33,12 @@ export function LessonForm({ defaultValues, onSubmit, onCancel, isSubmitting }: 
     defaultValues: {
       title: "",
       content: "",
+      description: "",
       lesson_type: "text",
       duration_minutes: null,
       order_index: 0,
       video_url: null,
+      external_link: null,
       ...defaultValues,
     },
   });
@@ -82,19 +86,58 @@ export function LessonForm({ defaultValues, onSubmit, onCancel, isSubmitting }: 
         />
 
         {lessonType === "video" && (
-          <FormField
-            control={form.control}
-            name="video_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Video URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://example.com/video.mp4" {...field} value={field.value || ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <>
+            <FormField
+              control={form.control}
+              name="video_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Video URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://www.youtube.com/embed/..." {...field} value={field.value || ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Video Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Describe what viewers will learn from this video..." 
+                      className="min-h-[100px]"
+                      {...field} 
+                      value={field.value || ""} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="external_link"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>External Link (Optional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://... (additional resources)" 
+                      {...field} 
+                      value={field.value || ""} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
         )}
 
         {lessonType === "text" && (

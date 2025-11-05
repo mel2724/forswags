@@ -1892,7 +1892,9 @@ export type Database = {
         Row: {
           content: string | null
           created_at: string
+          description: string | null
           duration_minutes: number | null
+          external_link: string | null
           id: string
           is_scorm_content: boolean | null
           module_id: string
@@ -1906,7 +1908,9 @@ export type Database = {
         Insert: {
           content?: string | null
           created_at?: string
+          description?: string | null
           duration_minutes?: number | null
+          external_link?: string | null
           id?: string
           is_scorm_content?: boolean | null
           module_id: string
@@ -1920,7 +1924,9 @@ export type Database = {
         Update: {
           content?: string | null
           created_at?: string
+          description?: string | null
           duration_minutes?: number | null
+          external_link?: string | null
           id?: string
           is_scorm_content?: boolean | null
           module_id?: string
@@ -3607,6 +3613,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      video_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          lesson_id: string
+          user_id: string
+          watch_duration_seconds: number | null
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          lesson_id: string
+          user_id: string
+          watch_duration_seconds?: number | null
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          lesson_id?: string
+          user_id?: string
+          watch_duration_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       waitlist_signups: {
         Row: {

@@ -36,6 +36,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const Courses = lazy(() => import("./pages/Courses"));
 const CourseDetail = lazy(() => import("./pages/CourseDetail"));
 const Lesson = lazy(() => import("./pages/Lesson"));
+const PlaybookForLife = lazy(() => import("./pages/PlaybookForLife"));
 const Badges = lazy(() => import("./pages/Badges"));
 const Evaluations = lazy(() => import("./pages/Evaluations"));
 const EvaluationProgress = lazy(() => import("./pages/EvaluationProgress"));
@@ -57,6 +58,7 @@ const AdminMemberships = lazy(() => import("./pages/admin/AdminMemberships"));
 const AdminCourses = lazy(() => import("./pages/admin/AdminCourses"));
 const AdminCourseDetail = lazy(() => import("./pages/admin/AdminCourseDetail"));
 const AdminPlaybookDashboard = lazy(() => import("./pages/admin/AdminPlaybookDashboard"));
+const AdminPlaybookVideos = lazy(() => import("./pages/admin/AdminPlaybookVideos"));
 const AdminAthletes = lazy(() => import("./pages/admin/AdminAthletes"));
 const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
 const AdminCoachApplications = lazy(() => import("./pages/admin/AdminCoachApplications"));
@@ -154,6 +156,7 @@ const App = () => (
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:courseId" element={<CourseDetail />} />
               <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
+              <Route path="/playbook-for-life" element={<PlaybookForLife />} />
               <Route path="/badges" element={<Badges />} />
               <Route path="/evaluations" element={<Evaluations />} />
               <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />
@@ -183,6 +186,7 @@ const App = () => (
                 <Route path="courses" element={<AdminCourses />} />
                 <Route path="courses/:courseId" element={<AdminCourseDetail />} />
                 <Route path="playbook-dashboard" element={<AdminPlaybookDashboard />} />
+                <Route path="playbook-videos" element={<AdminPlaybookVideos />} />
                 <Route path="athletes" element={<AdminAthletes />} />
                 <Route path="rankings" element={<AdminRankings />} />
                 <Route path="coach-applications" element={<AdminCoachApplications />} />
