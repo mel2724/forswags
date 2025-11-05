@@ -142,7 +142,7 @@ export function AppSidebar() {
     { title: "Profile", url: "/profile", icon: UserCircle },
     { title: "Stats Manager", url: "/stats", icon: BarChart3 },
     { title: "Evaluations", url: "/evaluations", icon: ClipboardCheck },
-    { title: "Courses", url: "/courses", icon: GraduationCap },
+    { title: "Learning Hub", url: "/learning", icon: GraduationCap },
     { title: "Badges", url: "/badges", icon: Medal },
     { title: "Rankings", url: "/rankings", icon: Trophy },
     { title: "Schools", url: "/schools", icon: School },
@@ -171,7 +171,7 @@ export function AppSidebar() {
 
   const parentItems = [
     { title: "Parent Dashboard", url: "/parent/dashboard", icon: Home },
-    { title: "Courses", url: "/courses", icon: GraduationCap },
+    { title: "Learning Hub", url: "/learning", icon: GraduationCap },
   ];
 
   const adminItems = [
