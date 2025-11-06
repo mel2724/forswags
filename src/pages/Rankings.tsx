@@ -146,90 +146,108 @@ function RankingsPage() {
     return "outline";
   };
 
-  const RankingCard = ({ ranking, rankType, rankValue }: { ranking: RankingData; rankType: string; rankValue: number | null }) => {
+  const RankingRow = ({ ranking, rankValue }: { ranking: RankingData; rankValue: number | null }) => {
     const athleteName = ranking.is_external_only 
       ? ranking.external_athlete_name 
       : ranking.profiles?.full_name;
     const sport = ranking.sport || ranking.athletes?.sport;
     const position = ranking.athletes?.position;
     const gradYear = ranking.graduation_year || ranking.athletes?.graduation_year;
+    const location = ranking.athletes?.city && ranking.athletes?.state 
+      ? `${ranking.athletes.high_school || ''} (${ranking.athletes.city}, ${ranking.athletes.state})`
+      : ranking.athletes?.high_school || '';
 
     return (
-      <div className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary transition-colors">
-        <div className="flex items-center justify-center w-12 h-12 flex-shrink-0">
-          {getRankIcon(rankValue)}
-        </div>
-        
-        <div className="flex-shrink-0">
-          <Badge variant={getRankBadgeVariant(rankValue)} className="text-lg font-black px-3 py-1">
-            #{rankValue || "N/A"}
-          </Badge>
-        </div>
-
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            {!ranking.is_external_only && ranking.profiles?.avatar_url ? (
-              <img 
-                src={ranking.profiles.avatar_url} 
-                alt={athleteName || "Athlete"}
-                className="h-10 w-10 rounded-full object-cover"
-              />
-            ) : (
-              <Trophy className="h-5 w-5 text-primary" />
+      <tr className="border-b border-border hover:bg-muted/50 transition-colors">
+        <td className="p-4">
+          <div className="flex flex-col items-center gap-1">
+            <div className="text-2xl font-black">{rankValue || "-"}</div>
+            {getRankIcon(rankValue) && (
+              <div className="opacity-60">{getRankIcon(rankValue)}</div>
             )}
           </div>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h4 className="font-bold truncate">{athleteName || "Unknown Athlete"}</h4>
-              {ranking.is_external_only && (
-                <Badge variant="outline" className="text-xs">External</Badge>
+        </td>
+        
+        <td className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              {!ranking.is_external_only && ranking.profiles?.avatar_url ? (
+                <img 
+                  src={ranking.profiles.avatar_url} 
+                  alt={athleteName || "Athlete"}
+                  className="h-12 w-12 rounded-full object-cover"
+                />
+              ) : (
+                <Trophy className="h-6 w-6 text-primary" />
               )}
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-              <span>{sport}</span>
-              {position && (
-                <>
-                  <span>•</span>
-                  <span>{position}</span>
-                </>
-              )}
-              {gradYear && (
-                <>
-                  <span>•</span>
-                  <span>Class of {gradYear}</span>
-                </>
-              )}
-              {!ranking.is_external_only && ranking.athletes?.committed_school_id && committedSchools[ranking.athletes.committed_school_id] && (
-                <>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    {committedSchools[ranking.athletes.committed_school_id].logo_url && (
-                      <img 
-                        src={committedSchools[ranking.athletes.committed_school_id].logo_url}
-                        alt={committedSchools[ranking.athletes.committed_school_id].name}
-                        className="h-4 w-4 rounded-full object-cover"
-                      />
-                    )}
-                    <Badge variant="secondary" className="text-xs px-1 py-0">
-                      {committedSchools[ranking.athletes.committed_school_id].name}
-                    </Badge>
-                  </div>
-                </>
-              )}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <div className="font-bold text-foreground">{athleteName || "Unknown Athlete"}</div>
+                {ranking.is_external_only && (
+                  <Badge variant="outline" className="text-xs">External</Badge>
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground truncate">{location}</div>
             </div>
           </div>
-        </div>
-
-        {ranking.composite_score && (
-          <div className="text-right">
-            <div className="text-xl font-black text-primary">
-              {ranking.composite_score.toFixed(1)}
-            </div>
-            <p className="text-xs text-muted-foreground">Score</p>
+        </td>
+        
+        <td className="p-4">
+          {position && (
+            <Badge variant="secondary" className="font-bold">{position}</Badge>
+          )}
+        </td>
+        
+        <td className="p-4 text-center">
+          <div className="text-sm text-muted-foreground">
+            {gradYear ? `Class of ${gradYear}` : '-'}
           </div>
-        )}
-      </div>
+        </td>
+        
+        <td className="p-4 text-center">
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <div 
+                  key={star} 
+                  className={`h-4 w-4 ${
+                    ranking.composite_score && ranking.composite_score >= star * 20 
+                      ? 'text-yellow-500' 
+                      : 'text-muted'
+                  }`}
+                >
+                  ★
+                </div>
+              ))}
+            </div>
+            {ranking.composite_score && (
+              <div className="text-lg font-black text-primary">
+                {ranking.composite_score.toFixed(1)}
+              </div>
+            )}
+          </div>
+        </td>
+        
+        <td className="p-4 text-center">
+          {!ranking.is_external_only && ranking.athletes?.committed_school_id && committedSchools[ranking.athletes.committed_school_id] ? (
+            <div className="flex flex-col items-center gap-2">
+              {committedSchools[ranking.athletes.committed_school_id].logo_url && (
+                <img 
+                  src={committedSchools[ranking.athletes.committed_school_id].logo_url}
+                  alt={committedSchools[ranking.athletes.committed_school_id].name}
+                  className="h-10 w-10 object-contain"
+                />
+              )}
+              <div className="text-xs text-muted-foreground">
+                {committedSchools[ranking.athletes.committed_school_id].name}
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">-</div>
+          )}
+        </td>
+      </tr>
     );
   };
 
@@ -328,17 +346,35 @@ function RankingsPage() {
                 </CardTitle>
                 <CardDescription>Athletes ranked by composite performance score</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {filteredRankings.filter(r => r.overall_rank).length > 0 ? (
-                  filteredRankings
-                    .filter(r => r.overall_rank)
-                    .sort((a, b) => (a.overall_rank || 999) - (b.overall_rank || 999))
-                    .map(ranking => (
-                      <RankingCard key={ranking.id} ranking={ranking} rankType="Overall" rankValue={ranking.overall_rank} />
-                    ))
-                ) : (
-                  <p className="text-center py-8 text-muted-foreground">No rankings available</p>
-                )}
+              <CardContent className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-border">
+                      <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRankings.filter(r => r.overall_rank).length > 0 ? (
+                      filteredRankings
+                        .filter(r => r.overall_rank)
+                        .sort((a, b) => (a.overall_rank || 999) - (b.overall_rank || 999))
+                        .map(ranking => (
+                          <RankingRow key={ranking.id} ranking={ranking} rankValue={ranking.overall_rank} />
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No rankings available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </CardContent>
             </Card>
           </TabsContent>
@@ -352,17 +388,35 @@ function RankingsPage() {
                 </CardTitle>
                 <CardDescription>Athletes ranked within their position group</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {filteredRankings.filter(r => r.position_rank).length > 0 ? (
-                  filteredRankings
-                    .filter(r => r.position_rank)
-                    .sort((a, b) => (a.position_rank || 999) - (b.position_rank || 999))
-                    .map(ranking => (
-                      <RankingCard key={ranking.id} ranking={ranking} rankType="Position" rankValue={ranking.position_rank} />
-                    ))
-                ) : (
-                  <p className="text-center py-8 text-muted-foreground">No position rankings available</p>
-                )}
+              <CardContent className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-border">
+                      <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRankings.filter(r => r.position_rank).length > 0 ? (
+                      filteredRankings
+                        .filter(r => r.position_rank)
+                        .sort((a, b) => (a.position_rank || 999) - (b.position_rank || 999))
+                        .map(ranking => (
+                          <RankingRow key={ranking.id} ranking={ranking} rankValue={ranking.position_rank} />
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No position rankings available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </CardContent>
             </Card>
           </TabsContent>
@@ -376,17 +430,35 @@ function RankingsPage() {
                 </CardTitle>
                 <CardDescription>Top athletes within their state</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {filteredRankings.filter(r => r.state_rank).length > 0 ? (
-                  filteredRankings
-                    .filter(r => r.state_rank)
-                    .sort((a, b) => (a.state_rank || 999) - (b.state_rank || 999))
-                    .map(ranking => (
-                      <RankingCard key={ranking.id} ranking={ranking} rankType="State" rankValue={ranking.state_rank} />
-                    ))
-                ) : (
-                  <p className="text-center py-8 text-muted-foreground">No state rankings available</p>
-                )}
+              <CardContent className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-border">
+                      <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRankings.filter(r => r.state_rank).length > 0 ? (
+                      filteredRankings
+                        .filter(r => r.state_rank)
+                        .sort((a, b) => (a.state_rank || 999) - (b.state_rank || 999))
+                        .map(ranking => (
+                          <RankingRow key={ranking.id} ranking={ranking} rankValue={ranking.state_rank} />
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No state rankings available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </CardContent>
             </Card>
           </TabsContent>
@@ -400,17 +472,35 @@ function RankingsPage() {
                 </CardTitle>
                 <CardDescription>Elite athletes ranked nationally</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {filteredRankings.filter(r => r.national_rank).length > 0 ? (
-                  filteredRankings
-                    .filter(r => r.national_rank)
-                    .sort((a, b) => (a.national_rank || 999) - (b.national_rank || 999))
-                    .map(ranking => (
-                      <RankingCard key={ranking.id} ranking={ranking} rankType="National" rankValue={ranking.national_rank} />
-                    ))
-                ) : (
-                  <p className="text-center py-8 text-muted-foreground">No national rankings available</p>
-                )}
+              <CardContent className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-border">
+                      <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
+                      <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRankings.filter(r => r.national_rank).length > 0 ? (
+                      filteredRankings
+                        .filter(r => r.national_rank)
+                        .sort((a, b) => (a.national_rank || 999) - (b.national_rank || 999))
+                        .map(ranking => (
+                          <RankingRow key={ranking.id} ranking={ranking} rankValue={ranking.national_rank} />
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No national rankings available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </CardContent>
             </Card>
           </TabsContent>
