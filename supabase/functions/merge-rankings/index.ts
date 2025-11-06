@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
         composite_score: athlete.blended_score,
         sport: athlete.sport,
         graduation_year: athlete.graduation_year,
-        last_calculated_at: new Date().toISOString(),
+        last_calculated: new Date().toISOString(),
         is_external_only: athlete.is_external_only || false,
       };
 
