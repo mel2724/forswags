@@ -202,20 +202,34 @@ async function scrapeMaxPreps(url: string, sport: string, apiKey: string): Promi
   const athletes: ExternalAthlete[] = [];
   const lines = data.data.markdown.split('\n');
   
+  // Skip common header words that aren't player names
+  const skipWords = ['rank', 'player', 'name', 'position', 'school', 'state', 'rating', 'commitment', 'maxpreps'];
+  
   let currentRank = 1;
   for (const line of lines) {
-    // Look for athlete names in the markdown (adjust pattern based on actual site structure)
-    const nameMatch = line.match(/\*\*([A-Za-z\s]+)\*\*/);
+    // Look for athlete names in the markdown
+    const nameMatch = line.match(/\*\*([A-Za-z\s\-'.]+)\*\*/);
     if (nameMatch) {
+      const name = nameMatch[1].trim();
+      
+      // Skip if it's a header word or too short
+      if (name.length < 3 || skipWords.includes(name.toLowerCase())) {
+        continue;
+      }
+      
+      // Must have at least 2 words (first and last name)
+      if (name.split(/\s+/).length < 2) {
+        continue;
+      }
+      
       athletes.push({
         source: 'maxpreps',
-        athlete_name: nameMatch[1].trim(),
+        athlete_name: name,
         sport: sport,
         overall_rank: currentRank++,
       });
     }
     
-    // Limit to top 100
     if (athletes.length >= 100) break;
   }
 
@@ -248,13 +262,29 @@ async function scrape247Sports(url: string, sport: string, apiKey: string): Prom
   const athletes: ExternalAthlete[] = [];
   const lines = data.data.markdown.split('\n');
   
+  // Skip common header words that aren't player names
+  const skipWords = ['rank', 'player', 'name', 'position', 'school', 'state', 'rating', 'commitment'];
+  
   let currentRank = 1;
   for (const line of lines) {
-    const nameMatch = line.match(/\*\*([A-Za-z\s]+)\*\*/);
+    // Look for bold text that could be player names
+    const nameMatch = line.match(/\*\*([A-Za-z\s\-'.]+)\*\*/);
     if (nameMatch) {
+      const name = nameMatch[1].trim();
+      
+      // Skip if it's a header word or too short
+      if (name.length < 3 || skipWords.includes(name.toLowerCase())) {
+        continue;
+      }
+      
+      // Must have at least 2 words (first and last name)
+      if (name.split(/\s+/).length < 2) {
+        continue;
+      }
+      
       athletes.push({
         source: '247sports',
-        athlete_name: nameMatch[1].trim(),
+        athlete_name: name,
         sport: sport,
         overall_rank: currentRank++,
       });
@@ -292,13 +322,28 @@ async function scrapeESPN(url: string, sport: string, apiKey: string): Promise<E
   const athletes: ExternalAthlete[] = [];
   const lines = data.data.markdown.split('\n');
   
+  // Skip common header words that aren't player names
+  const skipWords = ['rank', 'player', 'name', 'position', 'school', 'state', 'rating', 'espn', 'commitment'];
+  
   let currentRank = 1;
   for (const line of lines) {
-    const nameMatch = line.match(/\*\*([A-Za-z\s]+)\*\*/);
+    const nameMatch = line.match(/\*\*([A-Za-z\s\-'.]+)\*\*/);
     if (nameMatch) {
+      const name = nameMatch[1].trim();
+      
+      // Skip if it's a header word or too short
+      if (name.length < 3 || skipWords.includes(name.toLowerCase())) {
+        continue;
+      }
+      
+      // Must have at least 2 words (first and last name)
+      if (name.split(/\s+/).length < 2) {
+        continue;
+      }
+      
       athletes.push({
         source: 'espn',
-        athlete_name: nameMatch[1].trim(),
+        athlete_name: name,
         sport: sport,
         overall_rank: currentRank++,
       });
