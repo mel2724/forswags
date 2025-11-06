@@ -12,11 +12,7 @@ import { Trophy, Medal, Crown, TrendingUp, MapPin, Target } from "lucide-react";
 import { TierFeatureGuard } from "@/components/TierFeatureGuard";
 
 export default function Rankings() {
-  return (
-    <TierFeatureGuard featureKey="rankings">
-      <RankingsPage />
-    </TierFeatureGuard>
-  );
+  return <RankingsPage />;
 }
 
 function RankingsPage() {
