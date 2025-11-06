@@ -197,42 +197,55 @@ async function scrapeMaxPreps(url: string, sport: string, apiKey: string): Promi
     throw new Error('MaxPreps: No data returned');
   }
 
-  // Parse markdown to extract athlete data
-  // This is a simplified parser - in production, you'd need more robust parsing
-  const athletes: ExternalAthlete[] = [];
-  const lines = data.data.markdown.split('\n');
+  const markdown = data.data.markdown;
+  console.log(`MaxPreps markdown preview (first 1000 chars):\n${markdown.substring(0, 1000)}`);
   
-  // Skip common header words that aren't player names
-  const skipWords = ['rank', 'player', 'name', 'position', 'school', 'state', 'rating', 'commitment', 'maxpreps'];
+  const athletes: ExternalAthlete[] = [];
+  const lines = markdown.split('\n');
   
   let currentRank = 1;
+  
   for (const line of lines) {
-    // Look for athlete names in the markdown
-    const nameMatch = line.match(/\*\*([A-Za-z\s\-'.]+)\*\*/);
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    
+    // Try multiple patterns to extract athlete names
+    // Pattern 1: Bold names like **John Doe**
+    let nameMatch = trimmed.match(/\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\*\*/);
+    
+    // Pattern 2: Names followed by position or school info (e.g., "John Doe, QB, ...")
+    if (!nameMatch) {
+      nameMatch = trimmed.match(/^(\d+\.\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)[\s,]/);
+      if (nameMatch) nameMatch[1] = nameMatch[2];
+    }
+    
+    // Pattern 3: Lines starting with rank number and name
+    if (!nameMatch) {
+      nameMatch = trimmed.match(/^\d+\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    }
+    
     if (nameMatch) {
       const name = nameMatch[1].trim();
       
-      // Skip if it's a header word or too short
-      if (name.length < 3 || skipWords.includes(name.toLowerCase())) {
-        continue;
+      // Validate name: at least 5 chars and 2 words
+      if (name.length >= 5 && name.split(/\s+/).length >= 2) {
+        athletes.push({
+          source: 'maxpreps',
+          athlete_name: name,
+          sport: sport,
+          overall_rank: currentRank++,
+        });
+        
+        if (athletes.length >= 100) break;
       }
-      
-      // Must have at least 2 words (first and last name)
-      if (name.split(/\s+/).length < 2) {
-        continue;
-      }
-      
-      athletes.push({
-        source: 'maxpreps',
-        athlete_name: name,
-        sport: sport,
-        overall_rank: currentRank++,
-      });
     }
-    
-    if (athletes.length >= 100) break;
   }
 
+  console.log(`MaxPreps extracted ${athletes.length} athletes`);
+  if (athletes.length > 0) {
+    console.log(`Sample names: ${athletes.slice(0, 3).map(a => a.athlete_name).join(', ')}`);
+  }
+  
   return athletes;
 }
 
@@ -259,40 +272,51 @@ async function scrape247Sports(url: string, sport: string, apiKey: string): Prom
     throw new Error('247Sports: No data returned');
   }
 
-  const athletes: ExternalAthlete[] = [];
-  const lines = data.data.markdown.split('\n');
+  const markdown = data.data.markdown;
+  console.log(`247Sports markdown preview (first 1000 chars):\n${markdown.substring(0, 1000)}`);
   
-  // Skip common header words that aren't player names
-  const skipWords = ['rank', 'player', 'name', 'position', 'school', 'state', 'rating', 'commitment'];
+  const athletes: ExternalAthlete[] = [];
+  const lines = markdown.split('\n');
   
   let currentRank = 1;
+  
   for (const line of lines) {
-    // Look for bold text that could be player names
-    const nameMatch = line.match(/\*\*([A-Za-z\s\-'.]+)\*\*/);
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    
+    // Try multiple patterns
+    let nameMatch = trimmed.match(/\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\*\*/);
+    
+    if (!nameMatch) {
+      nameMatch = trimmed.match(/^(\d+\.\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)[\s,]/);
+      if (nameMatch) nameMatch[1] = nameMatch[2];
+    }
+    
+    if (!nameMatch) {
+      nameMatch = trimmed.match(/^\d+\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    }
+    
     if (nameMatch) {
       const name = nameMatch[1].trim();
       
-      // Skip if it's a header word or too short
-      if (name.length < 3 || skipWords.includes(name.toLowerCase())) {
-        continue;
+      if (name.length >= 5 && name.split(/\s+/).length >= 2) {
+        athletes.push({
+          source: '247sports',
+          athlete_name: name,
+          sport: sport,
+          overall_rank: currentRank++,
+        });
+        
+        if (athletes.length >= 100) break;
       }
-      
-      // Must have at least 2 words (first and last name)
-      if (name.split(/\s+/).length < 2) {
-        continue;
-      }
-      
-      athletes.push({
-        source: '247sports',
-        athlete_name: name,
-        sport: sport,
-        overall_rank: currentRank++,
-      });
     }
-    
-    if (athletes.length >= 100) break;
   }
 
+  console.log(`247Sports extracted ${athletes.length} athletes`);
+  if (athletes.length > 0) {
+    console.log(`Sample names: ${athletes.slice(0, 3).map(a => a.athlete_name).join(', ')}`);
+  }
+  
   return athletes;
 }
 
@@ -319,38 +343,50 @@ async function scrapeESPN(url: string, sport: string, apiKey: string): Promise<E
     throw new Error('ESPN: No data returned');
   }
 
-  const athletes: ExternalAthlete[] = [];
-  const lines = data.data.markdown.split('\n');
+  const markdown = data.data.markdown;
+  console.log(`ESPN markdown preview (first 1000 chars):\n${markdown.substring(0, 1000)}`);
   
-  // Skip common header words that aren't player names
-  const skipWords = ['rank', 'player', 'name', 'position', 'school', 'state', 'rating', 'espn', 'commitment'];
+  const athletes: ExternalAthlete[] = [];
+  const lines = markdown.split('\n');
   
   let currentRank = 1;
+  
   for (const line of lines) {
-    const nameMatch = line.match(/\*\*([A-Za-z\s\-'.]+)\*\*/);
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    
+    // Try multiple patterns
+    let nameMatch = trimmed.match(/\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\*\*/);
+    
+    if (!nameMatch) {
+      nameMatch = trimmed.match(/^(\d+\.\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)[\s,]/);
+      if (nameMatch) nameMatch[1] = nameMatch[2];
+    }
+    
+    if (!nameMatch) {
+      nameMatch = trimmed.match(/^\d+\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    }
+    
     if (nameMatch) {
       const name = nameMatch[1].trim();
       
-      // Skip if it's a header word or too short
-      if (name.length < 3 || skipWords.includes(name.toLowerCase())) {
-        continue;
+      if (name.length >= 5 && name.split(/\s+/).length >= 2) {
+        athletes.push({
+          source: 'espn',
+          athlete_name: name,
+          sport: sport,
+          overall_rank: currentRank++,
+        });
+        
+        if (athletes.length >= 100) break;
       }
-      
-      // Must have at least 2 words (first and last name)
-      if (name.split(/\s+/).length < 2) {
-        continue;
-      }
-      
-      athletes.push({
-        source: 'espn',
-        athlete_name: name,
-        sport: sport,
-        overall_rank: currentRank++,
-      });
     }
-    
-    if (athletes.length >= 100) break;
   }
 
+  console.log(`ESPN extracted ${athletes.length} athletes`);
+  if (athletes.length > 0) {
+    console.log(`Sample names: ${athletes.slice(0, 3).map(a => a.athlete_name).join(', ')}`);
+  }
+  
   return athletes;
 }
