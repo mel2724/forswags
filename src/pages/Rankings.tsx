@@ -37,6 +37,9 @@ function RankingsPage() {
       city?: string | null;
       state?: string | null;
       user_id: string;
+      height_feet?: number | null;
+      height_inches?: number | null;
+      weight?: number | null;
       committed_school_id?: string | null;
       commitment_date?: string | null;
       commitment_status?: string | null;
@@ -156,6 +159,10 @@ function RankingsPage() {
     const location = ranking.athletes?.city && ranking.athletes?.state 
       ? `${ranking.athletes.high_school || ''} (${ranking.athletes.city}, ${ranking.athletes.state})`
       : ranking.athletes?.high_school || '';
+    
+    const heightWeight = ranking.athletes?.height_feet && ranking.athletes?.height_inches && ranking.athletes?.weight
+      ? `${ranking.athletes.height_feet}-${ranking.athletes.height_inches} / ${ranking.athletes.weight}`
+      : '-';
 
     return (
       <tr className="border-b border-border hover:bg-muted/50 transition-colors">
@@ -182,7 +189,7 @@ function RankingsPage() {
               )}
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-1">
                 <div className="font-bold text-foreground">{athleteName || "Unknown Athlete"}</div>
                 {ranking.is_external_only && (
                   <Badge variant="outline" className="text-xs">External</Badge>
@@ -200,8 +207,12 @@ function RankingsPage() {
         </td>
         
         <td className="p-4 text-center">
+          <div className="text-sm font-medium">{heightWeight}</div>
+        </td>
+        
+        <td className="p-4 text-center">
           <div className="text-sm text-muted-foreground">
-            {gradYear ? `Class of ${gradYear}` : '-'}
+            {gradYear ? `${gradYear}` : '-'}
           </div>
         </td>
         
@@ -353,6 +364,7 @@ function RankingsPage() {
                       <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Ht / Wt</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
@@ -368,7 +380,7 @@ function RankingsPage() {
                         ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
                           No rankings available
                         </td>
                       </tr>
@@ -395,6 +407,7 @@ function RankingsPage() {
                       <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Ht / Wt</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
@@ -410,7 +423,7 @@ function RankingsPage() {
                         ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
                           No position rankings available
                         </td>
                       </tr>
@@ -437,6 +450,7 @@ function RankingsPage() {
                       <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Ht / Wt</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
@@ -452,7 +466,7 @@ function RankingsPage() {
                         ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
                           No state rankings available
                         </td>
                       </tr>
@@ -479,6 +493,7 @@ function RankingsPage() {
                       <th className="p-4 text-left font-bold uppercase text-sm">Rank</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Player</th>
                       <th className="p-4 text-left font-bold uppercase text-sm">Pos</th>
+                      <th className="p-4 text-center font-bold uppercase text-sm">Ht / Wt</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Class</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Rating</th>
                       <th className="p-4 text-center font-bold uppercase text-sm">Team</th>
@@ -494,7 +509,7 @@ function RankingsPage() {
                         ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <td colSpan={7} className="text-center py-8 text-muted-foreground">
                           No national rankings available
                         </td>
                       </tr>
