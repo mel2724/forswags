@@ -43,6 +43,14 @@ Deno.serve(async (req) => {
 
     console.log(`Starting merge for sport: ${sport}, preserveOverrides: ${preserveOverrides}`);
 
+    // Get all external rankings for this sport (start with external data)
+    const { data: externalRankings, error: externalError } = await supabase
+      .from('external_rankings')
+      .select('*')
+      .eq('sport', sport);
+
+    if (externalError) throw externalError;
+
     // Get all internal rankings (ForSWAGs members)
     const { data: internalRankings, error: internalError } = await supabase
       .from('rankings')
@@ -62,26 +70,21 @@ Deno.serve(async (req) => {
 
     if (internalError) throw internalError;
 
-    // Get all external rankings for this sport
-    const { data: externalRankings, error: externalError } = await supabase
-      .from('external_rankings')
-      .select('*')
-      .eq('sport', sport);
-
-    if (externalError) throw externalError;
-
     console.log(`Found ${internalRankings?.length || 0} internal rankings, ${externalRankings?.length || 0} external rankings`);
 
-    // Calculate blended scores
+    // Calculate blended scores - process ALL external rankings
     const rankedAthletes = [];
+    const processedExternalIds = new Set();
 
+    // SCENARIO A: Process internal athletes (blend internal + external)
     for (const ranking of internalRankings || []) {
       // Skip if manual override and preserveOverrides is true
       if (preserveOverrides && ranking.is_manual_override) {
         rankedAthletes.push({
           ...ranking,
           blended_score: ranking.composite_score,
-          is_locked: true
+          is_locked: true,
+          is_external_only: false
         });
         continue;
       }
@@ -94,6 +97,9 @@ Deno.serve(async (req) => {
         ext.athlete_name.toLowerCase().includes(athlete.profiles.full_name.toLowerCase()) ||
         athlete.profiles.full_name.toLowerCase().includes(ext.athlete_name.toLowerCase())
       ) || [];
+
+      // Mark these external rankings as processed
+      externalMatches.forEach(ext => processedExternalIds.add(ext.id));
 
       let blendedScore = internalScore;
 
@@ -112,7 +118,34 @@ Deno.serve(async (req) => {
         ...ranking,
         blended_score: blendedScore,
         external_matches: externalMatches.length,
-        is_locked: false
+        is_locked: false,
+        is_external_only: false,
+        sport: athlete.sport,
+        graduation_year: athlete.graduation_year
+      });
+    }
+
+    // SCENARIO B: Process external-only rankings (no matching athlete)
+    const unprocessedExternal = externalRankings?.filter(ext => !processedExternalIds.has(ext.id)) || [];
+    
+    for (const extRanking of unprocessedExternal) {
+      // Convert external rank to score (invert: rank 1 = score 100, rank 100 = score 1)
+      const externalScore = Math.max(1, 101 - (extRanking.overall_rank || 100));
+      
+      rankedAthletes.push({
+        athlete_id: null,
+        external_athlete_name: extRanking.athlete_name,
+        is_external_only: true,
+        blended_score: externalScore,
+        composite_score: externalScore,
+        is_locked: false,
+        external_matches: 1,
+        sport: extRanking.sport,
+        graduation_year: extRanking.graduation_year,
+        position: extRanking.position,
+        state: extRanking.state,
+        high_school: extRanking.high_school,
+        committed_school: extRanking.committed_school_name
       });
     }
 
@@ -121,44 +154,71 @@ Deno.serve(async (req) => {
 
     // Assign new ranks
     const updates: Array<{
-      id: string;
-      athlete_id: string;
+      id?: string;
+      athlete_id: string | null;
+      external_athlete_name?: string;
+      is_external_only: boolean;
       overall_rank: number;
       position_rank: number;
       state_rank: number;
       national_rank: number;
       composite_score: number;
+      sport: string;
+      graduation_year?: number;
       last_calculated_at: string;
     }> = [];
     const byPosition: Record<string, number> = {};
     const byState: Record<string, number> = {};
 
     rankedAthletes.forEach((athlete, index) => {
-      const position = athlete.athletes.position || 'ATH';
-      const state = athlete.athletes.state || 'XX';
+      const position = athlete.position || (athlete.athletes?.position) || 'ATH';
+      const state = athlete.state || (athlete.athletes?.state) || 'XX';
 
       // Increment position and state counters
       byPosition[position] = (byPosition[position] || 0) + 1;
       byState[state] = (byState[state] || 0) + 1;
 
-      updates.push({
-        id: athlete.id,
+      const updateRecord: any = {
         athlete_id: athlete.athlete_id,
         overall_rank: index + 1,
         position_rank: byPosition[position],
         state_rank: byState[state],
         national_rank: index + 1,
         composite_score: athlete.blended_score,
+        sport: athlete.sport,
+        graduation_year: athlete.graduation_year,
         last_calculated_at: new Date().toISOString(),
-      });
+        is_external_only: athlete.is_external_only || false,
+      };
+
+      // Add id for existing records, external_athlete_name for external-only
+      if (athlete.id) {
+        updateRecord.id = athlete.id;
+      }
+      if (athlete.is_external_only) {
+        updateRecord.external_athlete_name = athlete.external_athlete_name;
+      }
+
+      updates.push(updateRecord);
     });
 
-    // Update rankings in database
-    const { error: updateError } = await supabase
+    // Delete existing rankings for this sport to avoid conflicts
+    const { error: deleteError } = await supabase
       .from('rankings')
-      .upsert(updates, { onConflict: 'athlete_id' });
+      .delete()
+      .eq('sport', sport);
 
-    if (updateError) throw updateError;
+    if (deleteError) throw deleteError;
+
+    // Insert all new rankings
+    const { error: insertError } = await supabase
+      .from('rankings')
+      .insert(updates.map(u => {
+        const { id, ...record } = u;
+        return record;
+      }));
+
+    if (insertError) throw insertError;
 
     // Log the merge action
     await supabase.rpc('log_audit_event', {

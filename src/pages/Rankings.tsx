@@ -22,14 +22,18 @@ export default function Rankings() {
 function RankingsPage() {
   interface RankingData {
     id: string;
-    athlete_id: string;
+    athlete_id: string | null;
+    external_athlete_name?: string | null;
+    is_external_only: boolean;
+    sport: string;
+    graduation_year: number | null;
     overall_rank: number | null;
     position_rank: number | null;
     state_rank: number | null;
     national_rank: number | null;
     composite_score: number | null;
     last_calculated: string;
-    athletes: {
+    athletes?: {
       sport: string;
       position: string | null;
       graduation_year: number | null;
@@ -63,21 +67,28 @@ function RankingsPage() {
       const { data: rankingsData, error: rankingsError } = await supabase
         .from("rankings")
         .select("*, athletes(*)")
+        .order("sport", { ascending: true })
         .order("overall_rank", { ascending: true, nullsFirst: false });
 
       if (rankingsError) throw rankingsError;
 
-      // Fetch profiles separately
+      // Fetch profiles separately for internal athletes
       const userIds = rankingsData?.map(r => r.athletes?.user_id).filter(Boolean) || [];
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url")
-        .in("id", userIds);
+      let profilesData: any[] = [];
+      if (userIds.length > 0) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url")
+          .in("id", userIds);
+        profilesData = data || [];
+      }
 
       // Merge rankings with profiles
       const rankingsWithProfiles = rankingsData?.map(ranking => ({
         ...ranking,
-        profiles: profilesData?.find(p => p.id === ranking.athletes?.user_id) || null
+        profiles: ranking.athlete_id 
+          ? profilesData?.find(p => p.id === ranking.athletes?.user_id) || null
+          : null
       }));
 
       setRankings(rankingsWithProfiles || []);
@@ -113,14 +124,16 @@ function RankingsPage() {
   };
 
   const filteredRankings = rankings.filter(ranking => {
-    if (!ranking.athletes) return false;
-    if (sportFilter !== "all" && ranking.athletes.sport !== sportFilter) return false;
-    if (gradYearFilter !== "all" && ranking.athletes.graduation_year?.toString() !== gradYearFilter) return false;
+    const sport = ranking.sport || ranking.athletes?.sport;
+    const gradYear = ranking.graduation_year || ranking.athletes?.graduation_year;
+    
+    if (sportFilter !== "all" && sport !== sportFilter) return false;
+    if (gradYearFilter !== "all" && gradYear?.toString() !== gradYearFilter) return false;
     return true;
   });
 
-  const uniqueSports = Array.from(new Set(rankings.map(r => r.athletes?.sport).filter(Boolean)));
-  const uniqueGradYears = Array.from(new Set(rankings.map(r => r.athletes?.graduation_year).filter(Boolean))).sort((a, b) => b! - a!);
+  const uniqueSports = Array.from(new Set(rankings.map(r => r.sport || r.athletes?.sport).filter(Boolean)));
+  const uniqueGradYears = Array.from(new Set(rankings.map(r => r.graduation_year || r.athletes?.graduation_year).filter(Boolean))).sort((a, b) => b! - a!);
 
   const getRankIcon = (rank: number | null) => {
     if (!rank) return null;
@@ -137,78 +150,92 @@ function RankingsPage() {
     return "outline";
   };
 
-  const RankingCard = ({ ranking, rankType, rankValue }: { ranking: RankingData; rankType: string; rankValue: number | null }) => (
-    <div className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary transition-colors">
-      <div className="flex items-center justify-center w-12 h-12 flex-shrink-0">
-        {getRankIcon(rankValue)}
-      </div>
-      
-      <div className="flex-shrink-0">
-        <Badge variant={getRankBadgeVariant(rankValue)} className="text-lg font-black px-3 py-1">
-          #{rankValue || "N/A"}
-        </Badge>
-      </div>
+  const RankingCard = ({ ranking, rankType, rankValue }: { ranking: RankingData; rankType: string; rankValue: number | null }) => {
+    const athleteName = ranking.is_external_only 
+      ? ranking.external_athlete_name 
+      : ranking.profiles?.full_name;
+    const sport = ranking.sport || ranking.athletes?.sport;
+    const position = ranking.athletes?.position;
+    const gradYear = ranking.graduation_year || ranking.athletes?.graduation_year;
 
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-          {ranking.profiles?.avatar_url ? (
-            <img 
-              src={ranking.profiles.avatar_url} 
-              alt={ranking.profiles.full_name || "Athlete"}
-              className="h-10 w-10 rounded-full object-cover"
-            />
-          ) : (
-            <Trophy className="h-5 w-5 text-primary" />
-          )}
+    return (
+      <div className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary transition-colors">
+        <div className="flex items-center justify-center w-12 h-12 flex-shrink-0">
+          {getRankIcon(rankValue)}
         </div>
         
-        <div className="flex-1 min-w-0">
-          <h4 className="font-bold truncate">{ranking.profiles?.full_name || "Unknown Athlete"}</h4>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-            <span>{ranking.athletes?.sport}</span>
-            {ranking.athletes?.position && (
-              <>
-                <span>•</span>
-                <span>{ranking.athletes.position}</span>
-              </>
-            )}
-            {ranking.athletes?.graduation_year && (
-              <>
-                <span>•</span>
-                <span>Class of {ranking.athletes.graduation_year}</span>
-              </>
-            )}
-            {ranking.athletes?.committed_school_id && committedSchools[ranking.athletes.committed_school_id] && (
-              <>
-                <span>•</span>
-                <div className="flex items-center gap-1">
-                  {committedSchools[ranking.athletes.committed_school_id].logo_url && (
-                    <img 
-                      src={committedSchools[ranking.athletes.committed_school_id].logo_url}
-                      alt={committedSchools[ranking.athletes.committed_school_id].name}
-                      className="h-4 w-4 rounded-full object-cover"
-                    />
-                  )}
-                  <Badge variant="secondary" className="text-xs px-1 py-0">
-                    {committedSchools[ranking.athletes.committed_school_id].name}
-                  </Badge>
-                </div>
-              </>
-            )}
-          </div>
+        <div className="flex-shrink-0">
+          <Badge variant={getRankBadgeVariant(rankValue)} className="text-lg font-black px-3 py-1">
+            #{rankValue || "N/A"}
+          </Badge>
         </div>
-      </div>
 
-      {ranking.composite_score && (
-        <div className="text-right">
-          <div className="text-xl font-black text-primary">
-            {ranking.composite_score.toFixed(1)}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            {!ranking.is_external_only && ranking.profiles?.avatar_url ? (
+              <img 
+                src={ranking.profiles.avatar_url} 
+                alt={athleteName || "Athlete"}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            ) : (
+              <Trophy className="h-5 w-5 text-primary" />
+            )}
           </div>
-          <p className="text-xs text-muted-foreground">Score</p>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold truncate">{athleteName || "Unknown Athlete"}</h4>
+              {ranking.is_external_only && (
+                <Badge variant="outline" className="text-xs">External</Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+              <span>{sport}</span>
+              {position && (
+                <>
+                  <span>•</span>
+                  <span>{position}</span>
+                </>
+              )}
+              {gradYear && (
+                <>
+                  <span>•</span>
+                  <span>Class of {gradYear}</span>
+                </>
+              )}
+              {!ranking.is_external_only && ranking.athletes?.committed_school_id && committedSchools[ranking.athletes.committed_school_id] && (
+                <>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    {committedSchools[ranking.athletes.committed_school_id].logo_url && (
+                      <img 
+                        src={committedSchools[ranking.athletes.committed_school_id].logo_url}
+                        alt={committedSchools[ranking.athletes.committed_school_id].name}
+                        className="h-4 w-4 rounded-full object-cover"
+                      />
+                    )}
+                    <Badge variant="secondary" className="text-xs px-1 py-0">
+                      {committedSchools[ranking.athletes.committed_school_id].name}
+                    </Badge>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-    </div>
-  );
+
+        {ranking.composite_score && (
+          <div className="text-right">
+            <div className="text-xl font-black text-primary">
+              {ranking.composite_score.toFixed(1)}
+            </div>
+            <p className="text-xs text-muted-foreground">Score</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   if (loading) {
     return (

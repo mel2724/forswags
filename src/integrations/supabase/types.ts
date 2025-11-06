@@ -2943,10 +2943,13 @@ export type Database = {
       }
       rankings: {
         Row: {
-          athlete_id: string
+          athlete_id: string | null
           composite_score: number | null
           created_at: string
+          external_athlete_name: string | null
+          graduation_year: number | null
           id: string
+          is_external_only: boolean | null
           is_manual_override: boolean | null
           last_calculated: string
           national_rank: number | null
@@ -2955,14 +2958,18 @@ export type Database = {
           overridden_by: string | null
           override_reason: string | null
           position_rank: number | null
+          sport: string | null
           state_rank: number | null
           updated_at: string
         }
         Insert: {
-          athlete_id: string
+          athlete_id?: string | null
           composite_score?: number | null
           created_at?: string
+          external_athlete_name?: string | null
+          graduation_year?: number | null
           id?: string
+          is_external_only?: boolean | null
           is_manual_override?: boolean | null
           last_calculated?: string
           national_rank?: number | null
@@ -2971,14 +2978,18 @@ export type Database = {
           overridden_by?: string | null
           override_reason?: string | null
           position_rank?: number | null
+          sport?: string | null
           state_rank?: number | null
           updated_at?: string
         }
         Update: {
-          athlete_id?: string
+          athlete_id?: string | null
           composite_score?: number | null
           created_at?: string
+          external_athlete_name?: string | null
+          graduation_year?: number | null
           id?: string
+          is_external_only?: boolean | null
           is_manual_override?: boolean | null
           last_calculated?: string
           national_rank?: number | null
@@ -2987,6 +2998,7 @@ export type Database = {
           overridden_by?: string | null
           override_reason?: string | null
           position_rank?: number | null
+          sport?: string | null
           state_rank?: number | null
           updated_at?: string
         }
