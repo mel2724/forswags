@@ -52,6 +52,7 @@ const menuGroups: MenuGroup[] = [
       { title: "Import Athletes", url: "/admin/import-athletes" },
       { title: "Athlete Promo", url: "/admin/athlete-promo" },
       { title: "Rankings", url: "/admin/rankings" },
+      { title: "Scraping History", url: "/admin/scraping-history" },
     ],
   },
   {

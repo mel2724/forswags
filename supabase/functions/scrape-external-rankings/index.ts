@@ -84,6 +84,24 @@ Deno.serve(async (req) => {
     const allAthletes: ExternalAthlete[] = [];
     const errors: string[] = [];
 
+    // Create scraping history record
+    const { data: historyRecord, error: historyError } = await supabase
+      .from('scraping_history')
+      .insert({
+        sport,
+        source: 'multiple',
+        status: 'pending',
+        initiated_by: user.id
+      })
+      .select()
+      .single();
+
+    if (historyError) {
+      console.error('Failed to create history record:', historyError);
+    }
+
+    const historyId = historyRecord?.id;
+
     // Scrape MaxPreps
     try {
       console.log('Scraping MaxPreps...');
@@ -125,6 +143,7 @@ Deno.serve(async (req) => {
     }
 
     // Store in database
+    let importedCount = 0;
     if (allAthletes.length > 0) {
       const { error: insertError } = await supabase
         .from('external_rankings')
@@ -135,8 +154,31 @@ Deno.serve(async (req) => {
 
       if (insertError) {
         console.error('Database insert error:', insertError);
-        throw insertError;
+        errors.push(`Database: ${insertError.message}`);
+      } else {
+        importedCount = allAthletes.length;
       }
+    }
+
+    // Update scraping history with results
+    if (historyId) {
+      await supabase
+        .from('scraping_history')
+        .update({
+          status: errors.length > 0 && importedCount === 0 ? 'failed' : 'completed',
+          records_found: allAthletes.length,
+          records_imported: importedCount,
+          errors: errors,
+          completed_at: new Date().toISOString(),
+          metadata: {
+            by_source: {
+              maxpreps: allAthletes.filter(a => a.source === 'maxpreps').length,
+              '247sports': allAthletes.filter(a => a.source === '247sports').length,
+              espn: allAthletes.filter(a => a.source === 'espn').length,
+            }
+          }
+        })
+        .eq('id', historyId);
     }
 
     // Log the scraping action
@@ -153,7 +195,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        athletes_imported: allAthletes.length,
+        athletes_imported: importedCount,
         by_source: {
           maxpreps: allAthletes.filter(a => a.source === 'maxpreps').length,
           '247sports': allAthletes.filter(a => a.source === '247sports').length,
@@ -167,6 +209,37 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in scrape-external-rankings:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Update history record with failure
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    try {
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader) {
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user } } = await supabase.auth.getUser(token);
+        
+        if (user) {
+          await supabase
+            .from('scraping_history')
+            .insert({
+              sport: 'unknown',
+              source: 'multiple',
+              status: 'failed',
+              records_found: 0,
+              records_imported: 0,
+              errors: [errorMessage],
+              completed_at: new Date().toISOString(),
+              initiated_by: user.id
+            });
+        }
+      }
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { 

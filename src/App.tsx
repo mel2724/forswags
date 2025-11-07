@@ -74,6 +74,7 @@ const AdminChatbot = lazy(() => import("./pages/admin/AdminChatbot"));
 const AdminAIUsage = lazy(() => import("./pages/admin/AdminAIUsage"));
 const AdminSecretRotation = lazy(() => import("./pages/admin/AdminSecretRotation"));
 const AdminEvaluationPayments = lazy(() => import("./pages/admin/AdminEvaluationPayments"));
+const AdminScrapingHistory = lazy(() => import("./pages/admin/AdminScrapingHistory"));
 const CoachApplication = lazy(() => import("./pages/CoachApplication"));
 const PurchaseEvaluation = lazy(() => import("./pages/PurchaseEvaluation"));
 const CoachDashboard = lazy(() => import("./pages/coach/CoachDashboard"));
@@ -206,6 +207,7 @@ const App = () => (
                 <Route path="ai-usage" element={<AdminAIUsage />} />
                 <Route path="secret-rotation" element={<AdminSecretRotation />} />
                 <Route path="evaluation-payments" element={<AdminEvaluationPayments />} />
+                <Route path="scraping-history" element={<AdminScrapingHistory />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
