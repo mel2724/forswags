@@ -26,6 +26,9 @@ import {
   ChevronDown,
   LogOut,
   User,
+  Sparkles,
+  Network,
+  Lock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import logoIcon from "@/assets/forswags-logo.png";
@@ -69,7 +72,12 @@ export function AppSidebar() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    athlete: true,
+    general: true,
+    profile: true,
+    recruiting: true,
+    development: true,
+    network: true,
+    settings: true,
     coach: true,
     recruiter: true,
     admin: true,
@@ -137,20 +145,62 @@ export function AppSidebar() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const athleteItems = [
-    { title: "Dashboard", url: "/dashboard", icon: Home },
-    { title: "Profile", url: "/profile", icon: UserCircle },
-    { title: "Stats Manager", url: "/stats", icon: BarChart3 },
-    { title: "Evaluations", url: "/evaluations", icon: ClipboardCheck },
-    { title: "Learning Hub", url: "/learning", icon: GraduationCap },
-    { title: "Badges", url: "/badges", icon: Medal },
-    { title: "Rankings", url: "/rankings", icon: Trophy },
-    { title: "Schools", url: "/schools", icon: School },
-    { title: "Offers", url: "/offers", icon: Target },
-    { title: "Media Gallery", url: "/media", icon: Image },
-    { title: "Social Media", url: "/social", icon: Share2 },
-    { title: "Preferences", url: "/preferences", icon: Settings },
-    { title: "Membership", url: "/membership", icon: CreditCard },
+  const athleteGroups = [
+    {
+      label: "General",
+      key: "general",
+      items: [
+        { title: "Dashboard", url: "/dashboard", icon: Home },
+        { title: "Notifications", url: "/notifications", icon: Bell },
+      ],
+    },
+    {
+      label: "My Profile",
+      key: "profile",
+      items: [
+        { title: "Profile", url: "/profile", icon: UserCircle },
+        { title: "Stats Manager", url: "/stats", icon: BarChart3 },
+        { title: "Media Gallery", url: "/media", icon: Image },
+        { title: "Social Media Tools", url: "/social", icon: Share2 },
+      ],
+    },
+    {
+      label: "Recruiting",
+      key: "recruiting",
+      items: [
+        { title: "Prime Dime Matching", url: "/prime-dime", icon: Sparkles },
+        { title: "College Matches", url: "/college-matches", icon: Target },
+        { title: "School Search", url: "/schools", icon: School },
+        { title: "Rankings", url: "/rankings", icon: Trophy },
+        { title: "Offers Tracker", url: "/offers", icon: FileText },
+      ],
+    },
+    {
+      label: "Development",
+      key: "development",
+      items: [
+        { title: "Evaluations", url: "/evaluations", icon: ClipboardCheck },
+        { title: "Learning Hub", url: "/learning", icon: GraduationCap },
+        { title: "Badges & Achievements", url: "/badges", icon: Medal },
+      ],
+    },
+    {
+      label: "Network",
+      key: "network",
+      items: [
+        { title: "Players Directory", url: "/players", icon: Users },
+        { title: "Alumni Network", url: "/alumni-network", icon: Network },
+      ],
+    },
+    {
+      label: "Settings",
+      key: "settings",
+      items: [
+        { title: "College Preferences", url: "/preferences", icon: Settings },
+        { title: "Membership", url: "/membership", icon: CreditCard },
+        { title: "Security", url: "/security", icon: Lock },
+      ],
+    },
   ];
 
   const coachItems = [
@@ -255,34 +305,8 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="py-2">
-        {/* General Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>General</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/notifications"
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 ${
-                        isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-muted/50"
-                      }`
-                    }
-                  >
-                    <Bell className="h-4 w-4" />
-                    {!collapsed && <span>Notifications</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
         {/* Role-based navigation */}
-        {userRole === "athlete" && renderMenuGroup("Athlete", athleteItems, "athlete")}
+        {userRole === "athlete" && athleteGroups.map((group) => renderMenuGroup(group.label, group.items, group.key))}
         {userRole === "coach" && renderMenuGroup("Coach", coachItems, "coach")}
         {userRole === "recruiter" && renderMenuGroup("College Scout", recruiterItems, "recruiter")}
         {userRole === "parent" && renderMenuGroup("Parent", parentItems, "parent")}

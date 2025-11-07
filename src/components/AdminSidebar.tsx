@@ -46,13 +46,14 @@ const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: "Athlete Management",
+    label: "Athletes & Content",
     items: [
       { title: "Athletes", url: "/admin/athletes" },
       { title: "Import Athletes", url: "/admin/import-athletes" },
       { title: "Athlete Promo", url: "/admin/athlete-promo" },
       { title: "Rankings", url: "/admin/rankings" },
       { title: "Scraping History", url: "/admin/scraping-history" },
+      { title: "Schools", url: "/admin/schools" },
     ],
   },
   {
@@ -91,6 +92,13 @@ const menuGroups: MenuGroup[] = [
       { title: "Promo Codes", url: "/admin/promo-codes" },
       { title: "Sponsors", url: "/admin/sponsors" },
       { title: "PayPal Setup", url: "/admin/paypal-setup" },
+    ],
+  },
+  {
+    label: "Data & Compliance",
+    items: [
+      { title: "Consent Monitoring", url: "/admin/consent-monitoring" },
+      { title: "Archived Media", url: "/admin/archived-media" },
     ],
   },
   {
