@@ -13,7 +13,9 @@ import { Plus, RefreshCw, Trash2, Download, Lock, Unlock, Loader2, Trophy } from
 
 interface RankingEntry {
   id: string;
-  athlete_id: string;
+  athlete_id: string | null;
+  external_athlete_name?: string | null;
+  is_external_only?: boolean;
   overall_rank: number | null;
   position_rank: number | null;
   state_rank: number | null;
@@ -21,12 +23,14 @@ interface RankingEntry {
   composite_score: number | null;
   last_calculated: string;
   is_manual_override?: boolean;
-  athletes: {
+  sport?: string;
+  graduation_year?: number | null;
+  athletes?: {
     sport: string;
     position: string | null;
     user_id: string;
-  };
-  profiles: {
+  } | null;
+  profiles?: {
     full_name: string;
   } | null;
 }
@@ -62,16 +66,22 @@ export default function AdminRankings() {
 
       if (rankingsError) throw rankingsError;
 
-      // Get profiles
-      const userIds = rankingsData?.map(r => r.athletes.user_id).filter(Boolean) || [];
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", userIds);
+      // Get profiles (only for internal athletes)
+      const userIds = rankingsData?.map(r => r.athletes?.user_id).filter(Boolean) || [];
+      let profilesData: any[] = [];
+      if (userIds.length > 0) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", userIds);
+        profilesData = data || [];
+      }
 
       const rankingsWithProfiles = rankingsData?.map(ranking => ({
         ...ranking,
-        profiles: profilesData?.find(p => p.id === ranking.athletes.user_id) || null
+        profiles: ranking.athletes?.user_id 
+          ? profilesData?.find(p => p.id === ranking.athletes?.user_id) || null
+          : null
       })) || [];
 
       setRankings(rankingsWithProfiles);
@@ -432,13 +442,22 @@ export default function AdminRankings() {
                 rankings.map((ranking) => (
                   <TableRow key={ranking.id}>
                     <TableCell className="font-medium">
-                      {ranking.profiles?.full_name || "Unknown"}
+                      <div className="flex items-center gap-2">
+                        {ranking.is_external_only ? (
+                          <>
+                            <span>{ranking.external_athlete_name || "Unknown"}</span>
+                            <Badge variant="outline" className="text-xs">External</Badge>
+                          </>
+                        ) : (
+                          <span>{ranking.profiles?.full_name || "Unknown"}</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <div>{ranking.athletes.sport}</div>
+                        <div>{ranking.sport || ranking.athletes?.sport || "N/A"}</div>
                         <div className="text-muted-foreground text-xs">
-                          {ranking.athletes.position || "N/A"}
+                          {ranking.athletes?.position || "N/A"}
                         </div>
                       </div>
                     </TableCell>
