@@ -219,16 +219,16 @@ function RankingsPage() {
         <td className="p-4 text-center">
           <div className="flex flex-col items-center gap-1">
             <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[1, 2, 3, 4, 5].map((heart) => (
                 <div 
-                  key={star} 
+                  key={heart} 
                   className={`h-4 w-4 ${
-                    ranking.composite_score && ranking.composite_score >= star * 20 
-                      ? 'text-yellow-500' 
+                    ranking.composite_score && ranking.composite_score >= heart * 20 
+                      ? 'text-red-500' 
                       : 'text-muted'
                   }`}
                 >
-                  ★
+                  ♥
                 </div>
               ))}
             </div>

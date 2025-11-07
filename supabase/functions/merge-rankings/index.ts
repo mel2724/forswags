@@ -145,7 +145,10 @@ Deno.serve(async (req) => {
         position: extRanking.position,
         state: extRanking.state,
         high_school: extRanking.high_school,
-        committed_school: extRanking.committed_school_name
+        committed_school: extRanking.committed_school_name,
+        height_feet: extRanking.height_feet,
+        height_inches: extRanking.height_inches,
+        weight: extRanking.weight
       });
     }
 

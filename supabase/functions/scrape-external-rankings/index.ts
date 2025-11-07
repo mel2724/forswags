@@ -32,6 +32,9 @@ interface ExternalAthlete {
   committed_school_name?: string;
   committed_school_logo_url?: string;
   commitment_date?: string;
+  height_feet?: number;
+  height_inches?: number;
+  weight?: number;
 }
 
 Deno.serve(async (req) => {
@@ -174,6 +177,74 @@ Deno.serve(async (req) => {
   }
 });
 
+// Common validation helpers
+function isValidPersonName(name: string): boolean {
+  // Filter out common false positives
+  const invalidPatterns = [
+    /fighting/i,
+    /recruits/i,
+    /rankings/i,
+    /top \d+/i,
+    /class of/i,
+    /notre dame/i,
+    /university/i,
+    /college/i,
+    /high school/i,
+    /composite/i,
+    /overall/i
+  ];
+  
+  if (invalidPatterns.some(pattern => pattern.test(name))) {
+    return false;
+  }
+  
+  // Must be at least 2 words, each at least 2 characters
+  const words = name.trim().split(/\s+/);
+  if (words.length < 2) return false;
+  if (words.some(w => w.length < 2)) return false;
+  
+  // Must have proper capitalization (not all caps unless abbreviation)
+  if (name === name.toUpperCase() && name.length > 4) return false;
+  
+  return true;
+}
+
+function parseHeightWeight(text: string): { height_feet?: number; height_inches?: number; weight?: number } {
+  const result: { height_feet?: number; height_inches?: number; weight?: number } = {};
+  
+  // Height pattern: 6-2, 6'2", etc.
+  const heightMatch = text.match(/(\d)\s*[-']\s*(\d{1,2})/);
+  if (heightMatch) {
+    result.height_feet = parseInt(heightMatch[1]);
+    result.height_inches = parseInt(heightMatch[2]);
+  }
+  
+  // Weight pattern: 215, 215 lbs, etc.
+  const weightMatch = text.match(/(\d{3})\s*(?:lbs?)?/);
+  if (weightMatch) {
+    result.weight = parseInt(weightMatch[1]);
+  }
+  
+  return result;
+}
+
+function extractGraduationYear(text: string): number | undefined {
+  // Look for year patterns: 2025, '25, Class of 2025, etc.
+  const yearMatch = text.match(/(?:class of |')?(\d{2,4})/i);
+  if (yearMatch) {
+    let year = parseInt(yearMatch[1]);
+    // Convert 2-digit to 4-digit year
+    if (year < 100) {
+      year += 2000;
+    }
+    // Validate it's a reasonable graduation year
+    if (year >= 2024 && year <= 2030) {
+      return year;
+    }
+  }
+  return undefined;
+}
+
 async function scrapeMaxPreps(url: string, sport: string, apiKey: string): Promise<ExternalAthlete[]> {
   const response = await fetch('https://api.firecrawl.dev/v0/scrape', {
     method: 'POST',
@@ -183,7 +254,7 @@ async function scrapeMaxPreps(url: string, sport: string, apiKey: string): Promi
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown'],
+      formats: ['html', 'markdown'],
     }),
   });
 
@@ -193,57 +264,74 @@ async function scrapeMaxPreps(url: string, sport: string, apiKey: string): Promi
 
   const data: FirecrawlResponse = await response.json();
   
-  if (!data.success || !data.data?.markdown) {
+  if (!data.success || !data.data?.html) {
     throw new Error('MaxPreps: No data returned');
   }
 
-  const markdown = data.data.markdown;
-  console.log(`MaxPreps markdown preview (first 1000 chars):\n${markdown.substring(0, 1000)}`);
+  const html = data.data.html;
+  const markdown = data.data.markdown || '';
+  
+  console.log(`MaxPreps HTML length: ${html.length}, markdown length: ${markdown.length}`);
   
   const athletes: ExternalAthlete[] = [];
-  const lines = markdown.split('\n');
   
-  let currentRank = 1;
+  // Extract from HTML using regex patterns for ranking tables
+  // Look for player card/row structures with data attributes
+  const playerRowRegex = /<tr[^>]*class="[^"]*player[^"]*"[^>]*>(.*?)<\/tr>/gis;
+  const nameRegex = /<(?:a|span)[^>]*class="[^"]*(?:player-name|name)[^"]*"[^>]*>([^<]+)<\/(?:a|span)>/i;
+  const positionRegex = /<(?:span|div)[^>]*class="[^"]*(?:position|pos)[^"]*"[^>]*>([A-Z]{1,3})<\/(?:span|div)>/i;
+  const heightWeightRegex = /(\d-\d{1,2})\s*\/\s*(\d{3})/;
+  const schoolRegex = /<(?:span|div)[^>]*class="[^"]*(?:school|commitment)[^"]*"[^>]*>([^<]+)<\/(?:span|div)>/i;
   
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
+  const rows = html.match(playerRowRegex) || [];
+  let rank = 1;
+  
+  for (const row of rows) {
+    const nameMatch = row.match(nameRegex);
+    if (!nameMatch) continue;
     
-    // Try multiple patterns to extract athlete names
-    // Pattern 1: Bold names like **John Doe**
-    let nameMatch = trimmed.match(/\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\*\*/);
+    const name = nameMatch[1].trim();
+    if (!isValidPersonName(name)) continue;
     
-    // Pattern 2: Names followed by position or school info (e.g., "John Doe, QB, ...")
-    if (!nameMatch) {
-      nameMatch = trimmed.match(/^(\d+\.\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)[\s,]/);
-      if (nameMatch) nameMatch[1] = nameMatch[2];
+    const athlete: ExternalAthlete = {
+      source: 'maxpreps',
+      athlete_name: name,
+      sport: sport,
+      overall_rank: rank++,
+    };
+    
+    // Extract position
+    const posMatch = row.match(positionRegex);
+    if (posMatch) {
+      athlete.position = posMatch[1];
     }
     
-    // Pattern 3: Lines starting with rank number and name
-    if (!nameMatch) {
-      nameMatch = trimmed.match(/^\d+\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    // Extract height/weight
+    const hwMatch = row.match(heightWeightRegex);
+    if (hwMatch) {
+      const hw = parseHeightWeight(hwMatch[0]);
+      Object.assign(athlete, hw);
     }
     
-    if (nameMatch) {
-      const name = nameMatch[1].trim();
-      
-      // Validate name: at least 5 chars and 2 words
-      if (name.length >= 5 && name.split(/\s+/).length >= 2) {
-        athletes.push({
-          source: 'maxpreps',
-          athlete_name: name,
-          sport: sport,
-          overall_rank: currentRank++,
-        });
-        
-        if (athletes.length >= 100) break;
-      }
+    // Extract committed school
+    const schoolMatch = row.match(schoolRegex);
+    if (schoolMatch) {
+      athlete.committed_school_name = schoolMatch[1].trim();
     }
+    
+    // Extract graduation year from row
+    const gradYear = extractGraduationYear(row);
+    if (gradYear) {
+      athlete.graduation_year = gradYear;
+    }
+    
+    athletes.push(athlete);
+    if (athletes.length >= 100) break;
   }
 
   console.log(`MaxPreps extracted ${athletes.length} athletes`);
   if (athletes.length > 0) {
-    console.log(`Sample names: ${athletes.slice(0, 3).map(a => a.athlete_name).join(', ')}`);
+    console.log(`Sample: ${JSON.stringify(athletes[0], null, 2)}`);
   }
   
   return athletes;
@@ -258,7 +346,7 @@ async function scrape247Sports(url: string, sport: string, apiKey: string): Prom
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown'],
+      formats: ['html', 'markdown'],
     }),
   });
 
@@ -268,53 +356,67 @@ async function scrape247Sports(url: string, sport: string, apiKey: string): Prom
 
   const data: FirecrawlResponse = await response.json();
   
-  if (!data.success || !data.data?.markdown) {
+  if (!data.success || !data.data?.html) {
     throw new Error('247Sports: No data returned');
   }
 
-  const markdown = data.data.markdown;
-  console.log(`247Sports markdown preview (first 1000 chars):\n${markdown.substring(0, 1000)}`);
+  const html = data.data.html;
+  console.log(`247Sports HTML length: ${html.length}`);
   
   const athletes: ExternalAthlete[] = [];
-  const lines = markdown.split('\n');
   
-  let currentRank = 1;
+  // 247Sports has recruit cards with specific structure
+  const recruitCardRegex = /<li[^>]*class="[^"]*(?:recruit|ranking-item)[^"]*"[^>]*>(.*?)<\/li>/gis;
+  const nameRegex = /<a[^>]*class="[^"]*(?:name|player)[^"]*"[^>]*>([^<]+)<\/a>/i;
+  const positionRegex = /<span[^>]*class="[^"]*position[^"]*"[^>]*>([A-Z]{1,3})<\/span>/i;
+  const metricsRegex = /(\d-\d{1,2})\s*\/\s*(\d{3})/;
+  const commitmentRegex = /<img[^>]*alt="([^"]+)"[^>]*class="[^"]*(?:commit|logo)[^"]*"/i;
   
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
+  const cards = html.match(recruitCardRegex) || [];
+  let rank = 1;
+  
+  for (const card of cards) {
+    const nameMatch = card.match(nameRegex);
+    if (!nameMatch) continue;
     
-    // Try multiple patterns
-    let nameMatch = trimmed.match(/\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\*\*/);
+    const name = nameMatch[1].trim();
+    if (!isValidPersonName(name)) continue;
     
-    if (!nameMatch) {
-      nameMatch = trimmed.match(/^(\d+\.\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)[\s,]/);
-      if (nameMatch) nameMatch[1] = nameMatch[2];
+    const athlete: ExternalAthlete = {
+      source: '247sports',
+      athlete_name: name,
+      sport: sport,
+      overall_rank: rank++,
+    };
+    
+    const posMatch = card.match(positionRegex);
+    if (posMatch) {
+      athlete.position = posMatch[1];
     }
     
-    if (!nameMatch) {
-      nameMatch = trimmed.match(/^\d+\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    const metricsMatch = card.match(metricsRegex);
+    if (metricsMatch) {
+      const hw = parseHeightWeight(metricsMatch[0]);
+      Object.assign(athlete, hw);
     }
     
-    if (nameMatch) {
-      const name = nameMatch[1].trim();
-      
-      if (name.length >= 5 && name.split(/\s+/).length >= 2) {
-        athletes.push({
-          source: '247sports',
-          athlete_name: name,
-          sport: sport,
-          overall_rank: currentRank++,
-        });
-        
-        if (athletes.length >= 100) break;
-      }
+    const commitMatch = card.match(commitmentRegex);
+    if (commitMatch) {
+      athlete.committed_school_name = commitMatch[1].trim();
     }
+    
+    const gradYear = extractGraduationYear(card);
+    if (gradYear) {
+      athlete.graduation_year = gradYear;
+    }
+    
+    athletes.push(athlete);
+    if (athletes.length >= 100) break;
   }
 
   console.log(`247Sports extracted ${athletes.length} athletes`);
   if (athletes.length > 0) {
-    console.log(`Sample names: ${athletes.slice(0, 3).map(a => a.athlete_name).join(', ')}`);
+    console.log(`Sample: ${JSON.stringify(athletes[0], null, 2)}`);
   }
   
   return athletes;
@@ -329,7 +431,7 @@ async function scrapeESPN(url: string, sport: string, apiKey: string): Promise<E
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown'],
+      formats: ['html', 'markdown'],
     }),
   });
 
@@ -339,53 +441,61 @@ async function scrapeESPN(url: string, sport: string, apiKey: string): Promise<E
 
   const data: FirecrawlResponse = await response.json();
   
-  if (!data.success || !data.data?.markdown) {
+  if (!data.success || !data.data?.html) {
     throw new Error('ESPN: No data returned');
   }
 
-  const markdown = data.data.markdown;
-  console.log(`ESPN markdown preview (first 1000 chars):\n${markdown.substring(0, 1000)}`);
+  const html = data.data.html;
+  console.log(`ESPN HTML length: ${html.length}`);
   
   const athletes: ExternalAthlete[] = [];
-  const lines = markdown.split('\n');
   
-  let currentRank = 1;
+  // ESPN uses table rows for rankings
+  const tableRowRegex = /<tr[^>]*class="[^"]*(?:Table__TR|recruit-row)[^"]*"[^>]*>(.*?)<\/tr>/gis;
+  const nameRegex = /<a[^>]*>([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)<\/a>/i;
+  const positionRegex = /<td[^>]*>([A-Z]{1,3})<\/td>/i;
+  const statsRegex = /(\d-\d{1,2})\s*,\s*(\d{3})/;
   
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
+  const rows = html.match(tableRowRegex) || [];
+  let rank = 1;
+  
+  for (const row of rows) {
+    const nameMatch = row.match(nameRegex);
+    if (!nameMatch) continue;
     
-    // Try multiple patterns
-    let nameMatch = trimmed.match(/\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\*\*/);
+    const name = nameMatch[1].trim();
+    if (!isValidPersonName(name)) continue;
     
-    if (!nameMatch) {
-      nameMatch = trimmed.match(/^(\d+\.\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)[\s,]/);
-      if (nameMatch) nameMatch[1] = nameMatch[2];
+    const athlete: ExternalAthlete = {
+      source: 'espn',
+      athlete_name: name,
+      sport: sport,
+      overall_rank: rank++,
+    };
+    
+    const posMatch = row.match(positionRegex);
+    if (posMatch) {
+      athlete.position = posMatch[1];
     }
     
-    if (!nameMatch) {
-      nameMatch = trimmed.match(/^\d+\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    const statsMatch = row.match(statsRegex);
+    if (statsMatch) {
+      const hw = parseHeightWeight(statsMatch[0]);
+      Object.assign(athlete, hw);
     }
     
-    if (nameMatch) {
-      const name = nameMatch[1].trim();
-      
-      if (name.length >= 5 && name.split(/\s+/).length >= 2) {
-        athletes.push({
-          source: 'espn',
-          athlete_name: name,
-          sport: sport,
-          overall_rank: currentRank++,
-        });
-        
-        if (athletes.length >= 100) break;
-      }
+    const gradYear = extractGraduationYear(row);
+    if (gradYear) {
+      athlete.graduation_year = gradYear;
     }
+    
+    athletes.push(athlete);
+    if (athletes.length >= 100) break;
   }
 
   console.log(`ESPN extracted ${athletes.length} athletes`);
   if (athletes.length > 0) {
-    console.log(`Sample names: ${athletes.slice(0, 3).map(a => a.athlete_name).join(', ')}`);
+    console.log(`Sample: ${JSON.stringify(athletes[0], null, 2)}`);
   }
   
   return athletes;

@@ -1825,6 +1825,8 @@ export type Database = {
           created_at: string
           external_athlete_id: string | null
           graduation_year: number | null
+          height_feet: number | null
+          height_inches: number | null
           high_school: string | null
           id: string
           image_url: string | null
@@ -1838,6 +1840,7 @@ export type Database = {
           sport: string
           state: string | null
           state_rank: number | null
+          weight: number | null
         }
         Insert: {
           athlete_name: string
@@ -1847,6 +1850,8 @@ export type Database = {
           created_at?: string
           external_athlete_id?: string | null
           graduation_year?: number | null
+          height_feet?: number | null
+          height_inches?: number | null
           high_school?: string | null
           id?: string
           image_url?: string | null
@@ -1860,6 +1865,7 @@ export type Database = {
           sport: string
           state?: string | null
           state_rank?: number | null
+          weight?: number | null
         }
         Update: {
           athlete_name?: string
@@ -1869,6 +1875,8 @@ export type Database = {
           created_at?: string
           external_athlete_id?: string | null
           graduation_year?: number | null
+          height_feet?: number | null
+          height_inches?: number | null
           high_school?: string | null
           id?: string
           image_url?: string | null
@@ -1882,6 +1890,7 @@ export type Database = {
           sport?: string
           state?: string | null
           state_rank?: number | null
+          weight?: number | null
         }
         Relationships: []
       }
