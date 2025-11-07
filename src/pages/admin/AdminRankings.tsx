@@ -244,27 +244,7 @@ export default function AdminRankings() {
             onClick={async () => {
               setLoading(true);
               try {
-                let importedCount = 0;
-                const errors: string[] = [];
-                
-                // Try Firecrawl scraper first
-                console.log('Attempting Firecrawl scraper...');
-                const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke('scrape-external-rankings', {
-                  body: { sport: 'football' }
-                });
-
-                if (scrapeError) {
-                  console.error('Firecrawl scraper error:', scrapeError);
-                  errors.push(`Firecrawl: ${scrapeError.message}`);
-                } else if (scrapeData) {
-                  importedCount += scrapeData.athletes_imported || 0;
-                  if (scrapeData.errors) {
-                    errors.push(...(scrapeData.errors as string[]));
-                  }
-                }
-
-                // Always try ESPN Hidden API as fallback/supplement
-                console.log('Attempting ESPN Hidden API...');
+                console.log('Fetching ESPN rankings...');
                 const { data: espnData, error: espnError } = await supabase.functions.invoke('fetch-espn-rankings', {
                   body: { 
                     sport: 'football',
@@ -274,24 +254,21 @@ export default function AdminRankings() {
 
                 if (espnError) {
                   console.error('ESPN API error:', espnError);
-                  errors.push(`ESPN API: ${espnError.message}`);
-                } else if (espnData) {
-                  importedCount += espnData.athletes_imported || 0;
-                  if (espnData.errors) {
-                    errors.push(...(espnData.errors as string[]));
-                  }
-                }
-
-                if (importedCount > 0) {
+                  toast({
+                    title: "Import Failed",
+                    description: espnError.message,
+                    variant: "destructive",
+                  });
+                } else if (espnData && espnData.athletes_imported > 0) {
                   toast({
                     title: "Import Successful",
-                    description: `Imported ${importedCount} rankings from multiple sources`,
+                    description: `Imported ${espnData.athletes_imported} rankings from ESPN`,
                   });
                   loadData();
                 } else {
                   toast({
                     title: "Import Completed",
-                    description: errors.length > 0 ? errors.join(', ') : "No data retrieved from any source",
+                    description: "No data retrieved from ESPN",
                     variant: "destructive",
                   });
                 }
@@ -456,18 +433,14 @@ export default function AdminRankings() {
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
             <div className="flex-1">
-              <h3 className="font-semibold mb-2">Multi-Source Import System</h3>
+              <h3 className="font-semibold mb-2">ESPN Rankings Import</h3>
               <p className="text-sm text-muted-foreground mb-3">
-                The "Import Top 100" button uses multiple data sources to maximize coverage:
+                The "Import Top 100" button fetches the latest athlete rankings from ESPN's API:
               </p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
-                  <Badge variant="outline" className="mt-0.5">Firecrawl</Badge>
-                  <span className="text-muted-foreground">Attempts to scrape MaxPreps, 247Sports, and ESPN websites</span>
-                </li>
-                <li className="flex items-start gap-2">
                   <Badge variant="default" className="mt-0.5">ESPN API</Badge>
-                  <span className="text-muted-foreground">Free hidden API (no key required) - automatic fallback</span>
+                  <span className="text-muted-foreground">Free hidden API providing current recruiting rankings (no key required)</span>
                 </li>
               </ul>
               <p className="text-xs text-muted-foreground mt-3">
