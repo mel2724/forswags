@@ -18,10 +18,12 @@ import {
 interface ScrapingHistoryEntry {
   id: string;
   sport: string;
-  source: string;
   status: string;
-  records_found: number;
-  records_imported: number;
+  athletes_scraped: number;
+  athletes_imported: number;
+  athletes_skipped: number;
+  sources_attempted: string[];
+  sources_succeeded: string[];
   errors: any[];
   started_at: string;
   completed_at: string | null;
@@ -87,8 +89,8 @@ export default function AdminScrapingHistory() {
   };
 
   const calculateSuccessRate = (entry: ScrapingHistoryEntry) => {
-    if (entry.records_found === 0) return "N/A";
-    const rate = (entry.records_imported / entry.records_found) * 100;
+    if (entry.athletes_scraped === 0) return "N/A";
+    const rate = (entry.athletes_imported / entry.athletes_scraped) * 100;
     return `${rate.toFixed(1)}%`;
   };
 
@@ -138,8 +140,8 @@ export default function AdminScrapingHistory() {
                   <TableRow>
                     <TableHead>Status</TableHead>
                     <TableHead>Sport</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Found</TableHead>
+                    <TableHead>Sources</TableHead>
+                    <TableHead>Scraped</TableHead>
                     <TableHead>Imported</TableHead>
                     <TableHead>Success Rate</TableHead>
                     <TableHead>Duration</TableHead>
@@ -158,13 +160,24 @@ export default function AdminScrapingHistory() {
                       </TableCell>
                       <TableCell className="font-medium">{entry.sport}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{entry.source}</Badge>
+                        <div className="flex flex-wrap gap-1">
+                          {entry.sources_succeeded?.map((source) => (
+                            <Badge key={source} variant="default" className="text-xs">
+                              {source}
+                            </Badge>
+                          ))}
+                          {entry.sources_attempted?.filter(s => !entry.sources_succeeded?.includes(s)).map((source) => (
+                            <Badge key={source} variant="outline" className="text-xs">
+                              {source}
+                            </Badge>
+                          ))}
+                        </div>
                       </TableCell>
-                      <TableCell>{entry.records_found}</TableCell>
-                      <TableCell>{entry.records_imported}</TableCell>
+                      <TableCell>{entry.athletes_scraped}</TableCell>
+                      <TableCell>{entry.athletes_imported}</TableCell>
                       <TableCell>
                         <span className={
-                          entry.records_imported === entry.records_found
+                          entry.athletes_imported === entry.athletes_scraped
                             ? "text-green-600 font-medium"
                             : "text-yellow-600"
                         }>
