@@ -1,14 +1,26 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, PlayCircle, Award, TrendingUp, Heart } from "lucide-react";
+import { Search, PlayCircle, Award, TrendingUp, Heart, BookOpen, GraduationCap, ArrowLeft } from "lucide-react";
 import { VideoPlaylist } from "@/components/VideoPlaylist";
+import { CourseCard } from "@/components/CourseCard";
+import { SEO } from "@/components/SEO";
 import logoIcon from "@/assets/forswags-logo.png";
 import { toast } from "sonner";
+
+interface Course {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  duration_minutes: number | null;
+  is_published: boolean;
+}
 
 interface Module {
   id: string;
@@ -30,15 +42,20 @@ interface FavoriteVideo {
 
 const PlaybookForLife = () => {
   const navigate = useNavigate();
-  const [modules, setModules] = useState<Module[]>([]);
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "playbook";
+  
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [playbookModules, setPlaybookModules] = useState<Module[]>([]);
   const [favoriteVideos, setFavoriteVideos] = useState<FavoriteVideo[]>([]);
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({
-    totalVideos: 0,
-    completedVideos: 0,
+    coursesEnrolled: 0,
+    videosCompleted: 0,
     badgesEarned: 0,
-    favoriteVideos: 0,
+    totalProgress: 0,
   });
 
   useEffect(() => {
@@ -48,59 +65,48 @@ const PlaybookForLife = () => {
   const loadData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // Find "Playbook for Life" course
-      const { data: course, error: courseError } = await supabase
+
+      // Load all courses
+      const { data: coursesData, error: coursesError } = await supabase
         .from("courses")
-        .select("id")
-        .ilike("title", "%playbook%")
-        .single();
+        .select("*")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
 
-      if (courseError) {
-        // Create the course if it doesn't exist
-        const { data: newCourse, error: createError } = await supabase
-          .from("courses")
-          .insert({
-            title: "The Playbook for Life",
-            description: "Essential life skills videos for athletes - covering Focus, Respect, Finances, Friendships, and more",
-            is_published: true,
-          })
-          .select()
-          .single();
+      if (coursesError) throw coursesError;
+      setCourses(coursesData || []);
 
-        if (createError) throw createError;
-        
-        toast.success("Playbook for Life course created!");
-        loadData();
-        return;
+      // Find "Playbook for Life" course
+      const playbookCourse = coursesData?.find(c => c.title.toLowerCase().includes("playbook"));
+      
+      if (playbookCourse) {
+        // Load playbook modules
+        const { data: modulesData, error: modulesError } = await supabase
+          .from("modules")
+          .select(`
+            id,
+            title,
+            description,
+            order_index,
+            lessons!inner(id)
+          `)
+          .eq("course_id", playbookCourse.id)
+          .order("order_index", { ascending: true });
+
+        if (modulesError) throw modulesError;
+
+        const formattedModules = modulesData?.map((m: any) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description,
+          order_index: m.order_index,
+          video_count: m.lessons?.length || 0,
+        })) || [];
+
+        setPlaybookModules(formattedModules);
       }
 
-      // Load modules
-      const { data: modulesData, error: modulesError } = await supabase
-        .from("modules")
-        .select(`
-          id,
-          title,
-          description,
-          order_index,
-          lessons!inner(id)
-        `)
-        .eq("course_id", course.id)
-        .order("order_index", { ascending: true });
-
-      if (modulesError) throw modulesError;
-
-      const formattedModules = modulesData.map((m: any) => ({
-        id: m.id,
-        title: m.title,
-        description: m.description,
-        order_index: m.order_index,
-        video_count: m.lessons?.length || 0,
-      }));
-
-      setModules(formattedModules);
-
-      // Load user stats
+      // Load user stats if logged in
       if (user) {
         const { data: completions } = await supabase
           .from("video_completions")
@@ -110,14 +116,12 @@ const PlaybookForLife = () => {
         const { data: badges } = await supabase
           .from("user_badges")
           .select("badge_id")
-          .eq("user_id", user.id)
-          .in("badge_id", 
-            await supabase
-              .from("badges")
-              .select("id")
-              .in("name", ["Video Learner", "Life Skills Student", "Playbook Graduate"])
-              .then(res => res.data?.map(b => b.id) || [])
-          );
+          .eq("user_id", user.id);
+
+        const { data: enrollments } = await supabase
+          .from("course_progress")
+          .select("course_id")
+          .eq("user_id", user.id);
 
         // Load favorite videos
         const { data: favorites } = await supabase
@@ -148,22 +152,29 @@ const PlaybookForLife = () => {
 
         setFavoriteVideos(formattedFavorites);
 
-        const totalVideos = formattedModules.reduce((sum, m) => sum + m.video_count, 0);
+        const totalVideos = playbookModules.reduce((sum, m) => sum + m.video_count, 0);
+        const progress = totalVideos > 0 ? Math.round((completions?.length || 0) / totalVideos * 100) : 0;
 
         setStats({
-          totalVideos,
-          completedVideos: completions?.length || 0,
+          coursesEnrolled: new Set(enrollments?.map(e => e.course_id)).size,
+          videosCompleted: completions?.length || 0,
           badgesEarned: badges?.length || 0,
-          favoriteVideos: formattedFavorites.length,
+          totalProgress: progress,
         });
       }
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error("Failed to load Playbook for Life");
+      toast.error("Failed to load learning content");
     } finally {
       setLoading(false);
     }
   };
+
+  const filteredCourses = courses.filter(course =>
+    !course.title.toLowerCase().includes("playbook") &&
+    (course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     course.description?.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   if (loading) {
     return (
@@ -173,8 +184,9 @@ const PlaybookForLife = () => {
     );
   }
 
+  // If viewing a module's videos
   if (selectedModule) {
-    const module = modules.find(m => m.id === selectedModule);
+    const module = playbookModules.find(m => m.id === selectedModule);
     
     return (
       <div className="min-h-screen bg-background">
@@ -186,7 +198,7 @@ const PlaybookForLife = () => {
             
             <Button variant="ghost" onClick={() => setSelectedModule(null)}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Topics
+              Back to Playbook for Life
             </Button>
           </div>
         </header>
@@ -209,38 +221,53 @@ const PlaybookForLife = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background sports-pattern">
+      <SEO 
+        title="Playbook for Life - Life Skills & Training Platform"
+        description="Master life skills and athletic development with Playbook for Life. Access essential videos on focus, respect, finances, and more to excel on and off the field."
+        keywords="life skills training, athlete development, playbook for life, character building, student athlete education, leadership training"
+      />
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
             <img src={logoIcon} alt="ForSWAGs" className="h-12" />
           </div>
           
-          <Button variant="ghost" onClick={() => navigate("/courses")}>
+          <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-primary hover:text-primary/80 font-bold">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            All Courses
+            Back to Dashboard
           </Button>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="mb-12 text-center">
-          <h1 className="text-5xl font-black mb-4 uppercase tracking-tight">
-            The Playbook for Life
+          <h1 className="text-5xl font-black mb-3 uppercase tracking-tight flex items-center justify-center gap-3">
+            <GraduationCap className="h-12 w-12 text-primary" />
+            Playbook for Life
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Essential life skills videos for athletes. Learn about Focus, Respect, Finances, 
-            Friendships, and more. Watch videos to earn badges and boost your life skills score.
+          <p className="text-muted-foreground uppercase text-sm tracking-wider mb-8">
+            Life skills videos • Character development • Earn badges • Track progress
           </p>
 
           {/* Stats Cards */}
-          <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  <p className="text-3xl font-bold">{stats.coursesEnrolled}</p>
+                </div>
+                <p className="text-sm text-muted-foreground">Courses Enrolled</p>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <PlayCircle className="h-5 w-5 text-primary" />
-                  <p className="text-3xl font-bold">{stats.completedVideos}/{stats.totalVideos}</p>
+                  <p className="text-3xl font-bold">{stats.videosCompleted}</p>
                 </div>
                 <p className="text-sm text-muted-foreground">Videos Completed</p>
               </CardContent>
@@ -250,7 +277,7 @@ const PlaybookForLife = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Award className="h-5 w-5 text-primary" />
-                  <p className="text-3xl font-bold">{stats.badgesEarned}/3</p>
+                  <p className="text-3xl font-bold">{stats.badgesEarned}</p>
                 </div>
                 <p className="text-sm text-muted-foreground">Badges Earned</p>
               </CardContent>
@@ -260,40 +287,61 @@ const PlaybookForLife = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  <p className="text-3xl font-bold">
-                    {stats.totalVideos > 0 ? Math.round((stats.completedVideos / stats.totalVideos) * 100) : 0}%
-                  </p>
+                  <p className="text-3xl font-bold">{stats.totalProgress}%</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Progress</p>
+                <p className="text-sm text-muted-foreground">Overall Progress</p>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Topics and Favorites Tabs */}
-        <Tabs defaultValue="topics" className="mb-8">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-6">
-            <TabsTrigger value="topics">Life Skills Topics</TabsTrigger>
+        {/* Search */}
+        <Card className="mb-8 bg-card/80 backdrop-blur border-2 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search all learning content..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tabbed Content */}
+        <Tabs defaultValue={defaultTab} onValueChange={(value) => setSearchParams({ tab: value })}>
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto mb-8">
+            <TabsTrigger value="playbook">Playbook for Life</TabsTrigger>
+            <TabsTrigger value="courses">All Courses</TabsTrigger>
             <TabsTrigger value="favorites" className="gap-2">
               <Heart className="h-4 w-4" />
-              My Favorites ({stats.favoriteVideos})
+              Favorites
             </TabsTrigger>
+            <TabsTrigger value="progress">My Progress</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="topics">
-            {modules.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <PlayCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">No Topics Yet</h3>
-                <p className="text-muted-foreground">
-                  Video topics are being added. Check back soon!
-                </p>
-              </CardContent>
+          {/* Playbook for Life Tab */}
+          <TabsContent value="playbook">
+            <div className="mb-6 text-center">
+              <h2 className="text-3xl font-black uppercase mb-2">The Playbook for Life</h2>
+              <p className="text-muted-foreground">
+                Essential life skills videos covering Focus, Respect, Finances, and more
+              </p>
+            </div>
+
+            {playbookModules.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <PlayCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-semibold mb-2">No Topics Yet</h3>
+                  <p className="text-muted-foreground">Video topics are being added. Check back soon!</p>
+                </CardContent>
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {modules.map((module) => (
+                {playbookModules.map((module) => (
                   <Card 
                     key={module.id}
                     className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary/50"
@@ -320,6 +368,31 @@ const PlaybookForLife = () => {
             )}
           </TabsContent>
 
+          {/* All Courses Tab */}
+          <TabsContent value="courses">
+            {filteredCourses.length === 0 ? (
+              <Card className="p-16 text-center bg-card/50 backdrop-blur border-2 border-primary/20">
+                <BookOpen className="h-20 w-20 text-primary mx-auto mb-6" />
+                <h2 className="text-3xl font-black uppercase mb-4">No Courses Found</h2>
+                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                  {searchTerm 
+                    ? "Try adjusting your search to find courses"
+                    : "Check back soon for new educational content"}
+                </p>
+                {searchTerm && (
+                  <Button onClick={() => setSearchTerm("")}>Clear Search</Button>
+                )}
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredCourses.map((course) => (
+                  <CourseCard key={course.id} course={course} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Favorites Tab */}
           <TabsContent value="favorites">
             {favoriteVideos.length === 0 ? (
               <Card>
@@ -345,23 +418,15 @@ const PlaybookForLife = () => {
                       </div>
                       <CardTitle className="text-lg">{video.title}</CardTitle>
                       {video.description && (
-                        <CardDescription className="line-clamp-2">
-                          {video.description}
-                        </CardDescription>
+                        <CardDescription className="line-clamp-2">{video.description}</CardDescription>
                       )}
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center justify-between">
                         {video.duration_minutes && (
-                          <span className="text-sm text-muted-foreground">
-                            {video.duration_minutes} min
-                          </span>
+                          <span className="text-sm text-muted-foreground">{video.duration_minutes} min</span>
                         )}
-                        <Button 
-                          size="sm"
-                          onClick={() => setSelectedModule(video.module_id)}
-                          className="gap-2"
-                        >
+                        <Button size="sm" onClick={() => setSelectedModule(video.module_id)} className="gap-2">
                           <PlayCircle className="h-4 w-4" />
                           Watch
                         </Button>
@@ -372,45 +437,47 @@ const PlaybookForLife = () => {
               </div>
             )}
           </TabsContent>
-        </Tabs>
 
-        {/* Badge Milestones */}
-        <Card className="bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Video Learning Badges
-            </CardTitle>
-            <CardDescription>
-              Earn badges by watching videos and building life skills
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="text-center p-4">
-                <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Award className="h-8 w-8 text-primary" />
+          {/* My Progress Tab */}
+          <TabsContent value="progress">
+            <Card className="bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  Video Learning Badges
+                </CardTitle>
+                <CardDescription>
+                  Earn badges by watching videos and building life skills
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="text-center p-4">
+                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Award className="h-8 w-8 text-primary" />
+                    </div>
+                    <p className="font-semibold">Video Learner</p>
+                    <p className="text-sm text-muted-foreground">Complete 5 videos</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Award className="h-8 w-8 text-primary" />
+                    </div>
+                    <p className="font-semibold">Life Skills Student</p>
+                    <p className="text-sm text-muted-foreground">Complete 10 videos</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Award className="h-8 w-8 text-primary" />
+                    </div>
+                    <p className="font-semibold">Playbook Graduate</p>
+                    <p className="text-sm text-muted-foreground">Complete 25 videos</p>
+                  </div>
                 </div>
-                <p className="font-semibold">Video Learner</p>
-                <p className="text-sm text-muted-foreground">Complete 5 videos</p>
-              </div>
-              <div className="text-center p-4">
-                <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Award className="h-8 w-8 text-primary" />
-                </div>
-                <p className="font-semibold">Life Skills Student</p>
-                <p className="text-sm text-muted-foreground">Complete 10 videos</p>
-              </div>
-              <div className="text-center p-4">
-                <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Award className="h-8 w-8 text-primary" />
-                </div>
-                <p className="font-semibold">Playbook Graduate</p>
-                <p className="text-sm text-muted-foreground">Complete 25 videos</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

@@ -249,10 +249,11 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
-    // Step 1: Role selection - redirect non-athletes to coming soon page
+    // Step 1: Role selection - athletes continue to profile setup
     if (step === 1) {
       if (selectedRole === "parent" || selectedRole === "recruiter") {
-        navigate(`/coming-soon?role=${selectedRole}`);
+        // For now, redirect to onboarding - parent/recruiter flows to be added later
+        toast.info("Parent and recruiter features coming soon!");
         return;
       }
     }

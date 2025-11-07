@@ -180,7 +180,7 @@ export function AppSidebar() {
       key: "development",
       items: [
         { title: "Evaluations", url: "/evaluations", icon: ClipboardCheck },
-        { title: "Learning Hub", url: "/learning", icon: GraduationCap },
+        { title: "Playbook for Life", url: "/learning", icon: GraduationCap },
         { title: "Badges & Achievements", url: "/badges", icon: Medal },
       ],
     },
@@ -221,7 +221,7 @@ export function AppSidebar() {
 
   const parentItems = [
     { title: "Parent Dashboard", url: "/parent/dashboard", icon: Home },
-    { title: "Learning Hub", url: "/learning", icon: GraduationCap },
+    { title: "Playbook for Life", url: "/learning", icon: GraduationCap },
   ];
 
   const adminItems = [

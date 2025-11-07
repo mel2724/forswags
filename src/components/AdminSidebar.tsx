@@ -59,7 +59,7 @@ const menuGroups: MenuGroup[] = [
   {
     label: "Learning",
     items: [
-      { title: "Learning Hub", url: "/admin/learning" },
+      { title: "Playbook for Life", url: "/admin/learning" },
     ],
   },
   {

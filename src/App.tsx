@@ -33,7 +33,7 @@ const AlumniDashboard = lazy(() => import("./pages/AlumniDashboard"));
 const MediaGallery = lazy(() => import("./pages/MediaGallery"));
 const Rankings = lazy(() => import("./pages/Rankings"));
 const Notifications = lazy(() => import("./pages/Notifications"));
-const LearningHub = lazy(() => import("./pages/LearningHub"));
+const PlaybookForLife = lazy(() => import("./pages/PlaybookForLife"));
 const CourseDetail = lazy(() => import("./pages/CourseDetail"));
 const Lesson = lazy(() => import("./pages/Lesson"));
 const Badges = lazy(() => import("./pages/Badges"));
@@ -43,7 +43,6 @@ const SocialMedia = lazy(() => import("./pages/SocialMedia"));
 const Membership = lazy(() => import("./pages/Membership"));
 const MembershipAthlete = lazy(() => import("./pages/MembershipAthlete"));
 const MembershipRecruiter = lazy(() => import("./pages/MembershipRecruiter"));
-const ComingSoon = lazy(() => import("./pages/ComingSoon"));
 const RecruiterDashboard = lazy(() => import("./pages/recruiter/RecruiterDashboard"));
 const AthleteSearch = lazy(() => import("./pages/recruiter/AthleteSearch"));
 const RecruiterProfile = lazy(() => import("./pages/recruiter/RecruiterProfile"));
@@ -132,9 +131,8 @@ const App = () => (
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/auth" element={<Auth />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/players" element={<Players />} />
               <Route path="/profile" element={<Profile />} />
@@ -151,12 +149,12 @@ const App = () => (
               <Route path="/rankings" element={<Rankings />} />
               <Route path="/schools" element={<SchoolSearch />} />
               <Route path="/notifications" element={<Notifications />} />
-              <Route path="/learning" element={<LearningHub />} />
+              <Route path="/learning" element={<PlaybookForLife />} />
               <Route path="/courses/:courseId" element={<CourseDetail />} />
               <Route path="/courses/:courseId/lessons/:lessonId" element={<Lesson />} />
               {/* Redirects for old routes */}
-              <Route path="/courses" element={<LearningHub />} />
-              <Route path="/playbook-for-life" element={<LearningHub />} />
+              <Route path="/courses" element={<PlaybookForLife />} />
+              <Route path="/playbook-for-life" element={<PlaybookForLife />} />
               <Route path="/badges" element={<Badges />} />
               <Route path="/evaluations" element={<Evaluations />} />
               <Route path="/evaluations/purchase" element={<PurchaseEvaluation />} />

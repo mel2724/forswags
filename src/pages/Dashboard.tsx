@@ -301,21 +301,6 @@ const Dashboard = () => {
             <img src={logoIcon} alt="ForSWAGs" className="h-12" />
           </div>
           
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Button variant="ghost" onClick={() => navigate("/players")} className="text-primary hover:text-primary/80 font-bold">
-              Athletes
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/rankings")} className="text-primary hover:text-primary/80 font-bold">
-              Rankings
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/badges")} className="text-primary hover:text-primary/80 font-bold">
-              Badges
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/membership/athlete")} className="text-primary hover:text-primary/80 font-bold">
-              Membership
-            </Button>
-          </nav>
-
           <div className="flex items-center gap-2">
             <NotificationDropdown />
             <Button variant="ghost" onClick={handleSignOut} className="text-primary hover:text-primary/80 font-bold">

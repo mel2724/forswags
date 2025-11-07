@@ -14,9 +14,9 @@ export default function AdminLearning() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Learning Management</h1>
+        <h1 className="text-3xl font-bold mb-2">Playbook for Life Management</h1>
         <p className="text-muted-foreground">
-          Manage all learning content, courses, and videos from one place
+          Manage all Playbook for Life content, courses, and videos from one place
         </p>
       </div>
 
