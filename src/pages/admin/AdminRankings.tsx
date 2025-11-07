@@ -57,8 +57,9 @@ export default function AdminRankings() {
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
     try {
-      // Load rankings
+      // Load rankings with athlete data
       const { data: rankingsData, error: rankingsError } = await supabase
         .from("rankings")
         .select("*, athletes(sport, position, user_id)")
