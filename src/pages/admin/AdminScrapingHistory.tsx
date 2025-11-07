@@ -121,10 +121,24 @@ export default function AdminScrapingHistory() {
         <CardHeader>
           <CardTitle>Import History</CardTitle>
           <CardDescription>
-            Most recent 50 scraping operations
+            Most recent 50 scraping operations from multiple sources
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 p-4 bg-muted rounded-lg">
+            <h3 className="font-semibold mb-2">Active Data Sources:</h3>
+            <ul className="space-y-1 text-sm">
+              <li className="flex items-center gap-2">
+                <Badge variant="outline">Firecrawl</Badge>
+                <span className="text-muted-foreground">MaxPreps, 247Sports, ESPN (via web scraping)</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Badge variant="default">ESPN API</Badge>
+                <span className="text-muted-foreground">Direct API access (free, no key required)</span>
+              </li>
+            </ul>
+          </div>
+
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">
               Loading history...

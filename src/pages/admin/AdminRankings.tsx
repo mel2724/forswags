@@ -244,15 +244,57 @@ export default function AdminRankings() {
             onClick={async () => {
               setLoading(true);
               try {
-                const { data, error } = await supabase.functions.invoke('scrape-external-rankings', {
+                let importedCount = 0;
+                const errors: string[] = [];
+                
+                // Try Firecrawl scraper first
+                console.log('Attempting Firecrawl scraper...');
+                const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke('scrape-external-rankings', {
                   body: { sport: 'football' }
                 });
-                if (error) throw error;
-                toast({
-                  title: "Import Complete",
-                  description: `Imported ${data.athletes_imported} athletes from external sources`,
+
+                if (scrapeError) {
+                  console.error('Firecrawl scraper error:', scrapeError);
+                  errors.push(`Firecrawl: ${scrapeError.message}`);
+                } else if (scrapeData) {
+                  importedCount += scrapeData.athletes_imported || 0;
+                  if (scrapeData.errors) {
+                    errors.push(...(scrapeData.errors as string[]));
+                  }
+                }
+
+                // Always try ESPN Hidden API as fallback/supplement
+                console.log('Attempting ESPN Hidden API...');
+                const { data: espnData, error: espnError } = await supabase.functions.invoke('fetch-espn-rankings', {
+                  body: { 
+                    sport: 'football',
+                    year: new Date().getFullYear()
+                  }
                 });
-                loadData();
+
+                if (espnError) {
+                  console.error('ESPN API error:', espnError);
+                  errors.push(`ESPN API: ${espnError.message}`);
+                } else if (espnData) {
+                  importedCount += espnData.athletes_imported || 0;
+                  if (espnData.errors) {
+                    errors.push(...(espnData.errors as string[]));
+                  }
+                }
+
+                if (importedCount > 0) {
+                  toast({
+                    title: "Import Successful",
+                    description: `Imported ${importedCount} rankings from multiple sources`,
+                  });
+                  loadData();
+                } else {
+                  toast({
+                    title: "Import Completed",
+                    description: errors.length > 0 ? errors.join(', ') : "No data retrieved from any source",
+                    variant: "destructive",
+                  });
+                }
               } catch (error: any) {
                 toast({
                   title: "Import Failed",
@@ -409,6 +451,32 @@ export default function AdminRankings() {
           </Dialog>
         </div>
       </div>
+
+      <Card className="bg-muted/50">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
+              <h3 className="font-semibold mb-2">Multi-Source Import System</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                The "Import Top 100" button uses multiple data sources to maximize coverage:
+              </p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <Badge variant="outline" className="mt-0.5">Firecrawl</Badge>
+                  <span className="text-muted-foreground">Attempts to scrape MaxPreps, 247Sports, and ESPN websites</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Badge variant="default" className="mt-0.5">ESPN API</Badge>
+                  <span className="text-muted-foreground">Free hidden API (no key required) - automatic fallback</span>
+                </li>
+              </ul>
+              <p className="text-xs text-muted-foreground mt-3">
+                All operations are logged in <a href="/admin/scraping-history" className="underline">Scraping History</a> with detailed error tracking.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
