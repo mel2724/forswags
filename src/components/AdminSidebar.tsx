@@ -82,6 +82,7 @@ const menuGroups: MenuGroup[] = [
     label: "Communications",
     items: [
       { title: "Email Templates", url: "/admin/email-templates" },
+      { title: "Scheduled Emails", url: "/admin/scheduled-emails" },
       { title: "Send Notifications", url: "/admin/notifications" },
     ],
   },
