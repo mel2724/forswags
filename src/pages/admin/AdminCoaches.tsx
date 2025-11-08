@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -13,7 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Loader2, Mail, Phone, Award, User } from "lucide-react";
+import { Eye, Loader2, Mail, Award, User, Send } from "lucide-react";
 
 interface CoachProfile {
   id: string;
@@ -36,6 +39,11 @@ const AdminCoaches = () => {
   const [filteredCoaches, setFilteredCoaches] = useState<CoachProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCoach, setSelectedCoach] = useState<CoachProfile | null>(null);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
+  const [includeInactive, setIncludeInactive] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
     fetchCoaches();
@@ -126,6 +134,53 @@ const AdminCoaches = () => {
     );
   };
 
+  const handleSendBulkEmail = async () => {
+    if (!emailSubject.trim() || !emailMessage.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please provide both subject and message.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingEmail(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-coach-announcement', {
+        body: {
+          subject: emailSubject,
+          message: emailMessage,
+          includeInactive,
+        },
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to send emails');
+      }
+
+      toast({
+        title: "Emails Sent Successfully",
+        description: `Sent to ${data.successCount} of ${data.totalRecipients} coaches. ${data.failedCount} failed.`,
+      });
+
+      setShowEmailDialog(false);
+      setEmailSubject("");
+      setEmailMessage("");
+      setIncludeInactive(false);
+    } catch (error: any) {
+      toast({
+        title: "Error Sending Emails",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -136,11 +191,17 @@ const AdminCoaches = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Coaches Directory</h1>
-        <p className="text-muted-foreground">
-          View and manage all coach profiles
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Coaches Directory</h1>
+          <p className="text-muted-foreground">
+            View and manage all coach profiles
+          </p>
+        </div>
+        <Button onClick={() => setShowEmailDialog(true)}>
+          <Send className="h-4 w-4 mr-2" />
+          Send Bulk Email
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -344,6 +405,95 @@ const AdminCoaches = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Send Announcement to Coaches</DialogTitle>
+            <DialogDescription>
+              Send a bulk email announcement to all {includeInactive ? 'active and inactive' : 'active'} coaches
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="subject">Subject *</Label>
+              <Input
+                id="subject"
+                placeholder="Enter email subject..."
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="message">Message *</Label>
+              <Textarea
+                id="message"
+                placeholder="Enter your announcement message..."
+                value={emailMessage}
+                onChange={(e) => setEmailMessage(e.target.value)}
+                rows={8}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                {emailMessage.length} characters
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="includeInactive"
+                checked={includeInactive}
+                onCheckedChange={(checked) => setIncludeInactive(checked as boolean)}
+              />
+              <Label
+                htmlFor="includeInactive"
+                className="text-sm font-normal cursor-pointer"
+              >
+                Include inactive coaches
+              </Label>
+            </div>
+
+            <div className="bg-muted p-3 rounded-md">
+              <p className="text-sm">
+                <strong>Recipients:</strong>{' '}
+                {includeInactive
+                  ? coaches.length
+                  : coaches.filter(c => c.is_active).length}{' '}
+                coach{includeInactive ? 'es' : '(es)'}
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={handleSendBulkEmail}
+                disabled={sendingEmail || !emailSubject.trim() || !emailMessage.trim()}
+                className="flex-1"
+              >
+                {sendingEmail ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send to All Coaches
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowEmailDialog(false)}
+                disabled={sendingEmail}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
