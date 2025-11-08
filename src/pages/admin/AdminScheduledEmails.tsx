@@ -24,8 +24,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Loader2, Calendar, X, CheckCircle, XCircle, Clock, AlertCircle, Activity } from "lucide-react";
-import { format } from "date-fns";
+import { Eye, Loader2, Calendar, X, CheckCircle, XCircle, Clock, AlertCircle, Activity, TrendingUp, Mail, MousePointer } from "lucide-react";
+import { format, startOfDay, subDays } from "date-fns";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface ScheduledEmail {
   id: string;
@@ -186,6 +187,79 @@ const AdminScheduledEmails = () => {
     return new Date(scheduledFor) <= new Date();
   };
 
+  const getAggregateAnalytics = () => {
+    const sentEmails = emails.filter((e) => e.status === "sent");
+    const totalSent = sentEmails.length;
+    const totalRecipients = sentEmails.reduce((sum, e) => sum + (e.recipient_count || 0), 0);
+    const totalSuccess = sentEmails.reduce((sum, e) => sum + (e.success_count || 0), 0);
+    const totalOpens = sentEmails.reduce((sum, e) => sum + (e.open_count || 0), 0);
+    const totalUniqueOpens = sentEmails.reduce((sum, e) => sum + (e.unique_opens || 0), 0);
+    const totalClicks = sentEmails.reduce((sum, e) => sum + (e.click_count || 0), 0);
+    const totalUniqueClicks = sentEmails.reduce((sum, e) => sum + (e.unique_clicks || 0), 0);
+
+    const avgOpenRate = totalRecipients > 0 ? (totalUniqueOpens / totalRecipients) * 100 : 0;
+    const avgClickRate = totalRecipients > 0 ? (totalUniqueClicks / totalRecipients) * 100 : 0;
+    const deliveryRate = totalRecipients > 0 ? (totalSuccess / totalRecipients) * 100 : 0;
+    const engagementRate = totalRecipients > 0 ? ((totalUniqueOpens + totalUniqueClicks) / totalRecipients) * 100 : 0;
+
+    return {
+      totalSent,
+      totalRecipients,
+      totalSuccess,
+      totalOpens,
+      totalUniqueOpens,
+      totalClicks,
+      totalUniqueClicks,
+      avgOpenRate,
+      avgClickRate,
+      deliveryRate,
+      engagementRate,
+    };
+  };
+
+  const getTrendData = () => {
+    const sentEmails = emails.filter((e) => e.status === "sent" && e.sent_at);
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const date = startOfDay(subDays(new Date(), 29 - i));
+      return {
+        date,
+        dateStr: format(date, "MMM dd"),
+        emailsSent: 0,
+        recipients: 0,
+        opens: 0,
+        clicks: 0,
+        uniqueOpens: 0,
+        uniqueClicks: 0,
+      };
+    });
+
+    sentEmails.forEach((email) => {
+      const emailDate = startOfDay(new Date(email.sent_at!));
+      const dayData = last30Days.find(
+        (day) => day.date.getTime() === emailDate.getTime()
+      );
+
+      if (dayData) {
+        dayData.emailsSent += 1;
+        dayData.recipients += email.recipient_count || 0;
+        dayData.opens += email.open_count || 0;
+        dayData.clicks += email.click_count || 0;
+        dayData.uniqueOpens += email.unique_opens || 0;
+        dayData.uniqueClicks += email.unique_clicks || 0;
+      }
+    });
+
+    return last30Days.map((day) => ({
+      date: day.dateStr,
+      "Emails Sent": day.emailsSent,
+      "Open Rate": day.recipients > 0 ? ((day.uniqueOpens / day.recipients) * 100).toFixed(1) : 0,
+      "Click Rate": day.recipients > 0 ? ((day.uniqueClicks / day.recipients) * 100).toFixed(1) : 0,
+      Recipients: day.recipients,
+      Opens: day.opens,
+      Clicks: day.clicks,
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -195,16 +269,167 @@ const AdminScheduledEmails = () => {
   }
 
   const statusCounts = getStatusCounts();
+  const analytics = getAggregateAnalytics();
+  const trendData = getTrendData();
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Scheduled Emails</h1>
+        <h1 className="text-3xl font-bold">Email Performance Dashboard</h1>
         <p className="text-muted-foreground">
-          View and manage scheduled email announcements
+          Track and analyze email campaign performance across all scheduled emails
         </p>
       </div>
 
+      {/* Aggregate Analytics Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Mail className="h-4 w-4 text-primary" />
+              Total Sent
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics.totalSent}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {analytics.totalRecipients} total recipients
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Eye className="h-4 w-4 text-blue-600" />
+              Avg Open Rate
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {analytics.avgOpenRate.toFixed(1)}%
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {analytics.totalUniqueOpens} unique opens
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <MousePointer className="h-4 w-4 text-purple-600" />
+              Avg Click Rate
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">
+              {analytics.avgClickRate.toFixed(1)}%
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {analytics.totalUniqueClicks} unique clicks
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              Engagement Rate
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {analytics.engagementRate.toFixed(1)}%
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {analytics.deliveryRate.toFixed(1)}% delivery rate
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Trend Charts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Email Volume (Last 30 Days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="date" 
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <YAxis 
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="Emails Sent" fill="hsl(var(--primary))" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Engagement Rates (Last 30 Days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="date" 
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <YAxis 
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  label={{ value: '%', position: 'insideLeft' }}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="Open Rate" 
+                  stroke="hsl(217, 91%, 60%)" 
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(217, 91%, 60%)' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="Click Rate" 
+                  stroke="hsl(271, 91%, 65%)" 
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(271, 91%, 65%)' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Email Status Overview */}
       <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
