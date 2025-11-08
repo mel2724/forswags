@@ -3,6 +3,7 @@ import { TutorialStep } from "./TutorialStep";
 import { onboardingTutorialSteps, parentTutorialSteps, coachTutorialSteps, recruiterTutorialSteps } from "@/config/tutorialSteps";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useBadgeNotification } from "@/contexts/BadgeNotificationContext";
 
 interface InteractiveTutorialProps {
   currentOnboardingStep?: number;
@@ -20,6 +21,7 @@ export const InteractiveTutorial = ({
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
   const { toast } = useToast();
+  const { showBadgeNotification } = useBadgeNotification();
 
   // Select tutorial steps based on role
   const tutorialSteps = role === 'parent' 
@@ -112,8 +114,47 @@ export const InteractiveTutorial = ({
         .update({ tutorial_progress: progress })
         .eq('id', user.id);
 
+      // Check if this completion earned a badge
+      await checkForNewBadges(user.id);
+
     } catch (error) {
       console.error('Error marking step complete:', error);
+    }
+  };
+
+  const checkForNewBadges = async (userId: string) => {
+    try {
+      // Small delay to allow trigger to process
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Get newly earned badges
+      const { data: badges } = await supabase
+        .from('user_badges')
+        .select(`
+          id,
+          earned_at,
+          badges (
+            id,
+            name,
+            description,
+            icon_url
+          )
+        `)
+        .eq('user_id', userId)
+        .order('earned_at', { ascending: false })
+        .limit(5);
+
+      if (badges && badges.length > 0) {
+        // Show notification for the most recent badge
+        const latestBadge = badges[0];
+        const badgeEarnedRecently = new Date(latestBadge.earned_at).getTime() > Date.now() - 5000; // Within last 5 seconds
+
+        if (badgeEarnedRecently && latestBadge.badges) {
+          showBadgeNotification(latestBadge.badges);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking for new badges:', error);
     }
   };
 

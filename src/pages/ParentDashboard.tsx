@@ -13,6 +13,7 @@ import { NotificationDropdown } from "@/components/NotificationDropdown";
 import NotificationCard from "@/components/NotificationCard";
 import SponsorCard from "@/components/SponsorCard";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
+import { useBadgeListener } from "@/hooks/useBadgeListener";
 import {
   LogOut, Users, Trophy, GraduationCap, Calendar, 
   School, Award, Plus, Eye, MapPin
@@ -27,6 +28,9 @@ const ParentDashboard = () => {
   const [athleteEmail, setAthleteEmail] = useState("");
   const [linkingDialogOpen, setLinkingDialogOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+
+  // Listen for badge achievements
+  useBadgeListener(user?.id);
 
   useEffect(() => {
     const checkAuth = async () => {

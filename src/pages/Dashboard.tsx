@@ -20,6 +20,7 @@ import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { Footer } from "@/components/Footer";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
+import { useBadgeListener } from "@/hooks/useBadgeListener";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -49,6 +50,9 @@ const Dashboard = () => {
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
+
+  // Listen for badge achievements
+  useBadgeListener(user?.id);
 
   useEffect(() => {
     const checkAuth = async () => {

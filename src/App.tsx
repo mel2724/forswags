@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { BadgeNotificationProvider } from "@/contexts/BadgeNotificationContext";
 
 // Lazy load admin pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -114,10 +115,11 @@ const queryClient = new QueryClient({
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppLayout>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+      <BadgeNotificationProvider>
+        <BrowserRouter>
+          <AppLayout>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
               <Route path="/profile/:id" element={<PublicProfile />} />
@@ -212,6 +214,7 @@ const App = () => (
           </Suspense>
         </AppLayout>
       </BrowserRouter>
+    </BadgeNotificationProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );
