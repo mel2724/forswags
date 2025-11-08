@@ -59,6 +59,7 @@ const AdminCourseDetail = lazy(() => import("./pages/admin/AdminCourseDetail"));
 const AdminAthletes = lazy(() => import("./pages/admin/AdminAthletes"));
 const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
 const AdminCoachApplications = lazy(() => import("./pages/admin/AdminCoachApplications"));
+const AdminCoaches = lazy(() => import("./pages/admin/AdminCoaches"));
 const AdminRankings = lazy(() => import("./pages/admin/AdminRankings"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
 const AdminEvaluations = lazy(() => import("./pages/admin/AdminEvaluations"));
@@ -192,6 +193,7 @@ const App = () => (
                 <Route path="athletes" element={<AdminAthletes />} />
                 <Route path="rankings" element={<AdminRankings />} />
                 <Route path="coach-applications" element={<AdminCoachApplications />} />
+                <Route path="coaches" element={<AdminCoaches />} />
                 <Route path="email-templates" element={<AdminEmailTemplates />} />
                 <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="evaluations" element={<AdminEvaluations />} />

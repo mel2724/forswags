@@ -66,6 +66,7 @@ const menuGroups: MenuGroup[] = [
     label: "Coaching",
     items: [
       { title: "Coach Applications", url: "/admin/coach-applications" },
+      { title: "Coaches", url: "/admin/coaches" },
       { title: "Evaluations", url: "/admin/evaluations" },
       { title: "Payment Verification", url: "/admin/evaluation-payments" },
     ],
