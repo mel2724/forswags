@@ -1,3 +1,35 @@
-<h2 style="color:#FFD623;">New badge unlocked 🎖️</h2>
-<p>Great job, {{first_name}}—you earned <strong>{{badge_name}}</strong>.</p>
-<p><a href="{{dashboard_url}}">See your badges</a> • <a href="{{profile_url}}">Show on profile</a></p>
+<div style="text-align: center; padding: 20px 0;">
+  <div style="background: linear-gradient(135deg, #FFD623 0%, #FFA500 100%); border-radius: 50%; width: 120px; height: 120px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(255, 214, 35, 0.3);">
+    <span style="font-size: 64px;">🎖️</span>
+  </div>
+  <h2 style="color:#FFD623; margin: 0 0 10px 0; font-size: 28px;">Achievement Unlocked!</h2>
+  <h3 style="color:#F1F1F1; margin: 0 0 20px 0; font-size: 20px;">{{badge_name}}</h3>
+</div>
+
+<div style="background-color: #0F1117; border: 2px solid #FFD623; border-radius: 8px; padding: 24px; margin: 24px 0;">
+  <p style="color: #F1F1F1; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+    Great job, <strong style="color: #FFD623;">{{first_name}}</strong>! 🎉
+  </p>
+  <p style="color: #A0A0A0; font-size: 14px; line-height: 1.6; margin: 0;">
+    {{badge_description}}
+  </p>
+</div>
+
+<div style="text-align: center; margin: 32px 0;">
+  <a href="{{dashboard_url}}" style="display: inline-block; background-color: #FFD623; color: #0F1117; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 16px; margin: 0 8px 16px 8px;">
+    View All Badges
+  </a>
+  <br>
+  <a href="{{profile_url}}" style="display: inline-block; background-color: transparent; color: #FFD623; padding: 14px 32px; border: 2px solid #FFD623; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 16px; margin: 0 8px;">
+    Share on Profile
+  </a>
+</div>
+
+<div style="background-color: #1A1F2E; border-left: 4px solid #FFD623; padding: 16px; margin: 24px 0; border-radius: 4px;">
+  <p style="color: #F1F1F1; font-size: 14px; margin: 0 0 8px 0; font-weight: 600;">
+    💡 Pro Tip
+  </p>
+  <p style="color: #A0A0A0; font-size: 13px; margin: 0; line-height: 1.5;">
+    Badges are visible on your public profile and demonstrate your achievements to recruiters and scouts. Keep earning more to stand out!
+  </p>
+</div>

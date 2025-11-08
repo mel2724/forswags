@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBadgeNotification } from "@/contexts/BadgeNotificationContext";
+import { sendBadgeEarnedEmail } from "@/lib/emailNotifications";
 
 /**
  * Hook to listen for real-time badge achievements
@@ -33,6 +34,25 @@ export const useBadgeListener = (userId: string | undefined) => {
 
           if (badgeData) {
             showBadgeNotification(badgeData);
+
+            // Send email notification
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.email) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('first_name, last_name')
+                .eq('id', userId)
+                .single();
+
+              await sendBadgeEarnedEmail(
+                user.email,
+                profile?.first_name || 'Athlete',
+                badgeData.name,
+                badgeData.description || 'Keep up the great work!',
+                `${window.location.origin}/badges`,
+                `${window.location.origin}/profile`
+              );
+            }
           }
         }
       )

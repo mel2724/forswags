@@ -46,6 +46,7 @@ export async function sendBadgeEarnedEmail(
   userEmail: string,
   firstName: string,
   badgeName: string,
+  badgeDescription: string,
   dashboardUrl: string,
   profileUrl: string
 ) {
@@ -55,6 +56,7 @@ export async function sendBadgeEarnedEmail(
     variables: {
       first_name: firstName,
       badge_name: badgeName,
+      badge_description: badgeDescription,
       dashboard_url: dashboardUrl,
       profile_url: profileUrl,
     },
