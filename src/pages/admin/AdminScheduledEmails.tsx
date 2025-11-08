@@ -4,6 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -24,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Loader2, Calendar, X, CheckCircle, XCircle, Clock, AlertCircle, Activity, TrendingUp, Mail, MousePointer } from "lucide-react";
+import { Eye, Loader2, Calendar, X, CheckCircle, XCircle, Clock, AlertCircle, Activity, TrendingUp, Mail, MousePointer, Plus, Send } from "lucide-react";
 import { format, startOfDay, subDays } from "date-fns";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
@@ -58,6 +63,17 @@ const AdminScheduledEmails = () => {
   const [emailToCancel, setEmailToCancel] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  
+  // Create email form state
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [recipientType, setRecipientType] = useState<string>("coaches");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [sendType, setSendType] = useState<"immediate" | "scheduled">("immediate");
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [includeInactive, setIncludeInactive] = useState(false);
 
   useEffect(() => {
     fetchScheduledEmails();
@@ -135,6 +151,85 @@ const AdminScheduledEmails = () => {
       });
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleCreateEmail = async () => {
+    if (!subject.trim() || !message.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Subject and message are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (sendType === "scheduled" && (!scheduleDate || !scheduleTime)) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a date and time for scheduling",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCreating(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      let scheduledFor: string;
+      
+      if (sendType === "immediate") {
+        scheduledFor = new Date().toISOString();
+      } else {
+        const dateTime = new Date(`${scheduleDate}T${scheduleTime}`);
+        if (dateTime <= new Date()) {
+          throw new Error("Scheduled time must be in the future");
+        }
+        scheduledFor = dateTime.toISOString();
+      }
+
+      const { error } = await supabase
+        .from("scheduled_emails")
+        .insert([{
+          created_by: user.id,
+          subject: subject.trim(),
+          message: message.trim(),
+          scheduled_for: scheduledFor,
+          recipient_type: recipientType,
+          include_inactive: includeInactive,
+          status: "pending",
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Email Scheduled",
+        description: sendType === "immediate" 
+          ? "Email will be sent shortly" 
+          : `Email scheduled for ${format(new Date(scheduledFor), "PPpp")}`,
+      });
+
+      // Reset form
+      setSubject("");
+      setMessage("");
+      setSendType("immediate");
+      setScheduleDate("");
+      setScheduleTime("");
+      setIncludeInactive(false);
+      setShowCreateDialog(false);
+      
+      fetchScheduledEmails();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -274,11 +369,17 @@ const AdminScheduledEmails = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Email Performance Dashboard</h1>
-        <p className="text-muted-foreground">
-          Track and analyze email campaign performance across all scheduled emails
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Email Performance Dashboard</h1>
+          <p className="text-muted-foreground">
+            Track and analyze email campaign performance across all scheduled emails
+          </p>
+        </div>
+        <Button onClick={() => setShowCreateDialog(true)} size="lg">
+          <Plus className="h-4 w-4 mr-2" />
+          Create New Email
+        </Button>
       </div>
 
       {/* Aggregate Analytics Cards */}
@@ -595,6 +696,147 @@ const AdminScheduledEmails = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Create Email Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Scheduled Email</DialogTitle>
+            <DialogDescription>
+              Compose and schedule an email announcement to send to your selected recipients
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Recipient Type Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="recipient-type">Recipient Type</Label>
+              <Select value={recipientType} onValueChange={setRecipientType}>
+                <SelectTrigger id="recipient-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="coaches">Coaches</SelectItem>
+                  <SelectItem value="athletes">Athletes</SelectItem>
+                  <SelectItem value="recruiters">Recruiters</SelectItem>
+                  <SelectItem value="parents">Parents</SelectItem>
+                  <SelectItem value="alumni">Alumni</SelectItem>
+                  <SelectItem value="all_users">All Users</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Include Inactive Checkbox */}
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="include-inactive"
+                checked={includeInactive}
+                onCheckedChange={(checked) => setIncludeInactive(checked as boolean)}
+              />
+              <Label 
+                htmlFor="include-inactive"
+                className="text-sm font-normal cursor-pointer"
+              >
+                Include inactive users
+              </Label>
+            </div>
+
+            {/* Subject */}
+            <div className="space-y-2">
+              <Label htmlFor="subject">Subject *</Label>
+              <Input
+                id="subject"
+                placeholder="Enter email subject..."
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+            </div>
+
+            {/* Message */}
+            <div className="space-y-2">
+              <Label htmlFor="message">Message *</Label>
+              <Textarea
+                id="message"
+                placeholder="Enter your message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={8}
+              />
+            </div>
+
+            {/* Send Type */}
+            <div className="space-y-3">
+              <Label>Send Options</Label>
+              <RadioGroup value={sendType} onValueChange={(value) => setSendType(value as "immediate" | "scheduled")}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="immediate" id="immediate" />
+                  <Label htmlFor="immediate" className="font-normal cursor-pointer">
+                    Send immediately
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="scheduled" id="scheduled" />
+                  <Label htmlFor="scheduled" className="font-normal cursor-pointer">
+                    Schedule for later
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Schedule Date/Time */}
+            {sendType === "scheduled" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="schedule-date">Date *</Label>
+                  <Input
+                    id="schedule-date"
+                    type="date"
+                    value={scheduleDate}
+                    onChange={(e) => setScheduleDate(e.target.value)}
+                    min={format(new Date(), "yyyy-MM-dd")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="schedule-time">Time *</Label>
+                  <Input
+                    id="schedule-time"
+                    type="time"
+                    value={scheduleTime}
+                    onChange={(e) => setScheduleTime(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateDialog(false)}
+                disabled={creating}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateEmail}
+                disabled={creating}
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    {sendType === "immediate" ? "Send Now" : "Schedule Email"}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* View Details Dialog */}
       <Dialog open={!!selectedEmail} onOpenChange={() => setSelectedEmail(null)}>
