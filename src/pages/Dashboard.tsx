@@ -18,6 +18,7 @@ import { SEO } from "@/components/SEO";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { Footer } from "@/components/Footer";
+import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -45,6 +46,8 @@ const Dashboard = () => {
   const [needsStatsUpdate, setNeedsStatsUpdate] = useState(false);
   const [needsHighlightsUpdate, setNeedsHighlightsUpdate] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -70,6 +73,15 @@ const Dashboard = () => {
         .maybeSingle();
 
       setProfile(profileData);
+
+      // Check if user should see tutorial (new user, hasn't completed tutorial)
+      if (profileData && !profileData.tutorial_completed) {
+        setShowTutorial(true);
+        // Determine onboarding step - default to 0 if no progress
+        const progress = profileData.tutorial_progress || {};
+        const completedSteps = Object.keys(progress).filter(key => progress[key]).length;
+        setCurrentOnboardingStep(completedSteps);
+      }
 
       // Get user role
       const { data: roleData } = await supabase
@@ -220,6 +232,21 @@ const Dashboard = () => {
     checkAuth();
   }, [navigate, getEffectiveUserId]);
 
+  const handleTutorialComplete = async () => {
+    setShowTutorial(false);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ tutorial_completed: true })
+        .eq("id", user?.id);
+      
+      if (error) throw error;
+      toast.success("Tutorial completed! You're all set! 🎉");
+    } catch (error) {
+      console.error("Error completing tutorial:", error);
+    }
+  };
+
   const handleCompleteTask = async (taskKey: string) => {
     try {
       const { error } = await supabase
@@ -284,6 +311,11 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background sports-pattern">
+      <InteractiveTutorial
+        currentOnboardingStep={currentOnboardingStep}
+        onComplete={handleTutorialComplete}
+        enabled={showTutorial && role === "athlete"}
+      />
       {isImpersonating && <div className="h-14" />}
       {parentViewingAthlete && (
         <div className="bg-secondary/20 border-b border-secondary">
