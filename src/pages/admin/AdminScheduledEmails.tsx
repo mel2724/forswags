@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, Loader2, Calendar, X, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { Eye, Loader2, Calendar, X, CheckCircle, XCircle, Clock, AlertCircle, Activity } from "lucide-react";
 import { format } from "date-fns";
 
 interface ScheduledEmail {
@@ -41,6 +41,10 @@ interface ScheduledEmail {
   error_message: string | null;
   created_at: string;
   created_by: string;
+  open_count: number | null;
+  click_count: number | null;
+  unique_opens: number | null;
+  unique_clicks: number | null;
 }
 
 const AdminScheduledEmails = () => {
@@ -427,22 +431,96 @@ const AdminScheduledEmails = () => {
               </div>
 
               {selectedEmail.status === "sent" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-semibold mb-1 text-green-600">
-                      Successful Sends
-                    </h4>
-                    <p className="text-2xl font-bold text-green-600">
-                      {selectedEmail.success_count || 0}
-                    </p>
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-semibold mb-1 text-green-600">
+                        Successful Sends
+                      </h4>
+                      <p className="text-2xl font-bold text-green-600">
+                        {selectedEmail.success_count || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold mb-1 text-red-600">Failed Sends</h4>
+                      <p className="text-2xl font-bold text-red-600">
+                        {selectedEmail.failed_count || 0}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold mb-1 text-red-600">Failed Sends</h4>
-                    <p className="text-2xl font-bold text-red-600">
-                      {selectedEmail.failed_count || 0}
-                    </p>
+
+                  <div className="pt-4 border-t">
+                    <h4 className="text-sm font-semibold mb-3">Engagement Analytics</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Eye className="h-4 w-4 text-blue-600" />
+                          <h5 className="text-sm font-medium text-blue-900">Opens</h5>
+                        </div>
+                        <div className="flex items-baseline gap-3">
+                          <p className="text-2xl font-bold text-blue-600">
+                            {selectedEmail.open_count || 0}
+                          </p>
+                          <p className="text-sm text-blue-700">
+                            ({selectedEmail.unique_opens || 0} unique)
+                          </p>
+                        </div>
+                        {selectedEmail.recipient_count && selectedEmail.recipient_count > 0 && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            {((((selectedEmail.unique_opens || 0) / selectedEmail.recipient_count) * 100).toFixed(1))}% open rate
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Activity className="h-4 w-4 text-purple-600" />
+                          <h5 className="text-sm font-medium text-purple-900">Clicks</h5>
+                        </div>
+                        <div className="flex items-baseline gap-3">
+                          <p className="text-2xl font-bold text-purple-600">
+                            {selectedEmail.click_count || 0}
+                          </p>
+                          <p className="text-sm text-purple-700">
+                            ({selectedEmail.unique_clicks || 0} unique)
+                          </p>
+                        </div>
+                        {selectedEmail.recipient_count && selectedEmail.recipient_count > 0 && (
+                          <p className="text-xs text-purple-600 mt-1">
+                            {((((selectedEmail.unique_clicks || 0) / selectedEmail.recipient_count) * 100).toFixed(1))}% click rate
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-4">
+                      <div className="text-center p-3 bg-muted rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Delivery Rate</p>
+                        <p className="text-lg font-bold">
+                          {selectedEmail.recipient_count && selectedEmail.recipient_count > 0
+                            ? ((((selectedEmail.success_count || 0) / selectedEmail.recipient_count) * 100).toFixed(1))
+                            : '0'}%
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-muted rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Engagement Rate</p>
+                        <p className="text-lg font-bold">
+                          {selectedEmail.recipient_count && selectedEmail.recipient_count > 0
+                            ? ((((selectedEmail.unique_opens || 0) + (selectedEmail.unique_clicks || 0)) / selectedEmail.recipient_count) * 100).toFixed(1)
+                            : '0'}%
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-muted rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Click-to-Open</p>
+                        <p className="text-lg font-bold">
+                          {selectedEmail.unique_opens && selectedEmail.unique_opens > 0
+                            ? ((((selectedEmail.unique_clicks || 0) / selectedEmail.unique_opens) * 100).toFixed(1))
+                            : '0'}%
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
 
               {selectedEmail.error_message && (

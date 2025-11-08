@@ -1578,6 +1578,47 @@ export type Database = {
         }
         Relationships: []
       }
+      email_engagement: {
+        Row: {
+          clicked_url: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          recipient_email: string
+          scheduled_email_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_url?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          recipient_email: string
+          scheduled_email_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_url?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          recipient_email?: string
+          scheduled_email_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_engagement_scheduled_email_id_fkey"
+            columns: ["scheduled_email_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_emails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_templates: {
         Row: {
           available_variables: Json | null
@@ -3134,6 +3175,7 @@ export type Database = {
       }
       scheduled_emails: {
         Row: {
+          click_count: number | null
           created_at: string
           created_by: string
           error_message: string | null
@@ -3141,6 +3183,7 @@ export type Database = {
           id: string
           include_inactive: boolean | null
           message: string
+          open_count: number | null
           recipient_count: number | null
           recipient_type: string
           scheduled_for: string
@@ -3148,9 +3191,12 @@ export type Database = {
           status: string
           subject: string
           success_count: number | null
+          unique_clicks: number | null
+          unique_opens: number | null
           updated_at: string
         }
         Insert: {
+          click_count?: number | null
           created_at?: string
           created_by: string
           error_message?: string | null
@@ -3158,6 +3204,7 @@ export type Database = {
           id?: string
           include_inactive?: boolean | null
           message: string
+          open_count?: number | null
           recipient_count?: number | null
           recipient_type?: string
           scheduled_for: string
@@ -3165,9 +3212,12 @@ export type Database = {
           status?: string
           subject: string
           success_count?: number | null
+          unique_clicks?: number | null
+          unique_opens?: number | null
           updated_at?: string
         }
         Update: {
+          click_count?: number | null
           created_at?: string
           created_by?: string
           error_message?: string | null
@@ -3175,6 +3225,7 @@ export type Database = {
           id?: string
           include_inactive?: boolean | null
           message?: string
+          open_count?: number | null
           recipient_count?: number | null
           recipient_type?: string
           scheduled_for?: string
@@ -3182,6 +3233,8 @@ export type Database = {
           status?: string
           subject?: string
           success_count?: number | null
+          unique_clicks?: number | null
+          unique_opens?: number | null
           updated_at?: string
         }
         Relationships: []

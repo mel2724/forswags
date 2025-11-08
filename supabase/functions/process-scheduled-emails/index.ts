@@ -118,6 +118,18 @@ const handler = async (req: Request): Promise<Response> => {
         // Send emails
         const emailPromises = recipients.map(async (recipient) => {
           try {
+            // Create tracking URLs
+            const baseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+            const trackingPixelUrl = `${baseUrl}/functions/v1/track-email-event?id=${scheduledEmail.id}&type=open&r=${encodeURIComponent(recipient.email)}`;
+            
+            // Process message to add click tracking to links
+            let processedMessage = scheduledEmail.message;
+            const urlRegex = /(https?:\/\/[^\s<]+)/g;
+            processedMessage = processedMessage.replace(urlRegex, (url: string) => {
+              const trackedUrl = `${baseUrl}/functions/v1/track-email-event?id=${scheduledEmail.id}&type=click&r=${encodeURIComponent(recipient.email)}&url=${encodeURIComponent(url)}`;
+              return `<a href="${trackedUrl}" style="color: #667eea; text-decoration: underline;">${url}</a>`;
+            });
+
             const emailHtml = `
               <!DOCTYPE html>
               <html>
@@ -172,7 +184,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   <div class="content">
                     <p class="greeting">Hi ${recipient.name},</p>
-                    <div class="message">${scheduledEmail.message}</div>
+                    <div class="message">${processedMessage}</div>
                     <p>Thank you for being part of the ForSWAGs coaching team!</p>
                     <p>Best regards,<br>The ForSWAGs Team</p>
                   </div>
@@ -180,6 +192,8 @@ const handler = async (req: Request): Promise<Response> => {
                     <p>This is an automated message from ForSWAGs.<br>
                     Please do not reply to this email.</p>
                   </div>
+                  <!-- Tracking pixel -->
+                  <img src="${trackingPixelUrl}" width="1" height="1" style="display:none" alt="" />
                 </body>
               </html>
             `;
