@@ -12,6 +12,7 @@ import logoIcon from "@/assets/forswags-logo.png";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import NotificationCard from "@/components/NotificationCard";
 import SponsorCard from "@/components/SponsorCard";
+import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import {
   LogOut, Users, Trophy, GraduationCap, Calendar, 
   School, Award, Plus, Eye, MapPin
@@ -25,6 +26,7 @@ const ParentDashboard = () => {
   const [athletes, setAthletes] = useState<any[]>([]);
   const [athleteEmail, setAthleteEmail] = useState("");
   const [linkingDialogOpen, setLinkingDialogOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,6 +48,14 @@ const ParentDashboard = () => {
 
       setProfile(profileData);
 
+      // Check if parent should see tutorial
+      if (profileData && !profileData.tutorial_completed) {
+        const progress = (profileData.tutorial_progress || {}) as Record<string, boolean>;
+        if (!progress.parent_tutorial) {
+          setShowTutorial(true);
+        }
+      }
+
       // Get user role
       const { data: roleData } = await supabase
         .from("user_roles")
@@ -66,6 +76,21 @@ const ParentDashboard = () => {
 
     checkAuth();
   }, [navigate]);
+
+  const handleTutorialComplete = async () => {
+    setShowTutorial(false);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ tutorial_completed: true })
+        .eq("id", user?.id);
+      
+      if (error) throw error;
+      toast.success("Tutorial completed! 🎉");
+    } catch (error) {
+      console.error("Error completing tutorial:", error);
+    }
+  };
 
   const loadAthletes = async (parentId: string) => {
     const { data: athletesData } = await supabase
@@ -166,6 +191,11 @@ const ParentDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background sports-pattern">
+      <InteractiveTutorial
+        onComplete={handleTutorialComplete}
+        enabled={showTutorial}
+        role="parent"
+      />
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>

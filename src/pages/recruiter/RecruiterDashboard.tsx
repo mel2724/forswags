@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Search, Save, Bell, Users, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import NotificationCard from "@/components/NotificationCard";
+import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 
 export default function RecruiterDashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [savedSearches, setSavedSearches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -43,6 +46,23 @@ export default function RecruiterDashboard() {
         return;
       }
 
+      // Get user profile for tutorial status
+      const { data: userProfileData } = await supabase
+        .from("profiles")
+        .select("tutorial_completed, tutorial_progress")
+        .eq("id", user.id)
+        .single();
+
+      setUserProfile(userProfileData);
+
+      // Check if recruiter should see tutorial
+      if (userProfileData && !userProfileData.tutorial_completed) {
+        const progress = (userProfileData.tutorial_progress || {}) as Record<string, boolean>;
+        if (!progress.recruiter_tutorial) {
+          setShowTutorial(true);
+        }
+      }
+
       // Fetch recruiter profile
       const { data: profileData } = await supabase
         .from("recruiter_profiles")
@@ -67,6 +87,24 @@ export default function RecruiterDashboard() {
     }
   };
 
+  const handleTutorialComplete = async () => {
+    setShowTutorial(false);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ tutorial_completed: true })
+          .eq("id", user.id);
+        
+        if (error) throw error;
+        toast({ title: "Tutorial completed! 🎉" });
+      }
+    } catch (error) {
+      console.error("Error completing tutorial:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -79,6 +117,11 @@ export default function RecruiterDashboard() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <InteractiveTutorial
+        onComplete={handleTutorialComplete}
+        enabled={showTutorial}
+        role="recruiter"
+      />
       <div>
         <h1 className="text-3xl font-bold mb-2">College Scout Dashboard</h1>
         <p className="text-muted-foreground">

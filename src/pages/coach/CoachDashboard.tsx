@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import NotificationCard from "@/components/NotificationCard";
+import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { Loader2, LogOut, CheckCircle, Clock, AlertCircle } from "lucide-react";
 
 interface Evaluation {
@@ -32,6 +33,8 @@ const CoachDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [coachProfile, setCoachProfile] = useState<any>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     checkCoachAccess();
@@ -57,6 +60,23 @@ const CoachDashboard = () => {
       if (!hasCoachRole) {
         navigate("/dashboard");
         return;
+      }
+
+      // Get user profile for tutorial status
+      const { data: userProfileData } = await supabase
+        .from("profiles")
+        .select("tutorial_completed, tutorial_progress")
+        .eq("id", session.user.id)
+        .single();
+
+      setUserProfile(userProfileData);
+
+      // Check if coach should see tutorial
+      if (userProfileData && !userProfileData.tutorial_completed) {
+        const progress = (userProfileData.tutorial_progress || {}) as Record<string, boolean>;
+        if (!progress.coach_tutorial) {
+          setShowTutorial(true);
+        }
       }
 
       // Get coach profile
@@ -113,6 +133,24 @@ const CoachDashboard = () => {
     }
   };
 
+  const handleTutorialComplete = async () => {
+    setShowTutorial(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ tutorial_completed: true })
+          .eq("id", session.user.id);
+        
+        if (error) throw error;
+        toast({ title: "Tutorial completed! 🎉" });
+      }
+    } catch (error) {
+      console.error("Error completing tutorial:", error);
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/");
@@ -139,6 +177,11 @@ const CoachDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <InteractiveTutorial
+        onComplete={handleTutorialComplete}
+        enabled={showTutorial}
+        role="coach"
+      />
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div>

@@ -1,25 +1,34 @@
 import { useState, useEffect } from "react";
 import { TutorialStep } from "./TutorialStep";
-import { onboardingTutorialSteps } from "@/config/tutorialSteps";
+import { onboardingTutorialSteps, parentTutorialSteps, coachTutorialSteps, recruiterTutorialSteps } from "@/config/tutorialSteps";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface InteractiveTutorialProps {
-  currentOnboardingStep: number;
+  currentOnboardingStep?: number;
   onComplete: () => void;
   enabled: boolean;
+  role?: 'athlete' | 'parent' | 'coach' | 'recruiter';
 }
 
 export const InteractiveTutorial = ({ 
-  currentOnboardingStep, 
+  currentOnboardingStep = 0, 
   onComplete,
-  enabled 
+  enabled,
+  role = 'athlete'
 }: InteractiveTutorialProps) => {
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
   const { toast } = useToast();
 
-  const tutorialSteps = onboardingTutorialSteps[currentOnboardingStep] || [];
+  // Select tutorial steps based on role
+  const tutorialSteps = role === 'parent' 
+    ? parentTutorialSteps
+    : role === 'coach'
+    ? coachTutorialSteps
+    : role === 'recruiter'
+    ? recruiterTutorialSteps
+    : (onboardingTutorialSteps[currentOnboardingStep] || []);
 
   useEffect(() => {
     // Check if tutorial should be shown
@@ -38,7 +47,10 @@ export const InteractiveTutorial = ({
 
         if (profile && !profile.tutorial_completed) {
           const progress = profile.tutorial_progress || {};
-          const stepCompleted = progress[`step_${currentOnboardingStep}`];
+          
+          // For role-based tutorials, check if this specific role's tutorial was completed
+          const roleKey = role === 'athlete' ? `step_${currentOnboardingStep}` : `${role}_tutorial`;
+          const stepCompleted = progress[roleKey];
           
           if (!stepCompleted && tutorialSteps.length > 0) {
             setShowTutorial(true);
@@ -51,7 +63,7 @@ export const InteractiveTutorial = ({
     };
 
     checkTutorialStatus();
-  }, [currentOnboardingStep, enabled, tutorialSteps.length]);
+  }, [currentOnboardingStep, enabled, tutorialSteps.length, role]);
 
   const handleNext = async () => {
     if (currentTutorialStep < tutorialSteps.length - 1) {
@@ -90,7 +102,10 @@ export const InteractiveTutorial = ({
         .single();
 
       const progress = profile?.tutorial_progress || {};
-      progress[`step_${currentOnboardingStep}`] = true;
+      
+      // Mark role-specific tutorial as complete
+      const roleKey = role === 'athlete' ? `step_${currentOnboardingStep}` : `${role}_tutorial`;
+      progress[roleKey] = true;
 
       await supabase
         .from('profiles')
