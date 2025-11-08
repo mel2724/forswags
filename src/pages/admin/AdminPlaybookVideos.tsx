@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, PlayCircle, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, PlayCircle, ExternalLink, Upload } from "lucide-react";
 
 interface Video {
   id: string;
@@ -38,6 +38,8 @@ export default function AdminPlaybookVideos() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<Video | null>(null);
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -158,6 +160,49 @@ export default function AdminPlaybookVideos() {
     }
   };
 
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      setUploadingFile(true);
+
+      // Create unique filename
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `playbook-videos/${fileName}`;
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('playbook-videos')
+        .upload(filePath, selectedFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('playbook-videos')
+        .getPublicUrl(filePath);
+
+      // Update form data with the uploaded URL
+      setFormData({ ...formData, video_url: publicUrl });
+      setSelectedFile(null);
+
+      toast({ 
+        title: "Success", 
+        description: "Video file uploaded successfully" 
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to upload video file", 
+        variant: "destructive" 
+      });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const videoData = {
@@ -227,6 +272,7 @@ export default function AdminPlaybookVideos() {
       order_index: "",
     });
     setEditingVideo(null);
+    setSelectedFile(null);
   };
 
   const openEditDialog = (video: Video) => {
@@ -343,9 +389,33 @@ export default function AdminPlaybookVideos() {
                 </div>
 
                 <div>
-                  <Label>Video URL (YouTube/Vimeo Embed) *</Label>
+                  <Label>Upload Video File</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      disabled={uploadingFile}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleFileUpload}
+                      disabled={!selectedFile || uploadingFile}
+                      variant="outline"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {uploadingFile ? "Uploading..." : "Upload"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upload a video file or enter a URL below
+                  </p>
+                </div>
+
+                <div>
+                  <Label>Video URL (YouTube/Vimeo Embed or Uploaded) *</Label>
                   <Input
-                    placeholder="https://www.youtube.com/embed/..."
+                    placeholder="https://www.youtube.com/embed/... or upload file above"
                     value={formData.video_url}
                     onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
                   />
