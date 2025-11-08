@@ -16,6 +16,7 @@ interface Video {
   title: string;
   description: string | null;
   video_url: string;
+  thumbnail_url: string | null;
   external_link: string | null;
   duration_minutes: number | null;
   order_index: number;
@@ -40,11 +41,15 @@ export default function AdminPlaybookVideos() {
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     video_url: "",
+    thumbnail_url: "",
     external_link: "",
     duration_minutes: "",
     module_id: "",
@@ -105,6 +110,7 @@ export default function AdminPlaybookVideos() {
           title,
           description,
           video_url,
+          thumbnail_url,
           external_link,
           duration_minutes,
           order_index,
@@ -203,12 +209,69 @@ export default function AdminPlaybookVideos() {
     }
   };
 
+  const handleThumbnailSelect = (file: File | null) => {
+    setSelectedThumbnail(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setThumbnailPreview(null);
+    }
+  };
+
+  const handleThumbnailUpload = async () => {
+    if (!selectedThumbnail) return;
+
+    try {
+      setUploadingThumbnail(true);
+
+      // Create unique filename
+      const fileExt = selectedThumbnail.name.split('.').pop();
+      const fileName = `thumb-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `playbook-videos/${fileName}`;
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('playbook-videos')
+        .upload(filePath, selectedThumbnail);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('playbook-videos')
+        .getPublicUrl(filePath);
+
+      // Update form data with the uploaded URL
+      setFormData({ ...formData, thumbnail_url: publicUrl });
+      setSelectedThumbnail(null);
+
+      toast({ 
+        title: "Success", 
+        description: "Thumbnail uploaded successfully" 
+      });
+    } catch (error) {
+      console.error("Error uploading thumbnail:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to upload thumbnail", 
+        variant: "destructive" 
+      });
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const videoData = {
         title: formData.title,
         description: formData.description || null,
         video_url: formData.video_url,
+        thumbnail_url: formData.thumbnail_url || null,
         external_link: formData.external_link || null,
         duration_minutes: formData.duration_minutes ? parseInt(formData.duration_minutes) : null,
         module_id: formData.module_id,
@@ -266,6 +329,7 @@ export default function AdminPlaybookVideos() {
       title: "",
       description: "",
       video_url: "",
+      thumbnail_url: "",
       external_link: "",
       duration_minutes: "",
       module_id: "",
@@ -273,6 +337,8 @@ export default function AdminPlaybookVideos() {
     });
     setEditingVideo(null);
     setSelectedFile(null);
+    setSelectedThumbnail(null);
+    setThumbnailPreview(null);
   };
 
   const openEditDialog = (video: Video) => {
@@ -281,11 +347,13 @@ export default function AdminPlaybookVideos() {
       title: video.title,
       description: video.description || "",
       video_url: video.video_url,
+      thumbnail_url: video.thumbnail_url || "",
       external_link: video.external_link || "",
       duration_minutes: video.duration_minutes?.toString() || "",
       module_id: video.module_id,
       order_index: video.order_index.toString(),
     });
+    setThumbnailPreview(video.thumbnail_url);
     setIsDialogOpen(true);
   };
 
@@ -422,6 +490,39 @@ export default function AdminPlaybookVideos() {
                 </div>
 
                 <div>
+                  <Label>Video Thumbnail</Label>
+                  {thumbnailPreview && (
+                    <div className="mb-2">
+                      <img 
+                        src={thumbnailPreview} 
+                        alt="Thumbnail preview" 
+                        className="w-full max-w-xs rounded-md border"
+                      />
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleThumbnailSelect(e.target.files?.[0] || null)}
+                      disabled={uploadingThumbnail}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleThumbnailUpload}
+                      disabled={!selectedThumbnail || uploadingThumbnail}
+                      variant="outline"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {uploadingThumbnail ? "Uploading..." : "Upload"}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upload a thumbnail image for the video
+                  </p>
+                </div>
+
+                <div>
                   <Label>Description</Label>
                   <Textarea
                     placeholder="What will viewers learn from this video?"
@@ -501,6 +602,7 @@ export default function AdminPlaybookVideos() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Order</TableHead>
+                  <TableHead>Thumbnail</TableHead>
                   <TableHead>Topic</TableHead>
                   <TableHead>Video Title</TableHead>
                   <TableHead>Duration</TableHead>
@@ -512,6 +614,19 @@ export default function AdminPlaybookVideos() {
                 {videos.map((video) => (
                   <TableRow key={video.id}>
                     <TableCell>{video.order_index}</TableCell>
+                    <TableCell>
+                      {video.thumbnail_url ? (
+                        <img 
+                          src={video.thumbnail_url} 
+                          alt={video.title}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+                          <PlayCircle className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="secondary">{video.module_title}</Badge>
                     </TableCell>
