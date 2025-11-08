@@ -764,6 +764,8 @@ export default function PublicProfile() {
                     badge={userBadge.badges}
                     isEarned={true}
                     earnedAt={userBadge.earned_at}
+                    athleteName={profile.full_name}
+                    profileUrl={window.location.href}
                   />
                 ))}
               </div>
