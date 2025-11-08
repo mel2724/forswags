@@ -376,33 +376,6 @@ export default function PublicProfile() {
           </CardContent>
         </Card>
 
-        {/* Badge Showcase */}
-        {badges.length > 0 && (
-          <Card className="mb-6 border-2 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-primary" />
-                Achievement Badges
-                <Badge variant="secondary" className="ml-auto">
-                  {badges.length} {badges.length === 1 ? 'Badge' : 'Badges'} Earned
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {badges.map((userBadge) => (
-                  <BadgeCard
-                    key={userBadge.id}
-                    badge={userBadge.badges}
-                    isEarned={true}
-                    earnedAt={userBadge.earned_at}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         <div className="grid md:grid-cols-2 gap-6">
           {/* Left Column - Academics & Performance Stats (50% width) */}
           <div className="space-y-6">
@@ -770,6 +743,33 @@ export default function PublicProfile() {
             </Card>
           )}
         </div>
+
+        {/* Badge Showcase */}
+        {badges.length > 0 && (
+          <Card className="mt-6 border-2 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5 text-primary" />
+                Achievement Badges
+                <Badge variant="secondary" className="ml-auto">
+                  {badges.length} {badges.length === 1 ? 'Badge' : 'Badges'} Earned
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {badges.map((userBadge) => (
+                  <BadgeCard
+                    key={userBadge.id}
+                    badge={userBadge.badges}
+                    isEarned={true}
+                    earnedAt={userBadge.earned_at}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Contact Information - Removed for Privacy */}
         <Card className="border-primary/20 mt-6">
