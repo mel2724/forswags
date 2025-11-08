@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, PlayCircle, ExternalLink, Upload } from "lucide-react";
+import { Plus, Edit, Trash2, PlayCircle, ExternalLink, Upload, BarChart3, Eye, Users, CheckCircle, TrendingUp } from "lucide-react";
 
 interface Video {
   id: string;
@@ -22,6 +22,20 @@ interface Video {
   order_index: number;
   module_id: string;
   module_title?: string;
+  view_count?: number;
+}
+
+interface VideoAnalytics {
+  lesson_id: string;
+  video_title: string;
+  topic_title: string;
+  total_views: number;
+  unique_viewers: number;
+  completed_views: number;
+  avg_watch_duration: number;
+  views_last_7_days: number;
+  views_last_30_days: number;
+  last_viewed_at: string;
 }
 
 interface Module {
@@ -44,6 +58,8 @@ export default function AdminPlaybookVideos() {
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<VideoAnalytics[]>([]);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -115,13 +131,20 @@ export default function AdminPlaybookVideos() {
           duration_minutes,
           order_index,
           module_id,
+          view_count,
           modules!inner(title)
         `)
         .not("video_url", "is", null)
         .in("module_id", (modulesData || []).map(m => m.id))
         .order("order_index", { ascending: true });
 
+      // Load analytics data
+      const { data: analyticsData, error: analyticsError } = await supabase
+        .from("playbook_video_analytics")
+        .select("*");
+
       if (videosError) throw videosError;
+      if (analyticsError) console.error("Error loading analytics:", analyticsError);
 
       const formattedVideos = videosData?.map((v: any) => ({
         ...v,
@@ -129,6 +152,7 @@ export default function AdminPlaybookVideos() {
       })) || [];
 
       setVideos(formattedVideos);
+      setAnalytics(analyticsData || []);
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -361,6 +385,10 @@ export default function AdminPlaybookVideos() {
     return <div className="p-8">Loading...</div>;
   }
 
+  const getVideoAnalytics = (videoId: string) => {
+    return analytics.find(a => a.lesson_id === videoId);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -369,6 +397,13 @@ export default function AdminPlaybookVideos() {
           <p className="text-muted-foreground">Manage life skills video content</p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant={showAnalytics ? "default" : "outline"}
+            onClick={() => setShowAnalytics(!showAnalytics)}
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            {showAnalytics ? "Hide" : "Show"} Analytics
+          </Button>
           <Dialog open={isModuleDialogOpen} onOpenChange={setIsModuleDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -571,15 +606,77 @@ export default function AdminPlaybookVideos() {
         </div>
       </div>
 
+      {/* Analytics Overview */}
+      {showAnalytics && (
+        <div className="grid md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                Total Views
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">
+                {analytics.reduce((sum, a) => sum + Number(a.total_views), 0)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Unique Viewers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">
+                {analytics.reduce((sum, a) => sum + Number(a.unique_viewers), 0)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Completions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">
+                {analytics.reduce((sum, a) => sum + Number(a.completed_views), 0)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Views (7 days)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">
+                {analytics.reduce((sum, a) => sum + Number(a.views_last_7_days), 0)}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Topics Overview */}
       <div className="grid md:grid-cols-4 gap-4">
         {modules.map(module => {
           const moduleVideos = videos.filter(v => v.module_id === module.id);
+          const moduleViews = moduleVideos.reduce((sum, v) => sum + (v.view_count || 0), 0);
           return (
             <Card key={module.id}>
               <CardHeader>
                 <CardTitle className="text-lg">{module.title}</CardTitle>
-                <CardDescription>{moduleVideos.length} videos</CardDescription>
+                <CardDescription>
+                  {moduleVideos.length} videos
+                  {showAnalytics && ` • ${moduleViews} views`}
+                </CardDescription>
               </CardHeader>
             </Card>
           );
@@ -606,32 +703,63 @@ export default function AdminPlaybookVideos() {
                   <TableHead>Topic</TableHead>
                   <TableHead>Video Title</TableHead>
                   <TableHead>Duration</TableHead>
+                  {showAnalytics && (
+                    <>
+                      <TableHead>Views</TableHead>
+                      <TableHead>Unique</TableHead>
+                      <TableHead>Completed</TableHead>
+                    </>
+                  )}
                   <TableHead>Links</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {videos.map((video) => (
-                  <TableRow key={video.id}>
-                    <TableCell>{video.order_index}</TableCell>
-                    <TableCell>
-                      {video.thumbnail_url ? (
-                        <img 
-                          src={video.thumbnail_url} 
-                          alt={video.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
-                          <PlayCircle className="h-6 w-6 text-muted-foreground" />
-                        </div>
+                {videos.map((video) => {
+                  const videoStats = getVideoAnalytics(video.id);
+                  return (
+                    <TableRow key={video.id}>
+                      <TableCell>{video.order_index}</TableCell>
+                      <TableCell>
+                        {video.thumbnail_url ? (
+                          <img 
+                            src={video.thumbnail_url} 
+                            alt={video.title}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+                            <PlayCircle className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{video.module_title}</Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">{video.title}</TableCell>
+                      <TableCell>{video.duration_minutes ? `${video.duration_minutes} min` : "—"}</TableCell>
+                      {showAnalytics && (
+                        <>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Eye className="h-3 w-3 text-muted-foreground" />
+                              {videoStats?.total_views || 0}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3 text-muted-foreground" />
+                              {videoStats?.unique_viewers || 0}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3 text-muted-foreground" />
+                              {videoStats?.completed_views || 0}
+                            </div>
+                          </TableCell>
+                        </>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{video.module_title}</Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">{video.title}</TableCell>
-                    <TableCell>{video.duration_minutes ? `${video.duration_minutes} min` : "—"}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         {video.video_url && (
@@ -668,8 +796,9 @@ export default function AdminPlaybookVideos() {
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))}
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}

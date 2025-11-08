@@ -1428,6 +1428,13 @@ export type Database = {
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "course_bookmarks_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_video_analytics"
+            referencedColumns: ["lesson_id"]
+          },
         ]
       }
       course_certificates: {
@@ -2021,6 +2028,13 @@ export type Database = {
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_video_analytics"
+            referencedColumns: ["lesson_id"]
+          },
         ]
       }
       lessons: {
@@ -2039,6 +2053,7 @@ export type Database = {
           title: string
           updated_at: string
           video_url: string | null
+          view_count: number | null
         }
         Insert: {
           content?: string | null
@@ -2055,6 +2070,7 @@ export type Database = {
           title: string
           updated_at?: string
           video_url?: string | null
+          view_count?: number | null
         }
         Update: {
           content?: string | null
@@ -2071,6 +2087,7 @@ export type Database = {
           title?: string
           updated_at?: string
           video_url?: string | null
+          view_count?: number | null
         }
         Relationships: [
           {
@@ -2592,6 +2609,57 @@ export type Database = {
           },
         ]
       }
+      playbook_video_views: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          lesson_id: string
+          user_agent: string | null
+          user_id: string | null
+          viewed_at: string
+          watch_duration_seconds: number | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          lesson_id: string
+          user_agent?: string | null
+          user_id?: string | null
+          viewed_at?: string
+          watch_duration_seconds?: number | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          lesson_id?: string
+          user_agent?: string | null
+          user_id?: string | null
+          viewed_at?: string
+          watch_duration_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbook_video_views_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_video_views_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_video_analytics"
+            referencedColumns: ["lesson_id"]
+          },
+        ]
+      }
       post_platforms: {
         Row: {
           created_at: string
@@ -2988,6 +3056,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "lessons"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "playbook_video_analytics"
+            referencedColumns: ["lesson_id"]
           },
         ]
       }
@@ -3453,6 +3528,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scorm_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_video_analytics"
+            referencedColumns: ["lesson_id"]
           },
         ]
       }
@@ -3926,6 +4008,13 @@ export type Database = {
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "video_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_video_analytics"
+            referencedColumns: ["lesson_id"]
+          },
         ]
       }
       video_favorites: {
@@ -3954,6 +4043,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_favorites_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_video_analytics"
+            referencedColumns: ["lesson_id"]
           },
         ]
       }
@@ -4037,6 +4133,21 @@ export type Database = {
           platform?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      playbook_video_analytics: {
+        Row: {
+          avg_watch_duration: number | null
+          completed_views: number | null
+          last_viewed_at: string | null
+          lesson_id: string | null
+          topic_title: string | null
+          total_views: number | null
+          unique_viewers: number | null
+          video_title: string | null
+          views_last_30_days: number | null
+          views_last_7_days: number | null
         }
         Relationships: []
       }

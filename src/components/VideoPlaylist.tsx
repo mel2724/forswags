@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, ExternalLink, PlayCircle, Clock, Heart } from "lucide-react";
 import { toast } from "sonner";
+import { trackVideoView } from "@/lib/videoTracking";
 
 interface Video {
   id: string;
@@ -39,9 +40,12 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
   }, [moduleId]);
 
   useEffect(() => {
-    // Reset start time when video changes
+    // Reset start time when video changes and track view
     startTimeRef.current = Date.now();
-  }, [currentVideoIndex]);
+    if (videos[currentVideoIndex]) {
+      trackVideoView(videos[currentVideoIndex].id);
+    }
+  }, [currentVideoIndex, videos]);
 
   const loadVideos = async () => {
     try {
@@ -151,6 +155,7 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
 
       const watchDuration = Math.floor((Date.now() - startTimeRef.current) / 1000);
 
+      // Track completion in video_completions table
       const { error } = await supabase
         .from("video_completions")
         .upsert({
@@ -160,6 +165,9 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
         });
 
       if (error) throw error;
+
+      // Also track in playbook_video_views with completion status
+      await trackVideoView(videoId, watchDuration, true);
 
       setCompletedVideos(prev => new Set([...prev, videoId]));
       setTotalCompletions(prev => prev + 1);
