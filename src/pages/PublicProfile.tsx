@@ -8,11 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { 
   User, MapPin, Calendar, Trophy, GraduationCap, 
-  Video, Target, Heart, Share2, Download, Home
+  Video, Target, Heart, Share2, Download, Home, Award
 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { BadgeCard } from "@/components/BadgeCard";
 
 interface MediaAsset {
   id: string;
@@ -32,6 +33,19 @@ interface AthleteStat {
   category: string | null;
   unit: string | null;
   is_highlighted: boolean;
+}
+
+interface UserBadge {
+  id: string;
+  badge_id: string;
+  earned_at: string;
+  badges: {
+    id: string;
+    name: string;
+    description: string | null;
+    icon_url: string | null;
+    criteria: string | null;
+  };
 }
 
 interface AthleteProfile {
@@ -68,6 +82,7 @@ interface AthleteProfile {
   vertical_jump?: number;
   bench_press_max?: number;
   squat_max?: number;
+  user_id?: string;
 }
 
 export default function PublicProfile() {
@@ -78,6 +93,7 @@ export default function PublicProfile() {
   const [communityVideo, setCommunityVideo] = useState<MediaAsset | null>(null);
   const [gameVideos, setGameVideos] = useState<MediaAsset[]>([]);
   const [stats, setStats] = useState<AthleteStat[]>([]);
+  const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -137,6 +153,7 @@ export default function PublicProfile() {
         city: profileData?.city,
         state: profileData?.state,
         ...athleteData,
+        user_id: athleteData.user_id,
         profile_photo_url: profileData?.avatar_url || athleteData.profile_photo_url,
         // SECURITY: Always hide social media handles for minors to prevent direct contact
         twitter_handle: isMinor ? undefined : athleteData.twitter_handle,
@@ -145,6 +162,28 @@ export default function PublicProfile() {
       };
 
       setProfile(combinedProfile);
+
+      // Fetch user badges
+      const { data: badgesData } = await supabase
+        .from('user_badges')
+        .select(`
+          id,
+          badge_id,
+          earned_at,
+          badges (
+            id,
+            name,
+            description,
+            icon_url,
+            criteria
+          )
+        `)
+        .eq('user_id', athleteData.user_id)
+        .order('earned_at', { ascending: false });
+
+      if (badgesData) {
+        setBadges(badgesData as UserBadge[]);
+      }
 
       // Fetch media assets (introduction, community, and game videos)
       const { data: mediaData } = await supabase
@@ -336,6 +375,33 @@ export default function PublicProfile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Badge Showcase */}
+        {badges.length > 0 && (
+          <Card className="mb-6 border-2 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5 text-primary" />
+                Achievement Badges
+                <Badge variant="secondary" className="ml-auto">
+                  {badges.length} {badges.length === 1 ? 'Badge' : 'Badges'} Earned
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {badges.map((userBadge) => (
+                  <BadgeCard
+                    key={userBadge.id}
+                    badge={userBadge.badges}
+                    isEarned={true}
+                    earnedAt={userBadge.earned_at}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Left Column - Academics & Performance Stats (50% width) */}
