@@ -3132,6 +3132,60 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_emails: {
+        Row: {
+          created_at: string
+          created_by: string
+          error_message: string | null
+          failed_count: number | null
+          id: string
+          include_inactive: boolean | null
+          message: string
+          recipient_count: number | null
+          recipient_type: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+          subject: string
+          success_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          error_message?: string | null
+          failed_count?: number | null
+          id?: string
+          include_inactive?: boolean | null
+          message: string
+          recipient_count?: number | null
+          recipient_type?: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          success_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          error_message?: string | null
+          failed_count?: number | null
+          id?: string
+          include_inactive?: boolean | null
+          message?: string
+          recipient_count?: number | null
+          recipient_type?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          success_count?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scheduled_posts: {
         Row: {
           account_id: string | null

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -16,7 +17,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Loader2, Mail, Award, User, Send } from "lucide-react";
+import { Eye, Loader2, Mail, Award, User, Send, Calendar, Clock } from "lucide-react";
+import { format } from "date-fns";
 
 interface CoachProfile {
   id: string;
@@ -44,6 +46,9 @@ const AdminCoaches = () => {
   const [emailMessage, setEmailMessage] = useState("");
   const [includeInactive, setIncludeInactive] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [sendType, setSendType] = useState<"now" | "schedule">("now");
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
 
   useEffect(() => {
     fetchCoaches();
@@ -144,6 +149,72 @@ const AdminCoaches = () => {
       return;
     }
 
+    if (sendType === "schedule") {
+      if (!scheduleDate || !scheduleTime) {
+        toast({
+          title: "Validation Error",
+          description: "Please provide both date and time for scheduling.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Combine date and time into ISO string
+      const scheduledFor = new Date(`${scheduleDate}T${scheduleTime}`);
+      
+      if (scheduledFor <= new Date()) {
+        toast({
+          title: "Validation Error",
+          description: "Scheduled time must be in the future.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSendingEmail(true);
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        const { error } = await supabase
+          .from('scheduled_emails')
+          .insert([{
+            created_by: user.id,
+            subject: emailSubject,
+            message: emailMessage,
+            scheduled_for: scheduledFor.toISOString(),
+            include_inactive: includeInactive,
+            recipient_type: 'coaches',
+          }]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Email Scheduled",
+          description: `Email scheduled for ${format(scheduledFor, "PPpp")}`,
+        });
+
+        setShowEmailDialog(false);
+        setEmailSubject("");
+        setEmailMessage("");
+        setIncludeInactive(false);
+        setScheduleDate("");
+        setScheduleTime("");
+        setSendType("now");
+      } catch (error: any) {
+        toast({
+          title: "Error Scheduling Email",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setSendingEmail(false);
+      }
+      return;
+    }
+
+    // Send immediately
     setSendingEmail(true);
 
     try {
@@ -170,6 +241,7 @@ const AdminCoaches = () => {
       setEmailSubject("");
       setEmailMessage("");
       setIncludeInactive(false);
+      setSendType("now");
     } catch (error: any) {
       toast({
         title: "Error Sending Emails",
@@ -409,11 +481,11 @@ const AdminCoaches = () => {
       </Dialog>
 
       <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Send Announcement to Coaches</DialogTitle>
             <DialogDescription>
-              Send a bulk email announcement to all {includeInactive ? 'active and inactive' : 'active'} coaches
+              Send or schedule a bulk email announcement to coaches
             </DialogDescription>
           </DialogHeader>
 
@@ -457,6 +529,54 @@ const AdminCoaches = () => {
               </Label>
             </div>
 
+            <div className="space-y-3 pt-2 border-t">
+              <Label>Delivery Options</Label>
+              <RadioGroup value={sendType} onValueChange={(value: "now" | "schedule") => setSendType(value)}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="now" id="now" />
+                  <Label htmlFor="now" className="font-normal cursor-pointer flex items-center gap-2">
+                    <Send className="h-4 w-4" />
+                    Send immediately
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="schedule" id="schedule" />
+                  <Label htmlFor="schedule" className="font-normal cursor-pointer flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Schedule for later
+                  </Label>
+                </div>
+              </RadioGroup>
+
+              {sendType === "schedule" && (
+                <div className="grid grid-cols-2 gap-4 pl-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="scheduleDate" className="text-sm">
+                      Date *
+                    </Label>
+                    <Input
+                      id="scheduleDate"
+                      type="date"
+                      value={scheduleDate}
+                      onChange={(e) => setScheduleDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="scheduleTime" className="text-sm">
+                      Time *
+                    </Label>
+                    <Input
+                      id="scheduleTime"
+                      type="time"
+                      value={scheduleTime}
+                      onChange={(e) => setScheduleTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="bg-muted p-3 rounded-md">
               <p className="text-sm">
                 <strong>Recipients:</strong>{' '}
@@ -465,6 +585,12 @@ const AdminCoaches = () => {
                   : coaches.filter(c => c.is_active).length}{' '}
                 coach{includeInactive ? 'es' : '(es)'}
               </p>
+              {sendType === "schedule" && scheduleDate && scheduleTime && (
+                <p className="text-sm mt-1">
+                  <strong>Scheduled for:</strong>{' '}
+                  {format(new Date(`${scheduleDate}T${scheduleTime}`), "PPpp")}
+                </p>
+              )}
             </div>
 
             <div className="flex gap-2 pt-4">
@@ -476,18 +602,32 @@ const AdminCoaches = () => {
                 {sendingEmail ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    {sendType === "schedule" ? "Scheduling..." : "Sending..."}
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send to All Coaches
+                    {sendType === "schedule" ? (
+                      <>
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Schedule Email
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Now
+                      </>
+                    )}
                   </>
                 )}
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setShowEmailDialog(false)}
+                onClick={() => {
+                  setShowEmailDialog(false);
+                  setSendType("now");
+                  setScheduleDate("");
+                  setScheduleTime("");
+                }}
                 disabled={sendingEmail}
               >
                 Cancel
