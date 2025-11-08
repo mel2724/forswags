@@ -71,48 +71,19 @@ const AdminCoachApplications = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      // Create auth account
-      const tempPassword = Math.random().toString(36).slice(-12);
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: selectedApp.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          full_name: selectedApp.full_name,
+      const { data, error } = await supabase.functions.invoke('approve-coach-application', {
+        body: {
+          applicationId: selectedApp.id,
+          adminNotes: adminNotes,
         },
       });
 
-      if (authError) throw authError;
-
-      // Create coach role
-      await supabase.from("user_roles").insert({
-        user_id: authData.user.id,
-        role: "coach",
-      });
-
-      // Create coach profile
-      await supabase.from("coach_profiles").insert({
-        user_id: authData.user.id,
-        full_name: selectedApp.full_name,
-        specializations: selectedApp.specializations,
-        certifications: selectedApp.certifications,
-        experience_years: selectedApp.experience_years,
-      });
-
-      // Update application status
-      await supabase
-        .from("coach_applications")
-        .update({
-          status: "approved",
-          reviewed_by: session.user.id,
-          reviewed_at: new Date().toISOString(),
-          admin_notes: adminNotes,
-        })
-        .eq("id", selectedApp.id);
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to approve application');
 
       toast({
         title: "Application Approved",
-        description: `${selectedApp.full_name} has been approved as a coach.`,
+        description: `${selectedApp.full_name} has been approved as a coach. A password reset email has been sent.`,
       });
 
       setSelectedApp(null);
