@@ -14,6 +14,7 @@ import NotificationCard from "@/components/NotificationCard";
 import SponsorCard from "@/components/SponsorCard";
 import { UpgradeNudge } from "@/components/UpgradeNudge";
 import { MembershipStatusBanner } from "@/components/MembershipStatusBanner";
+import { TutorialProgressCard } from "@/components/TutorialProgressCard";
 import { SEO } from "@/components/SEO";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
@@ -950,6 +951,11 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Tutorial Progress */}
+              {user?.id && (
+                <TutorialProgressCard userId={user.id} />
+              )}
 
               {/* Sponsor Card */}
               <SponsorCard />

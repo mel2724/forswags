@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ProfileActions } from "@/components/ProfileActions";
+import { TutorialProgressCard } from "@/components/TutorialProgressCard";
 import { PersonalInfoSection } from "@/components/profile/PersonalInfoSection";
 import { AthleticInfoSection } from "@/components/profile/AthleticInfoSection";
 import { AcademicInfoSection } from "@/components/profile/AcademicInfoSection";
@@ -372,6 +373,11 @@ const Profile = () => {
             setBio={setBio}
             hasPremiumProfile={hasPremiumProfile}
           />
+
+          {/* Tutorial Progress */}
+          {userId && (
+            <TutorialProgressCard userId={userId} />
+          )}
 
           {/* Profile Actions */}
           {athleteId && (

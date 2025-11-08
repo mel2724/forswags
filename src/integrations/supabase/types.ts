@@ -3349,6 +3349,57 @@ export type Database = {
           },
         ]
       }
+      scraping_history: {
+        Row: {
+          athletes_imported: number | null
+          athletes_scraped: number | null
+          athletes_skipped: number | null
+          completed_at: string | null
+          created_at: string
+          errors: Json | null
+          id: string
+          initiated_by: string | null
+          metadata: Json | null
+          sources_attempted: string[] | null
+          sources_succeeded: string[] | null
+          sport: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          athletes_imported?: number | null
+          athletes_scraped?: number | null
+          athletes_skipped?: number | null
+          completed_at?: string | null
+          created_at?: string
+          errors?: Json | null
+          id?: string
+          initiated_by?: string | null
+          metadata?: Json | null
+          sources_attempted?: string[] | null
+          sources_succeeded?: string[] | null
+          sport: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          athletes_imported?: number | null
+          athletes_scraped?: number | null
+          athletes_skipped?: number | null
+          completed_at?: string | null
+          created_at?: string
+          errors?: Json | null
+          id?: string
+          initiated_by?: string | null
+          metadata?: Json | null
+          sources_attempted?: string[] | null
+          sources_succeeded?: string[] | null
+          sport?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       search_analytics: {
         Row: {
           clicked_result_ids: string[] | null
