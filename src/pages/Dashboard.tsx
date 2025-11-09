@@ -216,9 +216,8 @@ const Dashboard = () => {
       setHasUnreadNotifications((notificationsData?.length || 0) > 0);
 
       // Sync subscription status from Stripe (only if user is authenticated)
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
+      if (user) {
+        try {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.access_token) {
             await supabase.functions.invoke("check-subscription", {
@@ -227,9 +226,9 @@ const Dashboard = () => {
               },
             });
           }
+        } catch (error) {
+          console.error("Error syncing subscription:", error);
         }
-      } catch (error) {
-        console.error("Error syncing subscription:", error);
       }
 
       // Get membership after syncing
