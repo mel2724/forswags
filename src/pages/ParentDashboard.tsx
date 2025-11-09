@@ -19,7 +19,7 @@ import { ParentConsentManager } from "@/components/ParentConsentManager";
 import { differenceInYears } from "date-fns";
 import {
   LogOut, Users, Trophy, GraduationCap, Calendar, 
-  School, Award, Plus, Eye, MapPin, Shield
+  School, Award, Plus, Eye, MapPin, Shield, BookOpen
 } from "lucide-react";
 
 const ParentDashboard = () => {
@@ -307,6 +307,32 @@ const ParentDashboard = () => {
           {/* Sponsor Card */}
           <SponsorCard />
         </div>
+
+        {/* Quick Actions */}
+        <Card className="mb-8 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 border-2 border-primary/20">
+          <CardHeader>
+            <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              Learning Resources
+            </CardTitle>
+            <CardDescription>
+              Access educational content to support your athlete's development
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => navigate("/playbook-for-life")} 
+              className="w-full gap-2"
+              size="lg"
+            >
+              <GraduationCap className="h-5 w-5" />
+              Playbook for Life
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              Life skills videos covering focus, respect, finances, leadership, and more
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Pending Verifications */}
         {pendingVerifications.length > 0 && (
