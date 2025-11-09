@@ -25,33 +25,70 @@ Deno.serve(async (req) => {
 
     console.log('Starting test athlete creation...');
 
-    // Check if user already exists and delete it
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users.find(u => u.email === testEmail);
+    // Check if user already exists by listing all users and filtering
+    let existingUser = null;
+    try {
+      const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+      
+      if (listError) {
+        console.error('Error listing users:', listError);
+      } else {
+        existingUser = usersData?.users.find(u => u.email === testEmail);
+      }
+    } catch (error) {
+      console.error('Error checking for existing user:', error);
+    }
 
     if (existingUser) {
-      console.log('Found existing user, deleting...');
+      console.log('Found existing user:', existingUser.id, '- deleting...');
       
-      // Get athlete data
-      const { data: athleteData } = await supabaseAdmin
-        .from('athletes')
-        .select('id')
-        .eq('user_id', existingUser.id)
-        .maybeSingle();
+      try {
+        // Get athlete data
+        const { data: athleteData } = await supabaseAdmin
+          .from('athletes')
+          .select('id')
+          .eq('user_id', existingUser.id)
+          .maybeSingle();
 
-      if (athleteData) {
-        // Delete parent verifications
-        await supabaseAdmin
-          .from('parent_verifications')
-          .delete()
-          .eq('athlete_id', athleteData.id);
+        if (athleteData) {
+          // Delete parent verifications first
+          const { error: pvDeleteError } = await supabaseAdmin
+            .from('parent_verifications')
+            .delete()
+            .eq('athlete_id', athleteData.id);
+          
+          if (pvDeleteError) {
+            console.error('Error deleting parent verifications:', pvDeleteError);
+          } else {
+            console.log('Deleted parent verifications');
+          }
+        }
+
+        // Delete auth user (should cascade to profile and athlete via foreign keys)
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
         
-        console.log('Deleted parent verifications');
+        if (deleteError) {
+          console.error('Error deleting user:', deleteError);
+          throw new Error(`Failed to delete existing user: ${deleteError.message}`);
+        }
+        
+        console.log('Deleted existing user successfully');
+        
+        // Wait longer for deletion to fully propagate through auth system
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        // Verify deletion completed
+        const { data: verifyData } = await supabaseAdmin.auth.admin.listUsers();
+        const stillExists = verifyData?.users.find(u => u.email === testEmail);
+        
+        if (stillExists) {
+          console.error('User still exists after deletion, waiting longer...');
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      } catch (deleteErr) {
+        console.error('Error during user deletion:', deleteErr);
+        throw deleteErr;
       }
-
-      // Delete auth user (cascades to profile and athlete)
-      await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
-      console.log('Deleted existing user');
     }
 
     // Create auth user
