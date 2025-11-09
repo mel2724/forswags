@@ -187,6 +187,7 @@ const Onboarding = () => {
           parent_email: parentEmail,
           child_name: fullName,
           child_dob: dateOfBirth,
+          app_url: window.location.origin,
         }
       });
 

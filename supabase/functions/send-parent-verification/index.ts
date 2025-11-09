@@ -21,9 +21,9 @@ serve(async (req) => {
   );
 
   try {
-    const { parent_email, child_name, child_dob } = await req.json();
+    const { parent_email, child_name, child_dob, app_url } = await req.json();
 
-    if (!parent_email || !child_name) {
+    if (!parent_email || !child_name || !app_url) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -80,8 +80,8 @@ serve(async (req) => {
       throw insertError;
     }
 
-    // Send email with verification link
-    const verificationUrl = `${Deno.env.get("SUPABASE_URL")?.replace("/v1", "")}/parent-verify?email=${encodeURIComponent(parent_email)}&name=${encodeURIComponent(child_name)}`;
+    // Send email with verification link using the frontend app URL
+    const verificationUrl = `${app_url}/parent-verify?email=${encodeURIComponent(parent_email)}&name=${encodeURIComponent(child_name)}`;
     
     const emailResponse = await resend.emails.send({
       from: "ForSWAGs <noreply@updates.forswags.com>",
