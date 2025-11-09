@@ -79,28 +79,44 @@ const ParentVerification = () => {
       // Check if the function returned an error in the data
       if (data?.error) {
         if (data.error.includes("No verification request found")) {
-          toast.error("No verification request found. Please complete the onboarding process first.");
+          toast.error("No verification request found", {
+            description: "Please complete the athlete onboarding process first to create a verification request."
+          });
         } else if (data.error.includes("already been completed")) {
-          toast.error("This verification has already been completed.");
+          toast.error("Verification already completed", {
+            description: "This email has already been verified."
+          });
         } else {
-          toast.error(data.error);
+          toast.error("Unable to resend", {
+            description: data.error
+          });
         }
         return;
       }
 
-      toast.success("Verification email sent! Check your inbox.");
+      // Success!
+      toast.success("Verification email sent!", {
+        description: `Check ${email} for your new verification code.`
+      });
+      
+      // Clear the code field so user knows to enter the new one
+      setCode("");
     } catch (error: any) {
       console.error("Resend error:", error);
       
       // Handle specific error messages
       if (error.message?.includes("No verification request found")) {
-        toast.error("No verification request found. Please complete the athlete onboarding first.", {
+        toast.error("No verification request found", {
           description: "You need to create a profile before we can send a verification email."
         });
       } else if (error.message?.includes("already been completed")) {
-        toast.error("This verification was already completed.");
+        toast.error("Verification already completed", {
+          description: "This verification was already completed."
+        });
       } else {
-        toast.error("Failed to resend email. Please try again or contact support.");
+        toast.error("Failed to resend email", {
+          description: "Please try again or contact support if the problem persists."
+        });
       }
     } finally {
       setResending(false);
