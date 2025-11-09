@@ -29,11 +29,12 @@ serve(async (req) => {
     console.log("Resending verification for:", parent_email);
 
     // Find the most recent verification request for this email
+    // Use LEFT JOIN (not inner) since athlete_id may be null during onboarding
     const { data: existingVerification, error: fetchError } = await supabaseClient
       .from("parent_verifications")
       .select(`
         *,
-        athletes!inner (
+        athletes (
           user_id,
           date_of_birth
         )
@@ -82,10 +83,11 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Get child name from profile via athlete's user_id
+    // Get child name from profile via user_id (either from athlete or directly from verification)
     let childName = "your child";
     let childDob = "N/A";
     
+    // Try to get from athlete profile first
     if (existingVerification.athletes?.user_id) {
       const { data: profile } = await supabaseClient
         .from("profiles")
@@ -96,10 +98,22 @@ serve(async (req) => {
       if (profile?.full_name) {
         childName = profile.full_name;
       }
+      
+      if (existingVerification.athletes.date_of_birth) {
+        childDob = existingVerification.athletes.date_of_birth;
+      }
     }
-    
-    if (existingVerification.athletes?.date_of_birth) {
-      childDob = existingVerification.athletes.date_of_birth;
+    // If no athlete, try to get from user_id in verification record
+    else if (existingVerification.user_id) {
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("full_name")
+        .eq("id", existingVerification.user_id)
+        .single();
+      
+      if (profile?.full_name) {
+        childName = profile.full_name;
+      }
     }
 
     // Send email with new verification code
