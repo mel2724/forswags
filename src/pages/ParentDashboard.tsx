@@ -36,6 +36,7 @@ const ParentDashboard = () => {
   const [selectedVerification, setSelectedVerification] = useState<any>(null);
   const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
   const [learningProgress, setLearningProgress] = useState<Record<string, { videosWatched: number; badgesEarned: number; badges: any[] }>>({});
+  const [creatingTestAthlete, setCreatingTestAthlete] = useState(false);
 
   // Listen for badge achievements
   useBadgeListener(user?.id);
@@ -298,6 +299,30 @@ const ParentDashboard = () => {
     }
   };
 
+  const handleCreateTestAthlete = async () => {
+    setCreatingTestAthlete(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-test-athlete");
+      
+      if (error) throw error;
+      
+      if (data.success) {
+        toast.success("Tyler Brown created! Check pending verifications below.");
+        toast.info(`Verification code: ${data.verification.verificationCode}`);
+        
+        // Reload verifications
+        await loadPendingVerifications(user.email!);
+      } else {
+        toast.error(data.error || "Failed to create test athlete");
+      }
+    } catch (error: any) {
+      console.error("Error creating test athlete:", error);
+      toast.error(error.message || "Failed to create test athlete");
+    } finally {
+      setCreatingTestAthlete(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -356,13 +381,13 @@ const ParentDashboard = () => {
           <CardHeader>
             <CardTitle className="uppercase tracking-tight flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" />
-              Learning Resources
+              Learning Resources & Testing
             </CardTitle>
             <CardDescription>
-              Access educational content to support your athlete's development
+              Access educational content and create test accounts
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Button 
               onClick={() => navigate("/playbook-for-life")} 
               className="w-full gap-2"
@@ -371,9 +396,27 @@ const ParentDashboard = () => {
               <GraduationCap className="h-5 w-5" />
               Playbook for Life
             </Button>
-            <p className="text-xs text-muted-foreground mt-3 text-center">
+            <p className="text-xs text-muted-foreground text-center">
               Life skills videos covering focus, respect, finances, leadership, and more
             </p>
+            
+            <Separator />
+            
+            <div className="pt-2">
+              <Button 
+                onClick={handleCreateTestAthlete}
+                disabled={creatingTestAthlete}
+                variant="outline"
+                className="w-full gap-2"
+                size="lg"
+              >
+                <Users className="h-5 w-5" />
+                {creatingTestAthlete ? "Creating..." : "Create Test Athlete (Tyler Brown)"}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Creates a 14-year-old minor athlete account for testing parent verification
+              </p>
+            </div>
           </CardContent>
         </Card>
 
