@@ -52,9 +52,17 @@ export default function Membership() {
   const checkSubscription = async () => {
     setCheckingStatus(true);
     try {
+      // Verify user is authenticated first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log("User not authenticated, skipping subscription check");
+        setCheckingStatus(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        console.log("No active session, skipping subscription check");
+        console.log("No valid session token, skipping subscription check");
         setCheckingStatus(false);
         return;
       }
