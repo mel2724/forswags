@@ -218,8 +218,12 @@ const Dashboard = () => {
       // Sync subscription status from Stripe
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          await supabase.functions.invoke("check-subscription");
+        if (session?.access_token) {
+          await supabase.functions.invoke("check-subscription", {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
         }
       } catch (error) {
         console.error("Error syncing subscription:", error);
