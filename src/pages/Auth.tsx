@@ -291,13 +291,22 @@ const Auth = () => {
       
       // Handle invalid credentials specifically
       if (error.message?.toLowerCase().includes('invalid login credentials') || 
-          error.message?.toLowerCase().includes('invalid password')) {
+          error.message?.toLowerCase().includes('invalid password') ||
+          error.code === 'invalid_credentials') {
         toast.error("Incorrect email or password", {
           description: "Please check your credentials and try again, or use 'Forgot Password' to reset.",
+          duration: 8000,
+        });
+      } else if (error.message?.toLowerCase().includes('email not confirmed')) {
+        toast.error("Please verify your email", {
+          description: "Check your inbox for a verification email.",
           duration: 6000,
         });
       } else {
-        toast.error(error.message || "Error signing in");
+        toast.error("Sign in failed", {
+          description: error.message || "An error occurred. Please try again.",
+          duration: 6000,
+        });
       }
     } finally {
       setLoading(false);
