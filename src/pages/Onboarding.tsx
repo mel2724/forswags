@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ProgressIndicator } from "@/components/ProgressIndicator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft, Zap, Sparkles } from "lucide-react";
+import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft, Zap } from "lucide-react";
 import { z } from "zod";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { VideoWalkthroughModal, VideoWalkthroughButton } from "@/components/VideoWalkthroughModal";
@@ -28,24 +28,6 @@ const roles = [
 ];
 
 const sports = ["Football", "Basketball", "Baseball", "Softball", "Soccer", "Track & Field", "Volleyball", "Lacrosse", "Tennis", "Swimming", "Wrestling", "Golf", "Cross Country", "Other"];
-
-// Sample data for demo mode
-const SAMPLE_DATA = {
-  fullName: "Jordan Taylor",
-  phone: "(555) 234-5678",
-  sport: "Basketball",
-  position: "Point Guard",
-  heightFeet: "6",
-  heightInches: "2",
-  weight: "185",
-  highSchool: "Lincoln High School",
-  gradYear: "2026",
-  gpa: "3.8",
-  satScore: "1280",
-  actScore: "28",
-  highlightsUrl: "https://youtube.com/watch?v=example",
-  bio: "Passionate athlete with strong leadership skills and dedication to both academics and athletics. Team captain for 2 years with proven track record in competitive play.",
-};
 
 const profileSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -73,7 +55,6 @@ const Onboarding = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [setupMode, setSetupMode] = useState<"quick" | "complete">("quick");
-  const [useSampleData, setUseSampleData] = useState(false);
   const [tutorialEnabled, setTutorialEnabled] = useState(true);
   
   // Profile form data
@@ -117,26 +98,6 @@ const Onboarding = () => {
 
   const age = dateOfBirth ? calculateAge(dateOfBirth) : null;
   const isUnder13 = age !== null && age < 13;
-
-  // Load sample data function
-  const loadSampleData = () => {
-    setFullName(SAMPLE_DATA.fullName);
-    setPhone(SAMPLE_DATA.phone);
-    setSport(SAMPLE_DATA.sport);
-    setPosition(SAMPLE_DATA.position);
-    setHeightFeet(SAMPLE_DATA.heightFeet);
-    setHeightInches(SAMPLE_DATA.heightInches);
-    setWeight(SAMPLE_DATA.weight);
-    setHighSchool(SAMPLE_DATA.highSchool);
-    setGradYear(SAMPLE_DATA.gradYear);
-    setGpa(SAMPLE_DATA.gpa);
-    setSatScore(SAMPLE_DATA.satScore);
-    setActScore(SAMPLE_DATA.actScore);
-    setHighlightsUrl(SAMPLE_DATA.highlightsUrl);
-    setBio(SAMPLE_DATA.bio);
-    setUseSampleData(true);
-    toast.success("Sample data loaded! Feel free to customize it.");
-  };
 
   useEffect(() => {
     // Check if this is a claimed profile
@@ -515,19 +476,6 @@ const Onboarding = () => {
         )}
         
         <Card className="w-full max-w-2xl p-8 space-y-6 bg-card/80 backdrop-blur border-2 border-primary/20">
-        {/* Sample Data Toggle */}
-        {selectedRole === "athlete" && step > 1 && step < 6 && !useSampleData && (
-          <div className="flex items-center justify-between p-4 bg-accent/10 rounded-lg border border-accent/20">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-accent" />
-              <span className="text-sm font-medium">Try with sample data</span>
-            </div>
-            <Button onClick={loadSampleData} variant="outline" size="sm">
-              Load Demo
-            </Button>
-          </div>
-        )}
-
         {/* Progress indicator */}
         {selectedRole === "athlete" && step > 1 && (
           <ProgressIndicator
