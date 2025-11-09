@@ -36,19 +36,15 @@ serve(async (req) => {
     }
     logStep("Authorization header found");
 
-    // Extract token from Bearer header
-    const token = authHeader.replace("Bearer ", "");
-    logStep("Token extracted, attempting authentication");
-    
-    // Validate the token and get user
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) {
-      logStep("Authentication failed", { error: userError.message });
-      throw new Error(`Authentication error: ${userError.message}`);
+    // Get user from JWT token in Authorization header
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
+    if (userError || !user) {
+      logStep("Authentication failed", { error: userError?.message });
+      throw new Error(`Authentication error: ${userError?.message || "User not found"}`);
     }
     if (!user?.email) {
-      logStep("No user or email found after auth");
-      throw new Error("User not authenticated or email not available");
+      logStep("No user email found");
+      throw new Error("User email not available");
     }
     logStep("User authenticated successfully", { userId: user.id, email: user.email });
 

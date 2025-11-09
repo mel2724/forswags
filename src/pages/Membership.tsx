@@ -53,7 +53,7 @@ export default function Membership() {
     setCheckingStatus(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!session?.access_token) {
         console.log("No active session, skipping subscription check");
         setCheckingStatus(false);
         return;
