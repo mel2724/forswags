@@ -213,7 +213,8 @@ export default function AdminMemberships() {
       return <Badge variant="secondary">Parent</Badge>;
     }
 
-    return <Badge variant="outline">Active</Badge>;
+    // Show the actual plan value for unknown plans
+    return <Badge variant="default">{plan}</Badge>;
   };
 
   const sortedMemberships = getSortedAndFilteredMemberships();
