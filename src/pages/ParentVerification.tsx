@@ -169,13 +169,18 @@ const ParentVerification = () => {
             Didn't receive the email?
           </p>
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={handleResend}
             disabled={resending || !email}
             className="w-full"
           >
             {resending ? "Sending..." : "Resend Verification Email"}
           </Button>
+          {!email && (
+            <p className="text-xs text-muted-foreground">
+              Enter your email address above to enable resend
+            </p>
+          )}
         </div>
 
         <div className="text-center space-y-2">
