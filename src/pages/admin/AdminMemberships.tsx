@@ -51,51 +51,43 @@ export default function AdminMemberships() {
     try {
       setLoading(true);
 
-      // Fetch all memberships with profile data
-      const { data, error } = await supabase
-        .from("memberships")
-        .select("user_id, plan, status, end_date")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      // Get unique user IDs
-      const userIds = [...new Set(data?.map(m => m.user_id) || [])];
-
-      // Fetch profiles for these users
+      // Fetch ALL profiles first
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("id, email, full_name, created_at")
-        .in("id", userIds);
+        .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      // Create a map of profiles
-      const profilesMap = new Map(
-        profilesData?.map(p => [p.id, p]) || []
-      );
+      // Fetch all memberships
+      const { data: membershipsData, error: membershipsError } = await supabase
+        .from("memberships")
+        .select("user_id, plan, status, end_date");
+
+      if (membershipsError) throw membershipsError;
 
       // Create a map of latest membership per user
       const membershipMap = new Map();
-      data?.forEach(m => {
-        if (!membershipMap.has(m.user_id)) {
+      membershipsData?.forEach(m => {
+        if (!membershipMap.has(m.user_id) || 
+            membershipMap.get(m.user_id).status !== 'active') {
           membershipMap.set(m.user_id, m);
         }
       });
 
-      // Combine data
-      const membershipData = Array.from(membershipMap.entries()).map(([userId, membership]) => {
-        const profile = profilesMap.get(userId);
-        const isActive = membership.status === 'active';
+      // Combine ALL profiles with their memberships (or lack thereof)
+      const membershipData = (profilesData || []).map(profile => {
+        const membership = membershipMap.get(profile.id);
+        const isActive = membership?.status === 'active';
         
         return {
-          user_id: userId,
-          email: profile?.email || 'Unknown',
-          full_name: profile?.full_name || null,
-          plan: membership.plan || null,
+          user_id: profile.id,
+          email: profile.email || 'Unknown',
+          full_name: profile.full_name || null,
+          plan: membership?.plan || null,
           subscribed: isActive,
-          subscription_end: membership.end_date || null,
-          created_at: profile?.created_at || new Date().toISOString(),
+          subscription_end: membership?.end_date || null,
+          created_at: profile.created_at || new Date().toISOString(),
         };
       });
 
