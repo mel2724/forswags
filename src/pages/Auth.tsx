@@ -402,6 +402,7 @@ const Auth = () => {
                 placeholder="••••••••"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                autoComplete="new-password"
                 required
                 minLength={8}
               />
@@ -415,6 +416,7 @@ const Auth = () => {
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
                 required
                 minLength={8}
               />
@@ -442,6 +444,7 @@ const Auth = () => {
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -454,6 +457,7 @@ const Auth = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
                     required
                   />
                 </div>
@@ -482,6 +486,7 @@ const Auth = () => {
                     placeholder="your@email.com"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -516,6 +521,7 @@ const Auth = () => {
                   placeholder="John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                  autoComplete="name"
                   required
                 />
               </div>
@@ -530,6 +536,7 @@ const Auth = () => {
                   placeholder={isStaffSignup ? "yourname@college.edu" : "your@email.com"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                   required
                 />
                 {isStaffSignup && (
@@ -553,6 +560,7 @@ const Auth = () => {
                       setPasswordStrength(checkPasswordStrength(newPassword));
                     }
                   }}
+                  autoComplete="new-password"
                   required
                   minLength={8}
                 />

@@ -586,6 +586,7 @@ const Onboarding = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Smith"
+                  autoComplete="name"
                 />
               </div>
 
@@ -597,6 +598,7 @@ const Onboarding = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
+                  autoComplete="tel"
                 />
               </div>
             </div>
@@ -957,6 +959,7 @@ const Onboarding = () => {
                           value={parentEmail}
                           onChange={(e) => setParentEmail(e.target.value)}
                           placeholder="parent@example.com"
+                          autoComplete="email"
                           disabled={parentEmailVerified}
                           required
                         />
