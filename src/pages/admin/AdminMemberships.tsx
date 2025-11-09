@@ -33,15 +33,16 @@ export default function AdminMemberships() {
   const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
 
-  // Stats
+  // Stats by membership type
   const totalMembers = memberships.length;
-  const activeSubscriptions = memberships.filter(m => m.subscribed).length;
-  const athleteMembers = memberships.filter(m => 
-    m.plan && (m.plan.includes('pro_') || m.plan.includes('championship_'))
-  ).length;
+  const freeMembers = memberships.filter(m => !m.plan || m.plan === 'free').length;
+  const proMonthlyMembers = memberships.filter(m => m.plan === 'pro_monthly').length;
+  const championshipMembers = memberships.filter(m => m.plan === 'championship_yearly').length;
+  const parentMembers = memberships.filter(m => m.plan === 'parent_free').length;
   const recruiterMembers = memberships.filter(m => 
-    m.plan && m.plan.includes('recruiter_')
+    m.plan && (m.plan === 'recruiter_monthly' || m.plan === 'recruiter_yearly')
   ).length;
+  const activeSubscriptions = memberships.filter(m => m.subscribed).length;
 
   useEffect(() => {
     fetchMemberships();
@@ -144,11 +145,17 @@ export default function AdminMemberships() {
         m.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Apply tab filter
-    if (activeTab === "active") {
-      filtered = filtered.filter(m => m.subscribed);
-    } else if (activeTab === "free") {
-      filtered = filtered.filter(m => !m.subscribed);
+    // Apply tab filter by membership type
+    if (activeTab === "free") {
+      filtered = filtered.filter(m => !m.plan || m.plan === 'free');
+    } else if (activeTab === "pro_monthly") {
+      filtered = filtered.filter(m => m.plan === 'pro_monthly');
+    } else if (activeTab === "championship") {
+      filtered = filtered.filter(m => m.plan === 'championship_yearly');
+    } else if (activeTab === "parent") {
+      filtered = filtered.filter(m => m.plan === 'parent_free');
+    } else if (activeTab === "recruiter") {
+      filtered = filtered.filter(m => m.plan === 'recruiter_monthly' || m.plan === 'recruiter_yearly');
     } else if (activeTab === "issues") {
       filtered = filtered.filter(m => {
         if (!m.subscription_end) return false;
@@ -243,21 +250,21 @@ export default function AdminMemberships() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Athletes</CardTitle>
+            <CardTitle className="text-sm font-medium">Pro Monthly</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{athleteMembers}</div>
+            <div className="text-2xl font-bold">{proMonthlyMembers}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recruiters</CardTitle>
+            <CardTitle className="text-sm font-medium">Championship</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recruiterMembers}</div>
+            <div className="text-2xl font-bold">{championshipMembers}</div>
           </CardContent>
         </Card>
       </div>
@@ -295,11 +302,14 @@ export default function AdminMemberships() {
               <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
                 <TabsList>
                   <TabsTrigger value="all">All ({memberships.length})</TabsTrigger>
-                  <TabsTrigger value="active">Active ({activeSubscriptions})</TabsTrigger>
-                  <TabsTrigger value="free">Free ({memberships.length - activeSubscriptions})</TabsTrigger>
+                  <TabsTrigger value="free">Free ({freeMembers})</TabsTrigger>
+                  <TabsTrigger value="pro_monthly">Pro Monthly ({proMonthlyMembers})</TabsTrigger>
+                  <TabsTrigger value="championship">Championship ({championshipMembers})</TabsTrigger>
+                  <TabsTrigger value="parent">Parent ({parentMembers})</TabsTrigger>
+                  <TabsTrigger value="recruiter">Recruiter ({recruiterMembers})</TabsTrigger>
                   <TabsTrigger value="issues">
                     <AlertCircle className="h-4 w-4 mr-2" />
-                    Payment Issues
+                    Issues
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
