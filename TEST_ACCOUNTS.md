@@ -209,6 +209,31 @@
 
 ---
 
+## 👨‍👩‍👧 Test Account 6: Parent Account (Created via Admin Function)
+
+**Email**: `parent.test@forswags.com`  
+**Password**: `TestParent123!`  
+**Role**: Parent
+
+### Account Information:
+- **Full Name**: Test Parent
+- **Created**: Via admin function (auto-verified)
+- **Purpose**: Testing parent dashboard and verification flows
+
+### What to Test:
+- ✅ Parent dashboard access
+- ✅ View linked athlete profiles
+- ✅ Parent verification functionality
+- ✅ Consent management
+- ✅ Communication with coaches/recruiters
+
+### Notes:
+- This account is auto-created and verified
+- Can be used immediately without email verification
+- Already has parent role assigned
+
+---
+
 ## 📋 Testing Checklist
 
 ### For Each Account:
