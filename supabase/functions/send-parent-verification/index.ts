@@ -53,11 +53,20 @@ serve(async (req) => {
     }
 
     // Get athlete_id for this user (may not exist yet during onboarding)
-    const { data: athlete } = await supabaseClient
+    const { data: athlete, error: athleteError } = await supabaseClient
       .from("athletes")
       .select("id")
       .eq("user_id", user.id)
       .single();
+
+    if (athleteError) {
+      console.log("Athlete lookup result:", athleteError.message);
+      console.log("This is expected during onboarding before profile completion");
+    } else if (athlete) {
+      console.log("Found athlete record:", athlete.id, "for user:", user.id);
+    } else {
+      console.log("No athlete record found for user:", user.id);
+    }
 
     // Store verification code
     // During onboarding, athlete_id may be null - we'll link it later when the profile is created
@@ -65,7 +74,14 @@ serve(async (req) => {
     const forwardedFor = req.headers.get("x-forwarded-for");
     const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : "unknown";
     
-    const { error: insertError } = await supabaseClient
+    console.log("Storing verification with:", {
+      athlete_id: athlete?.id || null,
+      user_id: user.id,
+      parent_email,
+      has_athlete_record: !!athlete,
+    });
+
+    const { data: insertedVerification, error: insertError } = await supabaseClient
       .from("parent_verifications")
       .insert({
         athlete_id: athlete?.id || null,
@@ -73,12 +89,16 @@ serve(async (req) => {
         parent_email,
         verification_code: verificationCode,
         ip_address: ipAddress,
-      });
+      })
+      .select()
+      .single();
 
     if (insertError) {
       console.error("Error storing verification:", insertError);
       throw insertError;
     }
+
+    console.log("Verification created successfully:", insertedVerification.id);
 
     // Send email with verification link using the frontend app URL
     const verificationUrl = `${app_url}/parent-verify?email=${encodeURIComponent(parent_email)}&name=${encodeURIComponent(child_name)}`;

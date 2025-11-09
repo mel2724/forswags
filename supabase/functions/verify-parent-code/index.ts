@@ -40,8 +40,52 @@ serve(async (req) => {
       .single();
 
     if (verifyError || !verification) {
+      console.error("Verification lookup error:", verifyError);
       return new Response(
         JSON.stringify({ valid: false, error: "Invalid or expired verification code" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Handle case where athlete_id is NULL but user_id exists
+    // This can happen if verification was sent during onboarding before athlete profile was created
+    let athleteId = verification.athlete_id;
+    let athleteUserId = verification.athletes?.user_id;
+
+    if (!athleteId && verification.user_id) {
+      console.log("Athlete ID is NULL, attempting to lookup by user_id:", verification.user_id);
+      
+      const { data: athleteRecord, error: athleteLookupError } = await supabaseClient
+        .from("athletes")
+        .select("id, user_id")
+        .eq("user_id", verification.user_id)
+        .single();
+
+      if (athleteRecord && !athleteLookupError) {
+        console.log("Found athlete record:", athleteRecord.id);
+        athleteId = athleteRecord.id;
+        athleteUserId = athleteRecord.user_id;
+
+        // Update the verification record with the found athlete_id
+        const { error: updateVerifyError } = await supabaseClient
+          .from("parent_verifications")
+          .update({ athlete_id: athleteId })
+          .eq("id", verification.id);
+
+        if (updateVerifyError) {
+          console.error("Error updating verification with athlete_id:", updateVerifyError);
+        } else {
+          console.log("Successfully linked verification to athlete");
+        }
+      } else {
+        console.error("Could not find athlete record for user_id:", verification.user_id, athleteLookupError);
+      }
+    }
+
+    if (!athleteId) {
+      console.error("No athlete_id found for verification:", verification.id);
+      return new Response(
+        JSON.stringify({ valid: false, error: "Athlete profile not found. Please complete your profile first." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -57,21 +101,22 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Update athlete profile to public if they have an athlete record
-    if (verification.athletes) {
-      const { error: athleteError } = await supabaseClient
-        .from("athletes")
-        .update({ 
-          visibility: 'public',
-          is_parent_verified: true,
-          parent_verified_at: new Date().toISOString(),
-          consent_expires_at: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()
-        })
-        .eq("id", verification.athletes.id);
+    // Update athlete profile with parent verification data
+    const { error: athleteError } = await supabaseClient
+      .from("athletes")
+      .update({ 
+        parent_email: parent_email,
+        visibility: 'public',
+        is_parent_verified: true,
+        parent_verified_at: new Date().toISOString(),
+        consent_expires_at: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+        public_profile_consent: true,
+      })
+      .eq("id", athleteId);
 
-      if (athleteError) {
-        console.error("Error updating athlete visibility:", athleteError);
-      }
+    if (athleteError) {
+      console.error("Error updating athlete visibility:", athleteError);
+      throw athleteError;
     }
 
     // Log security event
