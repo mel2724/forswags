@@ -31,7 +31,13 @@ serve(async (req) => {
     // Find the most recent verification request for this email
     const { data: existingVerification, error: fetchError } = await supabaseClient
       .from("parent_verifications")
-      .select("*, athletes(full_name, date_of_birth)")
+      .select(`
+        *,
+        athletes!inner (
+          user_id,
+          date_of_birth
+        )
+      `)
       .eq("parent_email", parent_email)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -76,9 +82,25 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // Get child name from athlete record or use placeholder
-    const childName = existingVerification.athletes?.full_name || "your child";
-    const childDob = existingVerification.athletes?.date_of_birth || "N/A";
+    // Get child name from profile via athlete's user_id
+    let childName = "your child";
+    let childDob = "N/A";
+    
+    if (existingVerification.athletes?.user_id) {
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("full_name")
+        .eq("id", existingVerification.athletes.user_id)
+        .single();
+      
+      if (profile?.full_name) {
+        childName = profile.full_name;
+      }
+    }
+    
+    if (existingVerification.athletes?.date_of_birth) {
+      childDob = existingVerification.athletes.date_of_birth;
+    }
 
     // Send email with new verification code
     const verificationUrl = `${app_url}/parent-verify?email=${encodeURIComponent(parent_email)}&name=${encodeURIComponent(childName)}`;
