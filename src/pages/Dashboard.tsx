@@ -215,15 +215,11 @@ const Dashboard = () => {
       
       setHasUnreadNotifications((notificationsData?.length || 0) > 0);
 
-      // Sync subscription status from Stripe (only if user has valid session)
+      // Sync subscription status from Stripe
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          await supabase.functions.invoke("check-subscription", {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          });
+        if (session) {
+          await supabase.functions.invoke("check-subscription");
         }
       } catch (error) {
         console.error("Error syncing subscription:", error);
