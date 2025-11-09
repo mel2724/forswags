@@ -52,7 +52,18 @@ export default function Membership() {
   const checkSubscription = async () => {
     setCheckingStatus(true);
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log("No active session, skipping subscription check");
+        setCheckingStatus(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("check-subscription", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
       if (error) throw error;
       setSubscriptionStatus(data);
     } catch (error: any) {
