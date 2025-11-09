@@ -16,6 +16,7 @@ const ParentVerification = () => {
   const [loading, setLoading] = useState(false);
   const [verified, setVerified] = useState(false);
   const [childName, setChildName] = useState("");
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     // Get child name from URL param
@@ -55,6 +56,32 @@ const ParentVerification = () => {
       toast.error("Failed to verify code. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    setResending(true);
+    try {
+      const { error } = await supabase.functions.invoke("resend-parent-verification", {
+        body: { 
+          parent_email: email,
+          app_url: window.location.origin
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Verification email sent! Check your inbox.");
+    } catch (error: any) {
+      console.error("Resend error:", error);
+      toast.error(error.message || "Failed to resend email. Please try again.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -136,6 +163,20 @@ const ParentVerification = () => {
         >
           {loading ? "Verifying..." : "Verify Email"}
         </Button>
+
+        <div className="text-center space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Didn't receive the email?
+          </p>
+          <Button
+            variant="outline"
+            onClick={handleResend}
+            disabled={resending || !email}
+            className="w-full"
+          >
+            {resending ? "Sending..." : "Resend Verification Email"}
+          </Button>
+        </div>
 
         <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground">

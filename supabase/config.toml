@@ -51,6 +51,9 @@ verify_jwt = true
 [functions.verify-parent-code]
 verify_jwt = false  # Parents don't need to be logged in to verify email
 
+[functions.resend-parent-verification]
+verify_jwt = false  # Parents don't need to be logged in to resend verification
+
 [functions.send-consent-renewal-emails]
 verify_jwt = false
 
