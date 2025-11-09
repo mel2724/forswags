@@ -31,6 +31,10 @@ const ParentDashboard = () => {
   const [athleteEmail, setAthleteEmail] = useState("");
   const [linkingDialogOpen, setLinkingDialogOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [pendingVerifications, setPendingVerifications] = useState<any[]>([]);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [selectedVerification, setSelectedVerification] = useState<any>(null);
+  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
 
   // Listen for badge achievements
   useBadgeListener(user?.id);
@@ -77,6 +81,9 @@ const ParentDashboard = () => {
 
       // Get athletes linked to this parent
       await loadAthletes(session.user.id);
+      
+      // Load pending verifications for this parent
+      await loadPendingVerifications(session.user.email!);
 
       setLoading(false);
     };
@@ -112,6 +119,66 @@ const ParentDashboard = () => {
       .eq("parent_id", parentId);
 
     setAthletes(athletesData || []);
+  };
+
+  const loadPendingVerifications = async (parentEmail: string) => {
+    const { data } = await supabase
+      .from("parent_verifications")
+      .select(`
+        *,
+        athletes (
+          id,
+          user_id,
+          sport,
+          position,
+          high_school,
+          graduation_year,
+          profiles!athletes_user_id_fkey (
+            full_name,
+            email
+          )
+        )
+      `)
+      .eq("parent_email", parentEmail.toLowerCase())
+      .is("verified_at", null)
+      .gt("expires_at", new Date().toISOString());
+
+    setPendingVerifications(data || []);
+  };
+
+  const handleVerifyCode = async () => {
+    if (!selectedVerification || !verificationCode.trim()) {
+      toast.error("Please enter the verification code");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("verify-parent-code", {
+        body: {
+          verification_code: verificationCode.trim().toUpperCase(),
+          parent_email: user.email,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.valid) {
+        toast.success("Child verified successfully!");
+        setVerificationCode("");
+        setVerificationDialogOpen(false);
+        setSelectedVerification(null);
+        await loadAthletes(user.id);
+        await loadPendingVerifications(user.email!);
+      } else {
+        toast.error(data.error || "Invalid verification code");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Error verifying code");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLinkAthlete = async () => {
@@ -240,6 +307,114 @@ const ParentDashboard = () => {
           {/* Sponsor Card */}
           <SponsorCard />
         </div>
+
+        {/* Pending Verifications */}
+        {pendingVerifications.length > 0 && (
+          <Card className="bg-orange-500/10 border-2 border-orange-500/20">
+            <CardHeader>
+              <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+                <Shield className="h-5 w-5 text-orange-500" />
+                Pending Verifications
+              </CardTitle>
+              <CardDescription>
+                Your children need parental consent to create public profiles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {pendingVerifications.map((verification) => (
+                  <Card key={verification.id} className="bg-card/50 border-2">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg mb-1">
+                            {verification.athletes?.profiles?.full_name || "Athlete"}
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {verification.athletes?.profiles?.email}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm">
+                            {verification.athletes?.sport && (
+                              <span className="flex items-center gap-1">
+                                <Trophy className="h-3 w-3" />
+                                {verification.athletes.sport}
+                              </span>
+                            )}
+                            {verification.athletes?.graduation_year && (
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                Class of {verification.athletes.graduation_year}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Dialog 
+                          open={verificationDialogOpen && selectedVerification?.id === verification.id} 
+                          onOpenChange={(open) => {
+                            setVerificationDialogOpen(open);
+                            if (!open) {
+                              setSelectedVerification(null);
+                              setVerificationCode("");
+                            }
+                          }}
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              onClick={() => setSelectedVerification(verification)}
+                              className="bg-orange-500 hover:bg-orange-600"
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Verify Now
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Verify Parental Consent</DialogTitle>
+                              <DialogDescription>
+                                Enter the 6-digit verification code that was sent to your email
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="verification-code">Verification Code</Label>
+                                <Input
+                                  id="verification-code"
+                                  placeholder="ABC123"
+                                  value={verificationCode}
+                                  onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
+                                  maxLength={6}
+                                  className="text-center text-2xl font-mono tracking-widest uppercase"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  Check your email ({user?.email}) for the code
+                                </p>
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                  setVerificationDialogOpen(false);
+                                  setSelectedVerification(null);
+                                  setVerificationCode("");
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button onClick={handleVerifyCode} disabled={loading || verificationCode.length !== 6}>
+                                {loading ? "Verifying..." : "Verify & Grant Consent"}
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Athletes Grid */}
         <div className="grid gap-6">
