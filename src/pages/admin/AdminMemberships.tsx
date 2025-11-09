@@ -59,20 +59,18 @@ export default function AdminMemberships() {
 
       if (profilesError) throw profilesError;
 
-      // Fetch all memberships
+      // Fetch only active memberships to determine subscription status
       const { data: membershipsData, error: membershipsError } = await supabase
         .from("memberships")
-        .select("user_id, plan, status, end_date");
+        .select("user_id, plan, status, end_date")
+        .in("status", ["active", "trialing"]);
 
       if (membershipsError) throw membershipsError;
 
-      // Create a map of latest membership per user
+      // Create a map of active memberships per user (one active membership per user)
       const membershipMap = new Map();
       membershipsData?.forEach(m => {
-        if (!membershipMap.has(m.user_id) || 
-            membershipMap.get(m.user_id).status !== 'active') {
-          membershipMap.set(m.user_id, m);
-        }
+        membershipMap.set(m.user_id, m);
       });
 
       // Combine ALL profiles with their memberships (or lack thereof)
