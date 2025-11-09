@@ -31,8 +31,15 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      logStep("No authorization header provided");
-      throw new Error("No authorization header provided");
+      logStep("No authorization header - returning unsubscribed state");
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        product_id: null,
+        subscription_end: null
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
     logStep("Authorization header found");
 
@@ -41,14 +48,28 @@ serve(async (req) => {
     logStep("Token extracted, authenticating user");
     
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) {
-      logStep("Authentication failed", { error: userError.message });
-      throw new Error(`Authentication error: ${userError.message}`);
+    if (userError || !userData.user) {
+      logStep("Authentication failed - returning unsubscribed state", { error: userError?.message });
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        product_id: null,
+        subscription_end: null
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
     const user = userData.user;
     if (!user?.email) {
-      logStep("No user or email found after auth");
-      throw new Error("User not authenticated or email not available");
+      logStep("No email found - returning unsubscribed state");
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        product_id: null,
+        subscription_end: null
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
     logStep("User authenticated successfully", { userId: user.id, email: user.email });
 
