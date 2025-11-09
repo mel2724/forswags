@@ -19,7 +19,7 @@ import { ParentConsentManager } from "@/components/ParentConsentManager";
 import { differenceInYears } from "date-fns";
 import {
   LogOut, Users, Trophy, GraduationCap, Calendar, 
-  School, Award, Plus, Eye, MapPin, Shield, BookOpen
+  School, Award, Plus, Eye, MapPin, Shield, BookOpen, PlayCircle, TrendingUp
 } from "lucide-react";
 
 const ParentDashboard = () => {
@@ -35,6 +35,7 @@ const ParentDashboard = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [selectedVerification, setSelectedVerification] = useState<any>(null);
   const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
+  const [learningProgress, setLearningProgress] = useState<Record<string, { videosWatched: number; badgesEarned: number; badges: any[] }>>({});
 
   // Listen for badge achievements
   useBadgeListener(user?.id);
@@ -119,6 +120,48 @@ const ParentDashboard = () => {
       .eq("parent_id", parentId);
 
     setAthletes(athletesData || []);
+    
+    // Load learning progress for each athlete
+    if (athletesData) {
+      await loadLearningProgress(athletesData);
+    }
+  };
+
+  const loadLearningProgress = async (athletesData: any[]) => {
+    const progressData: Record<string, { videosWatched: number; badgesEarned: number; badges: any[] }> = {};
+    
+    for (const athlete of athletesData) {
+      // Get video completions
+      const { data: completions } = await supabase
+        .from("video_completions")
+        .select("id")
+        .eq("user_id", athlete.user_id);
+
+      // Get badges earned
+      const { data: userBadges } = await supabase
+        .from("user_badges")
+        .select(`
+          badge_id,
+          earned_at,
+          badges (
+            id,
+            name,
+            description,
+            icon
+          )
+        `)
+        .eq("user_id", athlete.user_id)
+        .order("earned_at", { ascending: false })
+        .limit(3);
+
+      progressData[athlete.id] = {
+        videosWatched: completions?.length || 0,
+        badgesEarned: userBadges?.length || 0,
+        badges: userBadges || []
+      };
+    }
+    
+    setLearningProgress(progressData);
   };
 
   const loadPendingVerifications = async (parentEmail: string) => {
@@ -333,6 +376,89 @@ const ParentDashboard = () => {
             </p>
           </CardContent>
         </Card>
+
+        {/* Learning Progress Overview */}
+        {athletes.length > 0 && (
+          <Card className="mb-8 bg-card/80 backdrop-blur border-2 border-secondary/20">
+            <CardHeader>
+              <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-secondary" />
+                Learning Progress
+              </CardTitle>
+              <CardDescription>
+                Track your children's educational achievements
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {athletes.map((athlete) => {
+                  const progress = learningProgress[athlete.id] || { videosWatched: 0, badgesEarned: 0, badges: [] };
+                  
+                  return (
+                    <Card key={athlete.id} className="bg-card/50">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h4 className="font-bold text-lg">
+                              {athlete.profiles?.full_name || "Athlete"}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              {athlete.sport} • Class of {athlete.graduation_year}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
+                            <PlayCircle className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="text-2xl font-bold">{progress.videosWatched}</p>
+                              <p className="text-xs text-muted-foreground">Videos Watched</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/5">
+                            <Award className="h-5 w-5 text-secondary" />
+                            <div>
+                              <p className="text-2xl font-bold">{progress.badgesEarned}</p>
+                              <p className="text-xs text-muted-foreground">Badges Earned</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {progress.badges.length > 0 && (
+                          <div>
+                            <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
+                              Recent Badges
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {progress.badges.map((userBadge: any) => (
+                                <Badge 
+                                  key={userBadge.badge_id} 
+                                  variant="secondary"
+                                  className="gap-1"
+                                >
+                                  {userBadge.badges.icon && <span>{userBadge.badges.icon}</span>}
+                                  {userBadge.badges.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {progress.videosWatched === 0 && progress.badgesEarned === 0 && (
+                          <p className="text-sm text-muted-foreground text-center py-2">
+                            No learning activity yet. Encourage them to start watching videos!
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pending Verifications */}
         {pendingVerifications.length > 0 && (
