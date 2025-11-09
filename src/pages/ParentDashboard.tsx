@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
@@ -14,9 +15,11 @@ import NotificationCard from "@/components/NotificationCard";
 import SponsorCard from "@/components/SponsorCard";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { useBadgeListener } from "@/hooks/useBadgeListener";
+import { ParentConsentManager } from "@/components/ParentConsentManager";
+import { differenceInYears } from "date-fns";
 import {
   LogOut, Users, Trophy, GraduationCap, Calendar, 
-  School, Award, Plus, Eye, MapPin
+  School, Award, Plus, Eye, MapPin, Shield
 } from "lucide-react";
 
 const ParentDashboard = () => {
@@ -290,64 +293,93 @@ const ParentDashboard = () => {
             </CardHeader>
             <CardContent>
               {athletes.length > 0 ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {athletes.map((athlete) => (
-                    <Card key={athlete.id} className="bg-card/50 backdrop-blur border-2 border-primary/10 hover:border-primary/30 transition-colors">
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h3 className="font-black text-xl mb-1">
-                                {athlete.profiles?.full_name || "Athlete"}
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                {athlete.profiles?.email}
-                              </p>
-                            </div>
-                          </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {athletes.map((athlete) => {
+                    const isMinor = athlete.date_of_birth 
+                      ? differenceInYears(new Date(), new Date(athlete.date_of_birth)) < 18
+                      : false;
 
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm">
-                              <Trophy className="h-4 w-4 text-primary" />
-                              <span className="font-semibold">{athlete.sport}</span>
-                              {athlete.position && (
-                                <span className="text-muted-foreground">• {athlete.position}</span>
+                    return (
+                      <Card key={athlete.id} className="bg-card/50 backdrop-blur border-2 border-primary/10 hover:border-primary/30 transition-colors">
+                        <CardContent className="p-6">
+                          <div className="space-y-4">
+                            {/* Header */}
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-black text-xl">
+                                    {athlete.profiles?.full_name || "Athlete"}
+                                  </h3>
+                                  {isMinor && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <Shield className="h-3 w-3 mr-1" />
+                                      Minor
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {athlete.profiles?.email}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Athletic Info */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 text-sm">
+                                <Trophy className="h-4 w-4 text-primary" />
+                                <span className="font-semibold">{athlete.sport}</span>
+                                {athlete.position && (
+                                  <span className="text-muted-foreground">• {athlete.position}</span>
+                                )}
+                              </div>
+
+                              {athlete.high_school && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <School className="h-4 w-4 text-secondary" />
+                                  <span className="truncate">{athlete.high_school}</span>
+                                </div>
+                              )}
+
+                              {athlete.graduation_year && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Calendar className="h-4 w-4 text-primary" />
+                                  <span>Class of {athlete.graduation_year}</span>
+                                </div>
+                              )}
+
+                              {athlete.gpa && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <GraduationCap className="h-4 w-4 text-secondary" />
+                                  <span>GPA: {athlete.gpa.toFixed(2)}</span>
+                                </div>
                               )}
                             </div>
 
-                            {athlete.high_school && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <School className="h-4 w-4 text-secondary" />
-                                <span className="truncate">{athlete.high_school}</span>
-                              </div>
+                            {/* Consent Management (only for minors) */}
+                            {isMinor && (
+                              <>
+                                <Separator />
+                                <ParentConsentManager 
+                                  athlete={athlete} 
+                                  onConsentUpdate={() => loadAthletes(user.id)}
+                                />
+                              </>
                             )}
 
-                            {athlete.graduation_year && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <Calendar className="h-4 w-4 text-primary" />
-                                <span>Class of {athlete.graduation_year}</span>
-                              </div>
-                            )}
-
-                            {athlete.gpa && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <GraduationCap className="h-4 w-4 text-secondary" />
-                                <span>GPA: {athlete.gpa.toFixed(2)}</span>
-                              </div>
-                            )}
+                            {/* View Dashboard Button */}
+                            <Button 
+                              onClick={() => handleViewAthlete(athlete.user_id)}
+                              className="w-full"
+                              variant="default"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Dashboard
+                            </Button>
                           </div>
-
-                          <Button 
-                            onClick={() => handleViewAthlete(athlete.user_id)}
-                            className="w-full"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Dashboard
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12">
