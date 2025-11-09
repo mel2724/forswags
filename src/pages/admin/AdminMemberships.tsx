@@ -196,7 +196,7 @@ export default function AdminMemberships() {
 
   const getMembershipBadge = (membership: MembershipData) => {
     if (!membership.subscribed || !membership.plan) {
-      return <Badge variant="outline">Free</Badge>;
+      return <Badge variant="outline" className="border-muted-foreground/50 text-muted-foreground">Free Tier</Badge>;
     }
 
     const plan = membership.plan;
