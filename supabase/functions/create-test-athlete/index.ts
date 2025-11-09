@@ -62,9 +62,21 @@ Deno.serve(async (req) => {
           } else {
             console.log('Deleted parent verifications');
           }
+
+          // Delete athlete record
+          const { error: athleteDeleteError } = await supabaseAdmin
+            .from('athletes')
+            .delete()
+            .eq('id', athleteData.id);
+          
+          if (athleteDeleteError) {
+            console.error('Error deleting athlete:', athleteDeleteError);
+          } else {
+            console.log('Deleted athlete record');
+          }
         }
 
-        // Delete auth user (should cascade to profile and athlete via foreign keys)
+        // Delete auth user (should cascade to profile)
         const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
         
         if (deleteError) {
