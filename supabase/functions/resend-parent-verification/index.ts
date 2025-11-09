@@ -38,18 +38,24 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !existingVerification) {
-      console.error("No verification found for email:", parent_email);
+      console.error("No verification found for email:", parent_email, fetchError);
       return new Response(
-        JSON.stringify({ error: "No verification request found for this email" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          success: false,
+          error: "No verification request found for this email. Please complete the athlete onboarding process first to create a verification request." 
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Check if already verified
     if (existingVerification.verified_at) {
       return new Response(
-        JSON.stringify({ error: "This verification has already been completed" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          success: false,
+          error: "This verification has already been completed" 
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

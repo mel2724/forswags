@@ -67,7 +67,7 @@ const ParentVerification = () => {
 
     setResending(true);
     try {
-      const { error } = await supabase.functions.invoke("resend-parent-verification", {
+      const { data, error } = await supabase.functions.invoke("resend-parent-verification", {
         body: { 
           parent_email: email,
           app_url: window.location.origin
@@ -76,10 +76,32 @@ const ParentVerification = () => {
 
       if (error) throw error;
 
+      // Check if the function returned an error in the data
+      if (data?.error) {
+        if (data.error.includes("No verification request found")) {
+          toast.error("No verification request found. Please complete the onboarding process first.");
+        } else if (data.error.includes("already been completed")) {
+          toast.error("This verification has already been completed.");
+        } else {
+          toast.error(data.error);
+        }
+        return;
+      }
+
       toast.success("Verification email sent! Check your inbox.");
     } catch (error: any) {
       console.error("Resend error:", error);
-      toast.error(error.message || "Failed to resend email. Please try again.");
+      
+      // Handle specific error messages
+      if (error.message?.includes("No verification request found")) {
+        toast.error("No verification request found. Please complete the athlete onboarding first.", {
+          description: "You need to create a profile before we can send a verification email."
+        });
+      } else if (error.message?.includes("already been completed")) {
+        toast.error("This verification was already completed.");
+      } else {
+        toast.error("Failed to resend email. Please try again or contact support.");
+      }
     } finally {
       setResending(false);
     }
