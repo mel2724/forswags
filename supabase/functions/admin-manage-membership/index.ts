@@ -76,9 +76,16 @@ serve(async (req) => {
           const customers = await stripe.customers.list({ email: profileData.email, limit: 1 });
           if (customers.data.length === 0) {
             logStep("No Stripe customer", { email: profileData.email });
+            // Return empty data structure for users without Stripe customers (free tier)
             return new Response(
-              JSON.stringify({ error: "No Stripe customer found" }),
-              { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+              JSON.stringify({
+                customer: null,
+                subscriptions: [],
+                payment_methods: [],
+                invoices: [],
+                has_stripe_customer: false
+              }),
+              { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
             );
           }
 
