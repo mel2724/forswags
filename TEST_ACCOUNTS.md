@@ -212,7 +212,7 @@
 ## 👨‍👩‍👧 Test Account 6: Parent Account (Created via Admin Function)
 
 **Email**: `parent.test@forswags.com`  
-**Password**: `TestParent123!`  
+**Password**: `Parent123Test!`  
 **Role**: Parent
 
 ### Account Information:

@@ -22,21 +22,16 @@ Deno.serve(async (req) => {
     );
 
     const testEmail = 'parent.test@forswags.com';
-    const testPassword = 'TestParent123!';
+    const testPassword = 'Parent123Test!';
 
-    // Check if user already exists
-    const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingUser?.users.some(u => u.email === testEmail);
+    // Check if user already exists and delete it
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users.find(u => u.email === testEmail);
 
-    if (userExists) {
-      return new Response(
-        JSON.stringify({ 
-          message: 'Test parent account already exists',
-          email: testEmail,
-          password: testPassword
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (existingUser) {
+      // Delete existing user
+      await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+      console.log('Deleted existing test parent account');
     }
 
     // Create auth user
