@@ -78,6 +78,16 @@ serve(async (req) => {
       );
     }
 
+    // Get recruiter's college information
+    const { data: recruiterProfile } = await supabase
+      .from('recruiter_profiles')
+      .select('school_name, position')
+      .eq('user_id', viewer_id)
+      .maybeSingle();
+
+    const collegeName = recruiterProfile?.school_name || 'a college';
+    console.log('[Profile View Notification] Recruiter college:', collegeName);
+
     // Get athlete and profile information
     const { data: athlete } = await supabase
       .from('athletes')
@@ -115,8 +125,8 @@ serve(async (req) => {
       .from('notifications')
       .insert({
         user_id: athlete.user_id,
-        title: '👀 Profile Viewed by College Scout',
-        message: 'A college recruiter checked out your profile! Keep your stats and media updated to maintain their interest.',
+        title: `👀 Scout from ${collegeName} Viewed Your Profile`,
+        message: `A recruiter from ${collegeName} checked out your profile! Keep your stats and media updated to maintain their interest.`,
         type: 'profile_view',
         link: '/dashboard',
       });
@@ -134,11 +144,11 @@ serve(async (req) => {
     try {
       await sendEmail(
         profile.email,
-        '👀 A College Scout Viewed Your Profile!',
+        `👀 Scout from ${collegeName} Viewed Your Profile!`,
         `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #9B51E0;">Heads up, ${firstName}!</h2>
-            <p>Great news! A college scout just checked out your profile on ForSWAGs.</p>
+            <p>Great news! A recruiter from <strong>${collegeName}</strong> just checked out your profile on ForSWAGs.</p>
             <p>This is a great opportunity to make a strong impression. Make sure your profile is up to date:</p>
             <ul>
               <li>Keep your stats current</li>
@@ -164,11 +174,11 @@ serve(async (req) => {
       try {
         await sendEmail(
           athlete.parent_email,
-          `🎓 College Scout Viewed ${profile.full_name}'s Profile`,
+          `🎓 Scout from ${collegeName} Viewed ${profile.full_name}'s Profile`,
           `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #9B51E0;">Great News!</h2>
-              <p>A college scout just viewed ${profile.full_name}'s ForSWAGs profile!</p>
+              <p>A recruiter from <strong>${collegeName}</strong> just viewed ${profile.full_name}'s ForSWAGs profile!</p>
               <p>This shows that recruiters are actively looking at your student-athlete's profile. Here's how you can help them stand out:</p>
               <ul>
                 <li>Encourage them to keep their stats updated</li>
