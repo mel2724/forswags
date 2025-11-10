@@ -122,14 +122,35 @@ serve(async (req) => {
       
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
 
-      // Determine plan name based on product ID
-      const planName = productId === 'prod_RfjPTDIqw0AESn' ? 'championship_yearly' : 'pro_monthly';
+      // Map product ID to tier and plan
+      let tier = 'free';
+      let planName = 'free';
+      
+      // Recruiter products
+      if (productId === 'prod_T9VqwYb5CEEool') {
+        tier = 'college_scout';
+        planName = 'recruiter_yearly';
+      } else if (productId === 'prod_T9Vq2TSF3rfzDp') {
+        tier = 'college_scout';
+        planName = 'recruiter_monthly';
+      }
+      // Athlete products
+      else if (productId === 'prod_SoqOdBi1QDaZTE') {
+        tier = 'premium';
+        planName = 'championship_yearly';
+      } else if (productId === 'prod_SoqPRCb0fKL4OW') {
+        tier = 'premium';
+        planName = 'pro_monthly';
+      }
+      
+      logStep("Determined membership tier", { productId, tier, planName });
       
       // Update the database membership record
       const { error: updateError } = await supabaseClient
         .from('memberships')
         .update({
           plan: planName,
+          tier: tier,
           status: 'active',
           stripe_subscription_id: subscription.id,
           end_date: subscriptionEnd,
@@ -140,7 +161,7 @@ serve(async (req) => {
       if (updateError) {
         logStep("Error updating membership", { error: updateError.message });
       } else {
-        logStep("Database updated successfully", { plan: planName, status: 'active' });
+        logStep("Database updated successfully", { tier, plan: planName, status: 'active' });
       }
     } else {
       logStep("No active subscription found");
