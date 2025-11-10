@@ -113,3 +113,6 @@ verify_jwt = true
 
 [functions.create-test-athlete]
 verify_jwt = false  # Public endpoint for testing - creates Tyler Brown test athlete
+
+[functions.test-prime-dime-notification]
+verify_jwt = false  # Public endpoint for testing Prime Dime notifications
