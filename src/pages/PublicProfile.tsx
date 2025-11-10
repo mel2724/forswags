@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BadgeCard } from "@/components/BadgeCard";
+import { useProfileTracking } from "@/hooks/useProfileTracking";
 
 interface MediaAsset {
   id: string;
@@ -96,6 +97,43 @@ export default function PublicProfile() {
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [athleteId, setAthleteId] = useState<string | null>(null);
+  const [viewerType, setViewerType] = useState<"recruiter" | "coach" | "athlete" | "parent" | "anonymous">("anonymous");
+
+  // Determine viewer type
+  useEffect(() => {
+    const determineViewerType = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setViewerType("anonymous");
+        return;
+      }
+
+      // Check user roles
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+
+      if (roles?.some(r => r.role === 'recruiter')) {
+        setViewerType("recruiter");
+      } else if (roles?.some(r => r.role === 'coach')) {
+        setViewerType("coach");
+      } else if (roles?.some(r => r.role === 'parent')) {
+        setViewerType("parent");
+      } else {
+        setViewerType("athlete");
+      }
+    };
+
+    determineViewerType();
+  }, []);
+
+  // Track profile views for recruiters
+  useProfileTracking({ 
+    athleteId: athleteId || '', 
+    viewerType 
+  });
 
   useEffect(() => {
     loadProfile();
@@ -162,6 +200,7 @@ export default function PublicProfile() {
       };
 
       setProfile(combinedProfile);
+      setAthleteId(athleteData.id);
 
       // Fetch user badges
       const { data: badgesData } = await supabase

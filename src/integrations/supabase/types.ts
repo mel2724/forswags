@@ -2808,6 +2808,7 @@ export type Database = {
           id: string
           is_archived: boolean | null
           last_name: string | null
+          notify_on_profile_views: boolean | null
           phone: string | null
           privacy_accepted: boolean
           privacy_accepted_at: string | null
@@ -2835,6 +2836,7 @@ export type Database = {
           id: string
           is_archived?: boolean | null
           last_name?: string | null
+          notify_on_profile_views?: boolean | null
           phone?: string | null
           privacy_accepted?: boolean
           privacy_accepted_at?: string | null
@@ -2862,6 +2864,7 @@ export type Database = {
           id?: string
           is_archived?: boolean | null
           last_name?: string | null
+          notify_on_profile_views?: boolean | null
           phone?: string | null
           privacy_accepted?: boolean
           privacy_accepted_at?: string | null
