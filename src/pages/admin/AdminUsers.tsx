@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Eye, KeyRound, Pencil, Trash2 } from "lucide-react";
+import { Search, Eye, KeyRound, Pencil, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
 
@@ -19,14 +19,19 @@ interface User {
   full_name: string | null;
   created_at: string;
   role?: string;
+  is_archived?: boolean;
+  archived_at?: string;
+  archive_reason?: string;
 }
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [archivingUser, setArchivingUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({ email: "", full_name: "" });
   const { toast } = useToast();
   const { startImpersonation } = useImpersonation();
@@ -215,10 +220,95 @@ export default function AdminUsers() {
     }
   };
 
+  const handleArchiveUser = async () => {
+    if (!archivingUser) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
+
+      const response = await supabase.functions.invoke('admin-archive-user', {
+        body: { 
+          userId: archivingUser.id,
+          reason: 'Archived by admin'
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || "Failed to archive user");
+      }
+
+      toast({
+        title: "Success",
+        description: "User archived successfully",
+      });
+      setArchivingUser(null);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error archiving user:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to archive user",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRestoreUser = async (userId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
+
+      const response = await supabase.functions.invoke('admin-restore-user', {
+        body: { userId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || "Failed to restore user");
+      }
+
+      toast({
+        title: "Success",
+        description: "User restored successfully",
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error("Error restoring user:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to restore user",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredUsers = users.filter(
-    (user) =>
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    (user) => {
+      const matchesSearch = user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesArchived = showArchived ? user.is_archived : !user.is_archived;
+      return matchesSearch && matchesArchived;
+    }
   );
 
   if (loading) {
@@ -242,7 +332,7 @@ export default function AdminUsers() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
+          <div className="mb-4 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -251,6 +341,16 @@ export default function AdminUsers() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showArchived ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowArchived(!showArchived)}
+              >
+                {showArchived ? <ArchiveRestore className="h-4 w-4 mr-2" /> : <Archive className="h-4 w-4 mr-2" />}
+                {showArchived ? "Show Active Users" : "Show Archived Users"}
+              </Button>
             </div>
           </div>
 
@@ -279,66 +379,102 @@ export default function AdminUsers() {
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex gap-2">
+                      {user.is_archived ? (
+                        <div className="flex flex-col gap-2">
                           <Button
                             size="sm"
                             variant="default"
-                            onClick={() => handleImpersonate(user.id, user.email)}
-                            className="flex-1"
+                            onClick={() => handleRestoreUser(user.id)}
+                            className="w-full"
                           >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Impersonate
+                            <ArchiveRestore className="h-4 w-4 mr-2" />
+                            Restore User
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResetPassword(user.email)}
-                            className="flex-1"
-                          >
-                            <KeyRound className="h-4 w-4 mr-2" />
-                            Reset
-                          </Button>
+                          {user.archived_at && (
+                            <p className="text-xs text-muted-foreground">
+                              Archived: {new Date(user.archived_at).toLocaleDateString()}
+                            </p>
+                          )}
+                          {user.archive_reason && (
+                            <p className="text-xs text-muted-foreground">
+                              Reason: {user.archive_reason}
+                            </p>
+                          )}
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditUser(user)}
-                            className="flex-1"
-                          >
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => setDeletingUser(user)}
-                            className="flex-1"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </Button>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleImpersonate(user.id, user.email)}
+                              className="flex-1"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Impersonate
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleResetPassword(user.email)}
+                              className="flex-1"
+                            >
+                              <KeyRound className="h-4 w-4 mr-2" />
+                              Reset
+                            </Button>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditUser(user)}
+                              className="flex-1"
+                            >
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setArchivingUser(user)}
+                              className="flex-1"
+                            >
+                              <Archive className="h-4 w-4 mr-2" />
+                              Archive
+                            </Button>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => setDeletingUser(user)}
+                              className="w-full"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </Button>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <span className="text-sm text-muted-foreground min-w-[60px]">Role:</span>
+                            <Select
+                              value={user.role}
+                              onValueChange={(value) => handleRoleChange(user.id, value)}
+                            >
+                              <SelectTrigger className="flex-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="user">User</SelectItem>
+                                <SelectItem value="athlete">Athlete</SelectItem>
+                                <SelectItem value="parent">Parent</SelectItem>
+                                <SelectItem value="coach">Coach</SelectItem>
+                                <SelectItem value="recruiter">Recruiter</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
-                        <div className="flex gap-2 items-center">
-                          <span className="text-sm text-muted-foreground min-w-[60px]">Role:</span>
-                          <Select
-                            value={user.role}
-                            onValueChange={(value) => handleRoleChange(user.id, value)}
-                          >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="athlete">Athlete</SelectItem>
-                              <SelectItem value="coach">Coach</SelectItem>
-                              <SelectItem value="recruiter">Recruiter</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -386,6 +522,25 @@ export default function AdminUsers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={!!archivingUser} onOpenChange={(open) => !open && setArchivingUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive User Account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will archive all data for {archivingUser?.email}, including their media assets. 
+              The user can be restored later if needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchiveUser}>
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingUser} onOpenChange={(open) => !open && setDeletingUser(null)}>
