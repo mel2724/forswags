@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Search, Download, Eye, Archive, Video, Image, Clock } from "lucide-react";
+import { Search, Download, Eye, Archive, Video, Image, Clock, RotateCcw, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ArchivedMedia {
@@ -29,24 +31,49 @@ export default function AdminArchivedMedia() {
   const [archivedMedia, setArchivedMedia] = useState<ArchivedMedia[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchEmail, setSearchEmail] = useState("");
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<string>("all");
+  const [reasonFilter, setReasonFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [filteredMedia, setFilteredMedia] = useState<ArchivedMedia[]>([]);
+  const [restoringMedia, setRestoringMedia] = useState<ArchivedMedia | null>(null);
+  const [deletingMedia, setDeletingMedia] = useState<ArchivedMedia | null>(null);
 
   useEffect(() => {
     loadArchivedMedia();
   }, []);
 
   useEffect(() => {
+    let filtered = archivedMedia;
+
+    // Search filter
     if (searchEmail) {
-      setFilteredMedia(
-        archivedMedia.filter(m => 
-          m.user_email?.toLowerCase().includes(searchEmail.toLowerCase()) ||
-          m.athlete_name?.toLowerCase().includes(searchEmail.toLowerCase())
-        )
+      filtered = filtered.filter(m => 
+        m.user_email?.toLowerCase().includes(searchEmail.toLowerCase()) ||
+        m.athlete_name?.toLowerCase().includes(searchEmail.toLowerCase())
       );
-    } else {
-      setFilteredMedia(archivedMedia);
     }
-  }, [searchEmail, archivedMedia]);
+
+    // Media type filter
+    if (mediaTypeFilter !== "all") {
+      filtered = filtered.filter(m => m.media_type === mediaTypeFilter);
+    }
+
+    // Reason filter
+    if (reasonFilter !== "all") {
+      filtered = filtered.filter(m => m.archived_reason === reasonFilter);
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      if (statusFilter === "deleted") {
+        filtered = filtered.filter(m => m.is_deleted);
+      } else {
+        filtered = filtered.filter(m => !m.is_deleted);
+      }
+    }
+
+    setFilteredMedia(filtered);
+  }, [searchEmail, mediaTypeFilter, reasonFilter, statusFilter, archivedMedia]);
 
   const loadArchivedMedia = async () => {
     try {
@@ -85,6 +112,74 @@ export default function AdminArchivedMedia() {
     );
   };
 
+  const handleRestore = async () => {
+    if (!restoringMedia) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
+
+      const response = await supabase.functions.invoke('admin-restore-archived-media', {
+        body: { archivedMediaId: restoringMedia.id },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || "Failed to restore media");
+      }
+
+      toast.success("Media restored successfully");
+      setRestoringMedia(null);
+      loadArchivedMedia();
+    } catch (error) {
+      console.error("Error restoring media:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to restore media");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingMedia) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
+
+      const response = await supabase.functions.invoke('admin-delete-archived-media', {
+        body: { archivedMediaId: deletingMedia.id },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || "Failed to delete media");
+      }
+
+      toast.success("Media permanently deleted");
+      setDeletingMedia(null);
+      loadArchivedMedia();
+    } catch (error) {
+      console.error("Error deleting media:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete media");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -113,14 +208,51 @@ export default function AdminArchivedMedia() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by email or athlete name..."
-              value={searchEmail}
-              onChange={(e) => setSearchEmail(e.target.value)}
-              className="max-w-sm"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex items-center gap-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by email or athlete name..."
+                value={searchEmail}
+                onChange={(e) => setSearchEmail(e.target.value)}
+              />
+            </div>
+            
+            <Select value={mediaTypeFilter} onValueChange={setMediaTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Media Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="video">Video</SelectItem>
+                <SelectItem value="highlight">Highlight</SelectItem>
+                <SelectItem value="image">Image</SelectItem>
+                <SelectItem value="profile_picture">Profile Picture</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={reasonFilter} onValueChange={setReasonFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Reason" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Reasons</SelectItem>
+                <SelectItem value="account_archived">Account Archived</SelectItem>
+                <SelectItem value="media_updated">Media Updated</SelectItem>
+                <SelectItem value="media_deleted">Media Deleted</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="archived">Archived Only</SelectItem>
+                <SelectItem value="deleted">Deleted Only</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="rounded-md border">
@@ -187,8 +319,27 @@ export default function AdminArchivedMedia() {
                             onClick={() => {
                               toast.info('Storage path: ' + media.storage_path);
                             }}
+                            title="View details"
                           >
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          {!media.is_deleted && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setRestoringMedia(media)}
+                              title="Restore media"
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setDeletingMedia(media)}
+                            title="Permanently delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -200,7 +351,7 @@ export default function AdminArchivedMedia() {
           </div>
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Total archived items: {filteredMedia.length}</span>
+            <span>Total archived items: {filteredMedia.length} of {archivedMedia.length}</span>
             <span>
               Deleted: {filteredMedia.filter(m => m.is_deleted).length} | 
               Archived: {filteredMedia.filter(m => !m.is_deleted).length}
@@ -208,6 +359,44 @@ export default function AdminArchivedMedia() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Restore Confirmation Dialog */}
+      <AlertDialog open={!!restoringMedia} onOpenChange={(open) => !open && setRestoringMedia(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restore Archived Media?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will restore "{restoringMedia?.file_name}" back to the user's active media library. 
+              The file will become accessible to the user again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestore}>
+              Restore
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingMedia} onOpenChange={(open) => !open && setDeletingMedia(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Permanently Delete Media?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{deletingMedia?.file_name}" from storage. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
