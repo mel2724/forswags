@@ -61,7 +61,7 @@ export default function AthleteSearch() {
         description: "You need an active paid membership to search athlete profiles. Please upgrade your membership.",
         variant: "destructive",
       });
-      navigate("/membership-recruiter");
+      navigate("/membership/recruiter");
       return;
     }
   };
