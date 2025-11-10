@@ -176,13 +176,28 @@ export default function AdminUsers() {
     if (!deletingUser) return;
 
     try {
-      // Delete user profile (cascading deletes will handle related records)
-      const { error } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", deletingUser.id);
+      // Get the current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session");
+      }
 
-      if (error) throw error;
+      // Call edge function to delete user with auth privileges
+      const response = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId: deletingUser.id },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || "Failed to delete user");
+      }
 
       toast({
         title: "Success",
@@ -194,7 +209,7 @@ export default function AdminUsers() {
       console.error("Error deleting user:", error);
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: error.message || "Failed to delete user",
         variant: "destructive",
       });
     }
