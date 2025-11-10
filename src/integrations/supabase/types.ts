@@ -2792,6 +2792,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
+          archived_data: Json | null
           avatar_url: string | null
           city: string | null
           country: string | null
@@ -2802,6 +2806,7 @@ export type Database = {
           full_name: string | null
           gender: string | null
           id: string
+          is_archived: boolean | null
           last_name: string | null
           phone: string | null
           privacy_accepted: boolean
@@ -2814,6 +2819,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_data?: Json | null
           avatar_url?: string | null
           city?: string | null
           country?: string | null
@@ -2824,6 +2833,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id: string
+          is_archived?: boolean | null
           last_name?: string | null
           phone?: string | null
           privacy_accepted?: boolean
@@ -2836,6 +2846,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_data?: Json | null
           avatar_url?: string | null
           city?: string | null
           country?: string | null
@@ -2846,6 +2860,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           id?: string
+          is_archived?: boolean | null
           last_name?: string | null
           phone?: string | null
           privacy_accepted?: boolean
