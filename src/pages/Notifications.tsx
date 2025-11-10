@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import logoIcon from "@/assets/forswags-logo.png";
-import { ArrowLeft, Bell, Check, Trash2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Bell, Check, Trash2, CheckCircle2, Share2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -18,6 +18,11 @@ interface Notification {
   link: string | null;
   is_read: boolean;
   created_at: string;
+  metadata?: {
+    college_name?: string;
+    viewer_type?: string;
+    sharable?: boolean;
+  };
 }
 
 const Notifications = () => {
@@ -149,6 +154,47 @@ const Notifications = () => {
     }
   };
 
+  const handleShareToSocial = async (notification: Notification, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const collegeName = notification.metadata?.college_name || "a college";
+    
+    // Create draft social post
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to share");
+        return;
+      }
+
+      // Get athlete_id
+      const { data: athlete } = await supabase
+        .from("athletes")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      const socialContent = `🎓 Just got noticed by a scout from ${collegeName}! My recruiting journey is heating up 🔥\n\n#Recruiting #CollegeAthletics #ForSWAGs #${collegeName.replace(/\s+/g, '')}`;
+
+      const { error } = await supabase
+        .from("social_posts")
+        .insert({
+          user_id: user.id,
+          athlete_id: athlete?.id,
+          content: socialContent,
+          is_draft: true
+        });
+
+      if (error) throw error;
+
+      toast.success("Social post draft created! Opening social media page...");
+      navigate("/social-media");
+    } catch (error: any) {
+      console.error("Error creating social post:", error);
+      toast.error("Failed to create social post");
+    }
+  };
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "success":
@@ -275,6 +321,17 @@ const Notifications = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        {notification.type === 'profile_view' && notification.metadata?.sharable && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={(e) => handleShareToSocial(notification, e)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            <Share2 className="h-4 w-4 mr-1" />
+                            Share
+                          </Button>
+                        )}
                         {!notification.is_read && (
                           <Button
                             variant="ghost"

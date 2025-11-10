@@ -129,6 +129,11 @@ serve(async (req) => {
         message: `A recruiter from ${collegeName} checked out your profile! Keep your stats and media updated to maintain their interest.`,
         type: 'profile_view',
         link: '/dashboard',
+        metadata: {
+          college_name: collegeName,
+          viewer_type: 'recruiter',
+          sharable: true
+        }
       });
 
     if (notificationError) {
