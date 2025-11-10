@@ -11,6 +11,7 @@ const corsHeaders = {
 const checkoutRequestSchema = z.object({
   priceId: z.string().min(1, "Price ID is required").startsWith("price_", "Invalid Stripe price ID format"),
   promoCode: z.string().max(50, "Promo code must be less than 50 characters").optional(),
+  returnPath: z.string().optional().default("/membership"),
 });
 
 const logStep = (step: string, details?: any) => {
@@ -56,8 +57,8 @@ serve(async (req) => {
       );
     }
     
-    const { priceId, promoCode } = validationResult.data;
-    logStep("Request data", { priceId, promoCode });
+    const { priceId, promoCode, returnPath } = validationResult.data;
+    logStep("Request data", { priceId, promoCode, returnPath });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -80,8 +81,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/membership?subscription=success`,
-      cancel_url: `${req.headers.get("origin")}/membership?subscription=canceled`,
+      success_url: `${req.headers.get("origin")}${returnPath}?subscription=success`,
+      cancel_url: `${req.headers.get("origin")}${returnPath}?subscription=canceled`,
       metadata: {
         user_id: user.id,
       },

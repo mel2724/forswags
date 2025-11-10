@@ -93,7 +93,10 @@ export default function MembershipAthlete() {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
+        body: { 
+          priceId,
+          returnPath: "/membership/athlete"
+        },
       });
 
       if (error) throw error;
