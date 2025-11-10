@@ -150,7 +150,6 @@ serve(async (req) => {
         .from('memberships')
         .update({
           plan: planName,
-          tier: tier,
           status: 'active',
           stripe_subscription_id: subscription.id,
           end_date: subscriptionEnd,

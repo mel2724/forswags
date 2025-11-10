@@ -61,13 +61,13 @@ serve(async (req) => {
       );
     }
 
-    // Check if viewer is a paid recruiter
+    // Check if viewer is a paid recruiter (using plan column, not tier)
     const { data: membership } = await supabase
       .from('memberships')
-      .select('status, tier')
+      .select('status, plan')
       .eq('user_id', viewer_id)
       .eq('status', 'active')
-      .in('tier', ['college_scout', 'recruiter', 'premium'])
+      .in('plan', ['recruiter_yearly', 'recruiter_monthly'])
       .maybeSingle();
 
     if (!membership) {
