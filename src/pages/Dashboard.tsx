@@ -24,7 +24,8 @@ import { useBadgeListener } from "@/hooks/useBadgeListener";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
-  Video, User, MapPin, Calendar, Award, Share2
+  Video, User, MapPin, Calendar, Award, Share2, Users, 
+  MessageSquare, Eye, Sparkles, BookOpen, Briefcase, Search
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -50,6 +51,8 @@ const Dashboard = () => {
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
+  const [profileViews, setProfileViews] = useState<any>(null);
+  const [engagementStats, setEngagementStats] = useState<any>(null);
 
   // Listen for badge achievements
   useBadgeListener(user?.id);
@@ -201,6 +204,23 @@ const Dashboard = () => {
               .eq("athlete_id", athleteData.id);
             
             setOffers(offersData || []);
+
+            // Get profile views and engagement stats
+            const { data: viewsData } = await supabase
+              .rpc("get_profile_view_stats", { 
+                p_athlete_id: athleteData.id,
+                p_days: 30 
+              });
+            
+            setProfileViews(viewsData?.[0] || null);
+
+            const { data: engagementData } = await supabase
+              .rpc("get_engagement_stats", { 
+                p_user_id: effectiveUserId,
+                p_days: 30 
+              });
+            
+            setEngagementStats(engagementData?.[0] || null);
           }
         }
       }
@@ -408,6 +428,160 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quick Navigation */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/social-media")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Social Media</p>
+                      <p className="text-lg font-bold">Manage Content</p>
+                    </div>
+                    <Share2 className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/prime-dime")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Prime Dime</p>
+                      <p className="text-lg font-bold">College Matches</p>
+                    </div>
+                    <Target className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/rankings")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Rankings</p>
+                      <p className="text-lg font-bold">See Where You Stand</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/school-search")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">School Search</p>
+                      <p className="text-lg font-bold">Find Colleges</p>
+                    </div>
+                    <Search className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/courses")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Playbook</p>
+                      <p className="text-lg font-bold">Life Skills</p>
+                    </div>
+                    <BookOpen className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/alumni-network")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Alumni Network</p>
+                      <p className="text-lg font-bold">Connect & Learn</p>
+                    </div>
+                    <Users className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/evaluations")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Evaluations</p>
+                      <p className="text-lg font-bold">Coach Reviews</p>
+                    </div>
+                    <Star className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/sponsors")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Sponsors</p>
+                      <p className="text-lg font-bold">Partnerships</p>
+                    </div>
+                    <Briefcase className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Analytics */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Profile Views</p>
+                      <p className="text-2xl font-black mt-1">{profileViews?.total_views || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+                    </div>
+                    <Eye className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Recruiter Views</p>
+                      <p className="text-2xl font-black mt-1">{profileViews?.recruiter_views || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">College scouts</p>
+                    </div>
+                    <Users className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Engagements</p>
+                      <p className="text-2xl font-black mt-1">{engagementStats?.total_engagements || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">All interactions</p>
+                    </div>
+                    <MessageSquare className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Media Shares</p>
+                      <p className="text-2xl font-black mt-1">{engagementStats?.shares || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Content shared</p>
+                    </div>
+                    <Share2 className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Stats Overview */}
             <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -846,6 +1020,106 @@ const Dashboard = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCompleteTask('explore_courses');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Social Media */}
+                    {!completedTasks.has('setup_social_media') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Share2 className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/social-media")}>
+                          <h5 className="font-semibold text-sm mb-1">Set Up Social Media</h5>
+                          <p className="text-xs text-muted-foreground">Connect accounts and schedule posts</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('setup_social_media');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* School Search */}
+                    {!completedTasks.has('use_school_search') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Search className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/school-search")}>
+                          <h5 className="font-semibold text-sm mb-1">Search for Schools</h5>
+                          <p className="text-xs text-muted-foreground">Find colleges that match your criteria</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('use_school_search');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Rankings */}
+                    {!completedTasks.has('check_rankings') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/rankings")}>
+                          <h5 className="font-semibold text-sm mb-1">Check Your Rankings</h5>
+                          <p className="text-xs text-muted-foreground">See where you stand nationally</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('check_rankings');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Alumni Network */}
+                    {!completedTasks.has('join_alumni_network') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Users className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/alumni-network")}>
+                          <h5 className="font-semibold text-sm mb-1">Connect with Alumni</h5>
+                          <p className="text-xs text-muted-foreground">Learn from former athletes</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('join_alumni_network');
                           }}
                           className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
                           title="Mark as complete"
