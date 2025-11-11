@@ -37,6 +37,8 @@ export function useMembershipStatus() {
       return data as unknown as MembershipStatus;
     },
     enabled: !!session?.user?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   return {

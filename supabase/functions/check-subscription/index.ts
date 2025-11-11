@@ -12,6 +12,10 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Simple in-memory cache with 5-minute TTL
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -72,6 +76,17 @@ serve(async (req) => {
       });
     }
     logStep("User authenticated successfully", { userId: user.id, email: user.email });
+
+    // Check cache first
+    const cacheKey = user.id;
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      logStep("Returning cached result", { age: Date.now() - cached.timestamp });
+      return new Response(JSON.stringify(cached.data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -166,11 +181,17 @@ serve(async (req) => {
       logStep("No active subscription found");
     }
 
-    return new Response(JSON.stringify({
+    const result = {
       subscribed: hasActiveSub,
       product_id: productId,
       subscription_end: subscriptionEnd
-    }), {
+    };
+
+    // Cache the result
+    cache.set(cacheKey, { data: result, timestamp: Date.now() });
+    logStep("Result cached", { cacheKey });
+
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
