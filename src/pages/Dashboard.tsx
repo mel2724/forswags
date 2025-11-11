@@ -369,14 +369,14 @@ const Dashboard = () => {
           <h1 className="text-4xl md:text-5xl font-black mb-2 uppercase tracking-tight">
             Welcome back, {athlete?.full_name?.split(' ')[0] || profile?.full_name?.split(' ')[0] || "Athlete"}!
           </h1>
-          <p className="text-muted-foreground flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <Badge variant="secondary" className="uppercase font-bold">
               {membership?.plan || "Free"} Plan
             </Badge>
             {role && (
-              <span className="text-sm capitalize">• {role}</span>
+              <span className="text-sm text-muted-foreground capitalize">• {role}</span>
             )}
-          </p>
+          </div>
         </div>
 
         {/* Notifications - Show only if there are unread notifications */}
@@ -430,7 +430,13 @@ const Dashboard = () => {
             </Card>
 
             {/* Quick Navigation */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/30">
+              <CardHeader>
+                <CardTitle className="text-2xl uppercase tracking-tight">🚀 Quick Access</CardTitle>
+                <CardDescription>Navigate to key features</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/social-media")}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -522,14 +528,22 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Sponsors</p>
                       <p className="text-lg font-bold">Partnerships</p>
                     </div>
-                    <Briefcase className="h-8 w-8 text-secondary" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <Briefcase className="h-8 w-8 text-secondary" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-            {/* Analytics */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Analytics */}
+      <Card className="bg-gradient-to-br from-secondary/5 to-primary/5 border-secondary/30">
+        <CardHeader>
+          <CardTitle className="text-2xl uppercase tracking-tight">📊 Your Performance</CardTitle>
+          <CardDescription>Track your visibility and engagement</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -577,14 +591,16 @@ const Dashboard = () => {
                       <p className="text-2xl font-black mt-1">{engagementStats?.shares || 0}</p>
                       <p className="text-xs text-muted-foreground mt-1">Content shared</p>
                     </div>
-                    <Share2 className="h-8 w-8 text-secondary" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                <Share2 className="h-8 w-8 text-secondary" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </CardContent>
+    </Card>
 
-            {/* Stats Overview */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+    {/* Stats Overview */}
+    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
               <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
