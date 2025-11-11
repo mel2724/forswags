@@ -21,6 +21,7 @@ import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { Footer } from "@/components/Footer";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { useBadgeListener } from "@/hooks/useBadgeListener";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -361,7 +362,7 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-20 md:pb-8">
         <MembershipStatusBanner />
         
         {/* Header */}
@@ -1290,6 +1291,12 @@ const Dashboard = () => {
           </div>
         )}
       </main>
+      
+      {/* Mobile Bottom Navigation - Only for Athletes */}
+      {role === "athlete" && athlete && (
+        <MobileBottomNav athleteId={athlete.id} />
+      )}
+      
       <Footer />
     </div>
   );
