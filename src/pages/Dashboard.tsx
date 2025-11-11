@@ -386,7 +386,8 @@ const Dashboard = () => {
           </div>
         )}
 
-        {role === "athlete" && athlete ? (
+        {role === "athlete" ? (
+          athlete ? (
           <div className="grid gap-6">
             {/* Profile Completion */}
             <Card className="bg-card/80 backdrop-blur border-2 border-primary/20">
@@ -1253,6 +1254,13 @@ const Dashboard = () => {
               <AthleteAnalytics />
             </div>
           </div>
+          ) : (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="text-center">
+                <p className="text-muted-foreground">Loading athlete data...</p>
+              </div>
+            </div>
+          )
         ) : (
           // Non-athlete dashboard
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
