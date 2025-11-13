@@ -112,7 +112,14 @@ const Dashboard = () => {
         if (roleData.role === "athlete") {
           const { data: athleteData } = await supabase
             .from("athletes")
-            .select("*")
+            .select(`
+              id, user_id, parent_id, sport, position, graduation_year, high_school,
+              height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
+              created_at, updated_at, dominant_hand, profile_photo_url, 
+              profile_completion_pct, visibility, secondary_sports, club_team_name,
+              ncaa_eligibility_number, jersey_number, username, twitter_handle,
+              instagram_handle, team_logo_url, profile_claimed
+            `)
             .eq("user_id", effectiveUserId)
             .maybeSingle();
           
