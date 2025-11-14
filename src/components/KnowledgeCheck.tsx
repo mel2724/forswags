@@ -13,6 +13,7 @@ interface Question {
   options: string[];
   correct_answer: string;
   order_index: number;
+  explanation: string | null;
 }
 
 interface KnowledgeCheckProps {
@@ -57,7 +58,7 @@ export const KnowledgeCheck = ({ lessonId, onComplete }: KnowledgeCheckProps) =>
       // Get questions for this quiz
       const { data: questionsData, error: questionsError } = await supabase
         .from("questions")
-        .select("*")
+        .select("id, question_text, options, correct_answer, order_index, explanation")
         .eq("quiz_id", quizData.id)
         .order("order_index");
 
@@ -169,13 +170,54 @@ export const KnowledgeCheck = ({ lessonId, onComplete }: KnowledgeCheckProps) =>
             You scored {score}% (Need {quiz.passing_score}% to pass)
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Review Section */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-sm">Review Your Answers:</h4>
+            {questions.map((question, index) => {
+              const userAnswer = answers[question.id];
+              const isCorrect = userAnswer === question.correct_answer;
+              
+              return (
+                <div key={question.id} className="space-y-2 p-4 rounded-lg bg-background border">
+                  <div className="flex items-start gap-2">
+                    {isCorrect ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium text-sm mb-2">
+                        {index + 1}. {question.question_text}
+                      </p>
+                      <div className="space-y-1 text-sm">
+                        <p className={isCorrect ? "text-green-600" : "text-red-600"}>
+                          Your answer: {userAnswer}
+                        </p>
+                        {!isCorrect && (
+                          <p className="text-green-600">
+                            Correct answer: {question.correct_answer}
+                          </p>
+                        )}
+                        {question.explanation && (
+                          <p className="text-muted-foreground mt-2 pt-2 border-t">
+                            <span className="font-medium">Explanation:</span> {question.explanation}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           {passed ? (
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground">
               You've completed this video. Moving to the next one...
             </p>
           ) : (
-            <Button onClick={handleRetry} className="gap-2">
+            <Button onClick={handleRetry} className="gap-2 w-full">
               <RefreshCw className="h-4 w-4" />
               Try Again
             </Button>
