@@ -117,8 +117,8 @@ export const KnowledgeCheck = ({ lessonId, onComplete }: KnowledgeCheckProps) =>
       if (attemptError) throw attemptError;
 
       if (hasPassed) {
-        toast.success("✅ Knowledge check passed!");
-        // Trigger completion
+        toast.success("✅ Knowledge check passed! Checking playlist progress...");
+        // Trigger completion with delay
         setTimeout(() => {
           onComplete();
         }, 1500);

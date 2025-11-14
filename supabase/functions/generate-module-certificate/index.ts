@@ -196,18 +196,22 @@ const handler = async (req: Request): Promise<Response> => {
       subject: `🎓 Congratulations! You've earned a certificate - ${module.title}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #667eea;">Congratulations, ${profile.full_name}! 🎉</h1>
-          <p style="font-size: 16px; line-height: 1.6;">
-            You've successfully completed all videos in the <strong>"${module.title}"</strong> module from ${course.title}!
-          </p>
-          <p style="font-size: 16px; line-height: 1.6;">
-            Your certificate of completion is attached below. Keep up the great work on your learning journey!
-          </p>
+          <h1 style="color: #667eea;">🎉 Playlist Complete! Certificate Earned! 🎓</h1>
+          <p style="font-size: 16px; line-height: 1.6;">Dear ${profile.full_name},</p>
+          <p style="font-size: 16px; line-height: 1.6;"><strong>Congratulations!</strong> You've successfully completed all videos and knowledge checks in <strong>${module.title}</strong> from the course <strong>${course.title}</strong>!</p>
+          <p style="font-size: 16px; line-height: 1.6;">🌟 <strong>What you achieved:</strong></p>
+          <ul style="line-height: 1.8; font-size: 16px;">
+            <li>✅ Watched all video lessons</li>
+            <li>✅ Passed all knowledge checks</li>
+            <li>✅ Earned your completion certificate</li>
+          </ul>
+          <p style="font-size: 16px; line-height: 1.6;">Your dedication to learning is inspiring! This certificate represents your commitment to growth and excellence.</p>
           <div style="margin: 30px 0;">
             ${certificateHtml}
           </div>
+          <p style="font-size: 16px; line-height: 1.6;"><strong>Share your achievement!</strong> Show the world what you've accomplished by sharing your certificate on social media. Inspire others to start their learning journey!</p>
           <p style="font-size: 14px; color: #666; margin-top: 40px;">
-            Keep learning and growing with Playbook for Life!
+            Keep learning and growing with Playbook for Life! 🚀
           </p>
         </div>
       `,
