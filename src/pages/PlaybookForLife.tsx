@@ -177,6 +177,28 @@ const PlaybookForLife = () => {
     }
   };
 
+  const unfavoriteVideo = async (lessonId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("video_favorites")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("lesson_id", lessonId);
+
+      if (error) throw error;
+
+      // Update local state
+      setFavoriteVideos(prev => prev.filter(v => v.id !== lessonId));
+      toast.success("Removed from favorites");
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      toast.error("Failed to remove favorite");
+    }
+  };
+
   const filteredCourses = courses.filter(course =>
     !course.title.toLowerCase().includes("playbook") &&
     (course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -421,7 +443,17 @@ const PlaybookForLife = () => {
                     <CardHeader>
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <Badge variant="outline">{video.module_title}</Badge>
-                        <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            unfavoriteVideo(video.id);
+                          }}
+                        >
+                          <Heart className="h-4 w-4 fill-red-500 text-red-500 hover:fill-transparent transition-all" />
+                        </Button>
                       </div>
                       <CardTitle className="text-lg">{video.title}</CardTitle>
                       {video.description && (
