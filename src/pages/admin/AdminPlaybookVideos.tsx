@@ -459,7 +459,7 @@ export default function AdminPlaybookVideos() {
                 Add Video
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingVideo ? "Edit Video" : "Add New Video"}</DialogTitle>
                 <DialogDescription>
@@ -467,7 +467,7 @@ export default function AdminPlaybookVideos() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4">
+              <div className="space-y-4 pb-4">
                 <div>
                   <Label>Topic *</Label>
                   <select
