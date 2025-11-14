@@ -1,10 +1,11 @@
 // Main Application Entry Point - v11
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BadgeNotificationProvider } from "@/contexts/BadgeNotificationContext";
+import { initLocalStorageCleanup } from "@/lib/localStorageCleanup";
 
 // Lazy load admin pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -114,14 +115,25 @@ const queryClient = new QueryClient({
 
 // Main Application Component
 // Build: FORCED-REBUILD-v9-CACHE-CLEAR
-const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <BadgeNotificationProvider>
-        <BrowserRouter>
-          <AppLayout>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
+const App = () => {
+  // Initialize localStorage cleanup service on app mount
+  useEffect(() => {
+    const cleanup = initLocalStorageCleanup();
+    
+    // Cleanup on unmount
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BadgeNotificationProvider>
+          <BrowserRouter>
+            <AppLayout>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
               <Route path="/profile/:id" element={<PublicProfile />} />
@@ -221,6 +233,7 @@ const App = () => (
     </BadgeNotificationProvider>
     </QueryClientProvider>
   </ErrorBoundary>
-);
+  );
+};
 
 export default App;
