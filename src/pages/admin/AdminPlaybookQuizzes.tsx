@@ -38,6 +38,7 @@ interface Question {
   options: string[];
   correct_answer: string;
   order_index: number;
+  explanation: string | null;
 }
 
 const AdminPlaybookQuizzes = () => {
@@ -87,7 +88,8 @@ const AdminPlaybookQuizzes = () => {
                 question_text,
                 options,
                 correct_answer,
-                order_index
+                order_index,
+                explanation
               )
             )
           )
@@ -190,7 +192,8 @@ const AdminPlaybookQuizzes = () => {
           .update({
             question_text: questionData.question_text,
             options: questionData.options,
-            correct_answer: questionData.correct_answer
+            correct_answer: questionData.correct_answer,
+            explanation: questionData.explanation
           })
           .eq("id", questionData.id);
 
@@ -217,6 +220,7 @@ const AdminPlaybookQuizzes = () => {
             question_text: questionData.question_text,
             options: questionData.options,
             correct_answer: questionData.correct_answer,
+            explanation: questionData.explanation,
             order_index: nextOrderIndex
           });
 
@@ -467,7 +471,7 @@ const QuestionDialog = ({
   onClose: () => void;
 }) => {
   const [editedQuestion, setEditedQuestion] = useState<Partial<Question>>(
-    question || { question_text: "", options: ["", "", "", ""], correct_answer: "", order_index: 0 }
+    question || { question_text: "", options: ["", "", "", ""], correct_answer: "", explanation: "", order_index: 0 }
   );
 
   useEffect(() => {
@@ -529,6 +533,19 @@ const QuestionDialog = ({
               option && <option key={index} value={option}>{String.fromCharCode(65 + index)}. {option}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <Label>Explanation (Optional)</Label>
+          <Textarea
+            value={editedQuestion.explanation || ""}
+            onChange={(e) => setEditedQuestion({ ...editedQuestion, explanation: e.target.value })}
+            placeholder="Explain why this is the correct answer..."
+            rows={3}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            This will be shown to students after they submit their answers
+          </p>
         </div>
 
         <div className="flex gap-2 pt-4">
