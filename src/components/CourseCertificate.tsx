@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Award, Download, CheckCircle } from "lucide-react";
+import { Award, Download, CheckCircle, Share2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface Certificate {
@@ -106,6 +106,20 @@ const CourseCertificate = ({ courseId, courseName }: CourseCertificateProps) => 
     toast.info("Certificate download will be implemented soon");
   };
 
+  const shareOnLinkedIn = () => {
+    const text = `I'm proud to share that I've completed the ${courseName} course!`;
+    const url = window.location.href;
+    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(text)}`;
+    window.open(linkedInUrl, '_blank', 'width=600,height=600');
+  };
+
+  const shareOnTwitter = () => {
+    const text = `I just completed the ${courseName} course! 🎓`;
+    const url = window.location.href;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank', 'width=600,height=600');
+  };
+
   if (loading) {
     return null;
   }
@@ -141,10 +155,22 @@ const CourseCertificate = ({ courseId, courseName }: CourseCertificateProps) => 
               </Badge>
             </div>
 
-            <Button onClick={downloadCertificate} className="w-full">
-              <Download className="h-4 w-4 mr-2" />
-              Download Certificate
-            </Button>
+            <div className="space-y-2">
+              <Button onClick={downloadCertificate} className="w-full">
+                <Download className="h-4 w-4 mr-2" />
+                Download Certificate
+              </Button>
+              <div className="flex gap-2">
+                <Button onClick={shareOnLinkedIn} variant="outline" className="flex-1">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share on LinkedIn
+                </Button>
+                <Button onClick={shareOnTwitter} variant="outline" className="flex-1">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share on Twitter
+                </Button>
+              </div>
+            </div>
           </div>
         ) : isEligible ? (
           <div className="space-y-4">
