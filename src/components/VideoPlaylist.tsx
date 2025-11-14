@@ -185,6 +185,34 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
         toast.success("Video completed! Keep learning!");
       }
 
+      // Check if all videos in module are complete
+      const allComplete = videos.every(v => 
+        completedVideos.has(v.id) || v.id === videoId
+      );
+
+      if (allComplete) {
+        console.log("Module completed! Generating certificate...");
+        
+        // Trigger certificate generation
+        try {
+          const { error: certError } = await supabase.functions.invoke('generate-module-certificate', {
+            body: {
+              userId: user.id,
+              moduleId: moduleId,
+              courseId: courseId
+            }
+          });
+
+          if (certError) {
+            console.error("Error generating certificate:", certError);
+          } else {
+            toast.success("🎓 Module completed! Check your email for your certificate!");
+          }
+        } catch (certError) {
+          console.error("Failed to generate certificate:", certError);
+        }
+      }
+
       // Auto-play next video
       if (currentVideoIndex < videos.length - 1) {
         setTimeout(() => {
