@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import logoFull from "@/assets/forswags-logo.png";
+
+// Create a temporary auth client that uses sessionStorage instead of localStorage
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+const authClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    storage: sessionStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 // Password strength checker
 const checkPasswordStrength = (password: string) => {
@@ -221,28 +234,30 @@ const Auth = () => {
     
     setLoading(true);
 
-    // Aggressively clear ALL localStorage before sign-in to prevent quota errors
+    // Clear localStorage to prevent quota errors
     try {
       localStorage.clear();
-      console.log("Cleared all localStorage to prevent quota issues");
+      console.log("Cleared localStorage");
     } catch (clearError) {
       console.warn("Could not clear localStorage:", clearError);
-      // If we can't clear, show error and don't proceed
-      toast.error("Storage error", {
-        description: "Please clear your browser cache and try again.",
-        duration: 8000,
-      });
-      setLoading(false);
-      return;
     }
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      // Use sessionStorage-based auth client to avoid localStorage quota issues
+      const { data: authData, error: authError } = await authClient.auth.signInWithPassword({
         email,
         password,
       });
 
       if (authError) throw authError;
+
+      // After successful sign-in, transfer session to main client
+      if (authData.session) {
+        await supabase.auth.setSession({
+          access_token: authData.session.access_token,
+          refresh_token: authData.session.refresh_token,
+        });
+      }
 
       // Check if user can login (membership status)
       if (authData.user) {
