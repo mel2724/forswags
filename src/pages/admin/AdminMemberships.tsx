@@ -52,22 +52,43 @@ export default function AdminMemberships() {
     try {
       setLoading(true);
 
+      // Debug: Check current session
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session:", session?.user?.id, session?.user?.email);
+
+      // Debug: Check if user has admin role
+      const { data: roleCheck, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session?.user?.id)
+        .maybeSingle();
+      
+      console.log("User role check:", roleCheck, roleError);
+
       // Fetch ALL profiles first
       const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("id, email, full_name, created_at")
         .order("created_at", { ascending: false });
 
+      console.log("Profiles data:", profilesData?.length, "Error:", profilesError);
+
       if (profilesError) {
         console.error("Profiles fetch error:", profilesError);
-        throw profilesError;
+        toast({
+          title: "Database Error",
+          description: profilesError.message || "Failed to fetch profiles",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
 
       if (!profilesData || profilesData.length === 0) {
-        console.warn("No profiles returned - user may not have admin role");
+        console.warn("No profiles returned - checking session and role");
         toast({
           title: "Access Denied",
-          description: "You need admin privileges to view memberships. Please log in as an admin user.",
+          description: `No data returned. Session: ${session?.user?.email || 'none'}, Role: ${roleCheck?.role || 'none'}. Try logging out and back in.`,
           variant: "destructive",
         });
         setLoading(false);
