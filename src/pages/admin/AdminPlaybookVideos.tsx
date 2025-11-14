@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 import { Plus, Edit, Trash2, PlayCircle, ExternalLink, Upload, BarChart3, Eye, Users, CheckCircle, TrendingUp, CheckCircle2 } from "lucide-react";
 
 interface Video {
@@ -54,6 +55,7 @@ export default function AdminPlaybookVideos() {
   const [editingVideo, setEditingVideo] = useState<Video | null>(null);
   const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
@@ -195,16 +197,25 @@ export default function AdminPlaybookVideos() {
 
     try {
       setUploadingFile(true);
+      setUploadProgress(0);
 
       // Create unique filename
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `playbook-videos/${fileName}`;
 
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+
       // Upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('playbook-videos')
         .upload(filePath, selectedFile);
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       if (uploadError) throw uploadError;
 
@@ -221,6 +232,9 @@ export default function AdminPlaybookVideos() {
         title: "Success", 
         description: "Video file uploaded successfully" 
       });
+      
+      // Reset progress after a short delay
+      setTimeout(() => setUploadProgress(0), 1000);
     } catch (error) {
       console.error("Error uploading file:", error);
       toast({ 
@@ -228,6 +242,7 @@ export default function AdminPlaybookVideos() {
         description: "Failed to upload video file", 
         variant: "destructive" 
       });
+      setUploadProgress(0);
     } finally {
       setUploadingFile(false);
     }
@@ -517,6 +532,14 @@ export default function AdminPlaybookVideos() {
                         <p className="text-xs text-muted-foreground mt-1">
                           Click Upload to save this file
                         </p>
+                      )}
+                      {uploadingFile && (
+                        <div className="mt-3 space-y-2">
+                          <Progress value={uploadProgress} className="h-2" />
+                          <p className="text-xs text-center text-muted-foreground">
+                            Uploading... {uploadProgress}%
+                          </p>
+                        </div>
                       )}
                     </div>
                     
