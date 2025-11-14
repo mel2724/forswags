@@ -61,19 +61,20 @@ const Dashboard = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          navigate("/auth");
+          return;
+        }
 
-      // Check if parent is viewing athlete's dashboard
-      const parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
-      
-      // Use impersonated user if available, parent viewing if available, otherwise use actual session user
-      const effectiveUserId = getEffectiveUserId() || parentViewingAthlete || session.user.id;
-      setUser(session.user);
+        // Check if parent is viewing athlete's dashboard
+        const parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
+        
+        // Use impersonated user if available, parent viewing if available, otherwise use actual session user
+        const effectiveUserId = getEffectiveUserId() || parentViewingAthlete || session.user.id;
+        setUser(session.user);
 
       // Get profile
       const { data: profileData } = await supabase
@@ -253,7 +254,12 @@ const Dashboard = () => {
       
       setMembership(membershipData);
 
-      setLoading(false);
+      } catch (error) {
+        console.error("Error loading dashboard:", error);
+        toast.error("Failed to load dashboard data. Please refresh the page.");
+      } finally {
+        setLoading(false);
+      }
     };
 
     checkAuth();
