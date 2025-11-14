@@ -49,7 +49,21 @@ export default function AdminUsers() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("Profiles fetch error:", profilesError);
+        throw profilesError;
+      }
+
+      if (!profilesData || profilesData.length === 0) {
+        console.warn("No profiles returned - user may not have admin role");
+        toast({
+          title: "Access Denied",
+          description: "You need admin privileges to view users. Please log in as an admin user.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
 
       // Fetch roles for each user
       const usersWithRoles = await Promise.all(
