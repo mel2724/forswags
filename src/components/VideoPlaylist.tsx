@@ -31,6 +31,8 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
   const [favoritedVideos, setFavoritedVideos] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [totalCompletions, setTotalCompletions] = useState(0);
+  const [isPlaylistComplete, setIsPlaylistComplete] = useState(false);
+  const [showCompletionScreen, setShowCompletionScreen] = useState(false);
   const videoRef = useRef<HTMLIFrameElement>(null);
   const startTimeRef = useRef<number>(Date.now());
 
@@ -191,6 +193,20 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
       );
 
       if (allComplete) {
+        // Playlist complete! Show celebration
+        setIsPlaylistComplete(true);
+        setShowCompletionScreen(true);
+        
+        // Trigger confetti
+        const { default: confetti } = await import("canvas-confetti");
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+
+        toast.success("🎉 Playlist Complete! Certificate being generated...");
+
         console.log("Module completed! Generating certificate...");
         
         // Trigger certificate generation
@@ -205,18 +221,20 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
 
           if (certError) {
             console.error("Error generating certificate:", certError);
-          } else {
-            toast.success("🎓 Module completed! Check your email for your certificate!");
           }
         } catch (certError) {
           console.error("Failed to generate certificate:", certError);
         }
+        
+        // DO NOT auto-advance since there's no next video
+        return;
       }
 
-      // Auto-play next video
+      // Auto-play next video if not complete
       if (currentVideoIndex < videos.length - 1) {
         setTimeout(() => {
           setCurrentVideoIndex(currentVideoIndex + 1);
+          toast.success("Moving to next video!");
         }, 2000);
       }
     } catch (error) {
@@ -248,6 +266,47 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
   const isCompleted = completedVideos.has(currentVideo.id);
   const isFavorited = favoritedVideos.has(currentVideo.id);
   const completionPercentage = Math.round((completedVideos.size / videos.length) * 100);
+
+  // Show completion screen if playlist is complete
+  if (showCompletionScreen) {
+    return (
+      <Card className="border-2 border-primary">
+        <CardContent className="p-12 text-center">
+          <div className="mb-6 text-6xl">🎓</div>
+          <h2 className="text-3xl font-bold mb-4">Playlist Complete!</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Congratulations! You've completed all videos in this module.
+          </p>
+          
+          <div className="bg-muted/50 rounded-lg p-6 mb-8 max-w-md mx-auto">
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div>
+                <div className="text-3xl font-bold text-primary">{videos.length}</div>
+                <div className="text-sm text-muted-foreground">Videos Watched</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-green-500">100%</div>
+                <div className="text-sm text-muted-foreground">Completed</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+            <p className="text-sm text-foreground">
+              📧 Your certificate has been generated and sent to your email!
+            </p>
+          </div>
+
+          <Button 
+            onClick={() => window.history.back()}
+            size="lg"
+          >
+            Return to Course
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -348,10 +407,13 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
           <CardContent>
             <div className="w-full bg-muted rounded-full h-2">
               <div 
-                className="bg-primary h-2 rounded-full transition-all"
+                className={`h-2 rounded-full transition-all ${completionPercentage === 100 ? 'bg-green-500' : 'bg-primary'}`}
                 style={{ width: `${completionPercentage}%` }}
               />
             </div>
+            {completionPercentage === 100 && (
+              <p className="text-xs text-green-500 font-semibold mt-1 text-right">🎉 Complete!</p>
+            )}
           </CardContent>
         </Card>
 
