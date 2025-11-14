@@ -221,18 +221,19 @@ const Auth = () => {
     
     setLoading(true);
 
-    // Proactively clear localStorage to prevent quota errors, keeping only auth tokens
+    // Aggressively clear ALL localStorage before sign-in to prevent quota errors
     try {
-      const keysToKeep = ['sb-fejnevxardxejdvjbipc-auth-token'];
-      const allKeys = Object.keys(localStorage);
-      allKeys.forEach(key => {
-        if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
-          localStorage.removeItem(key);
-        }
-      });
-      console.log("Cleared localStorage to prevent quota issues");
+      localStorage.clear();
+      console.log("Cleared all localStorage to prevent quota issues");
     } catch (clearError) {
       console.warn("Could not clear localStorage:", clearError);
+      // If we can't clear, show error and don't proceed
+      toast.error("Storage error", {
+        description: "Please clear your browser cache and try again.",
+        duration: 8000,
+      });
+      setLoading(false);
+      return;
     }
 
     try {
