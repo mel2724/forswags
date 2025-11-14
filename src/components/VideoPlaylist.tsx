@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, ExternalLink, PlayCircle, Clock, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { trackVideoView } from "@/lib/videoTracking";
+import { KnowledgeCheck } from "./KnowledgeCheck";
 
 interface Video {
   id: string;
@@ -287,27 +288,24 @@ export const VideoPlaylist = ({ moduleId, courseId }: VideoPlaylistProps) => {
               )}
             </div>
 
-            <div className="flex gap-2">
-              {!isCompleted && (
-                <Button 
-                  onClick={() => markVideoComplete(currentVideo.id)}
-                  className="gap-2"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Mark as Complete
-                </Button>
-              )}
-              {currentVideoIndex < videos.length - 1 && (
-                <Button 
-                  variant="outline"
-                  onClick={() => setCurrentVideoIndex(currentVideoIndex + 1)}
-                >
-                  Next Video
-                </Button>
-              )}
-            </div>
+            {currentVideoIndex < videos.length - 1 && !isCompleted && (
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentVideoIndex(currentVideoIndex + 1)}
+              >
+                Next Video
+              </Button>
+            )}
           </CardContent>
         </Card>
+
+        {/* Knowledge Check */}
+        {!isCompleted && (
+          <KnowledgeCheck 
+            lessonId={currentVideo.id}
+            onComplete={() => markVideoComplete(currentVideo.id)}
+          />
+        )}
       </div>
 
       {/* Playlist */}
