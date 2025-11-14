@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, PlayCircle, ExternalLink, Upload, BarChart3, Eye, Users, CheckCircle, TrendingUp } from "lucide-react";
+import { Plus, Edit, Trash2, PlayCircle, ExternalLink, Upload, BarChart3, Eye, Users, CheckCircle, TrendingUp, CheckCircle2 } from "lucide-react";
 
 interface Video {
   id: string;
@@ -491,37 +491,58 @@ export default function AdminPlaybookVideos() {
                   />
                 </div>
 
-                <div>
-                  <Label>Upload Video File</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      disabled={uploadingFile}
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleFileUpload}
-                      disabled={!selectedFile || uploadingFile}
-                      variant="outline"
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {uploadingFile ? "Uploading..." : "Upload"}
-                    </Button>
+                <div className="space-y-2">
+                  <Label>Video Source</Label>
+                  <div className="p-4 border rounded-lg space-y-3 bg-muted/30">
+                    <div>
+                      <p className="text-sm font-medium mb-2">Option 1: Upload Video File</p>
+                      <div className="flex gap-2">
+                        <Input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                          disabled={uploadingFile}
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleFileUpload}
+                          disabled={!selectedFile || uploadingFile}
+                          variant="outline"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {uploadingFile ? "Uploading..." : "Upload"}
+                        </Button>
+                      </div>
+                      {selectedFile && !uploadingFile && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Click Upload to save this file
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="text-center text-xs text-muted-foreground">
+                      — OR —
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm font-medium mb-2">Option 2: Enter Video URL</p>
+                      <Input
+                        placeholder="https://www.youtube.com/embed/... or https://vimeo.com/..."
+                        value={formData.video_url}
+                        onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        YouTube, Vimeo, or direct video URL
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Upload a video file or enter a URL below
-                  </p>
-                </div>
-
-                <div>
-                  <Label>Video URL (YouTube/Vimeo Embed or Uploaded) *</Label>
-                  <Input
-                    placeholder="https://www.youtube.com/embed/... or upload file above"
-                    value={formData.video_url}
-                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                  />
+                  
+                  {formData.video_url && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Video URL set
+                    </div>
+                  )}
                 </div>
 
                 <div>
