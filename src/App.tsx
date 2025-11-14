@@ -56,6 +56,7 @@ const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminMemberships = lazy(() => import("./pages/admin/AdminMemberships"));
 const AdminLearning = lazy(() => import("./pages/admin/AdminLearning"));
+const AdminPlaybookQuizzes = lazy(() => import("./pages/admin/AdminPlaybookQuizzes"));
 const AdminCourseDetail = lazy(() => import("./pages/admin/AdminCourseDetail"));
 const AdminAthletes = lazy(() => import("./pages/admin/AdminAthletes"));
 const AdminEmailTemplates = lazy(() => import("./pages/admin/AdminEmailTemplates"));
@@ -198,6 +199,7 @@ const App = () => {
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="memberships" element={<AdminMemberships />} />
                 <Route path="learning" element={<AdminLearning />} />
+                <Route path="playbook-quizzes" element={<AdminPlaybookQuizzes />} />
                 <Route path="courses/:courseId" element={<AdminCourseDetail />} />
                 {/* Redirects for old admin routes */}
                 <Route path="courses" element={<AdminLearning />} />
