@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,18 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import logoFull from "@/assets/forswags-logo.png";
-
-// Create a temporary auth client that uses sessionStorage instead of localStorage
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-const authClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: sessionStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
-});
 
 // Password strength checker
 const checkPasswordStrength = (password: string) => {
@@ -243,19 +230,18 @@ const Auth = () => {
     }
 
     try {
-      // Use sessionStorage-based auth client to avoid localStorage quota issues
-      const { data: authData, error: authError } = await authClient.auth.signInWithPassword({
+      // Now using sessionStorage in main client to avoid localStorage quota issues
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (authError) throw authError;
 
-      // Don't try to transfer session - just check permissions and navigate
+      // Check if user can login (membership status)
       if (authData.user) {
         try {
-          // Use authClient for database queries too
-          const { data: loginCheck, error: checkError } = await authClient.rpc('can_user_login', {
+          const { data: loginCheck, error: checkError } = await supabase.rpc('can_user_login', {
             p_user_id: authData.user.id
           });
 
@@ -265,7 +251,7 @@ const Auth = () => {
             const loginStatus = loginCheck as unknown as { can_login: boolean; reason: string };
             
             if (!loginStatus.can_login) {
-              await authClient.auth.signOut();
+              await supabase.auth.signOut();
               
               if (loginStatus.reason === 'membership_expired') {
                 toast.error('Your membership has expired. Please renew to continue accessing your account.');
@@ -284,30 +270,27 @@ const Auth = () => {
 
         // Check if user is admin
         try {
-          const { data: rolesData } = await authClient
+          const { data: rolesData } = await supabase
             .from("user_roles")
             .select("role")
             .eq("user_id", authData.user.id);
 
           const isAdmin = rolesData?.some(r => r.role === "admin");
           
-          // Store session info in sessionStorage for the app to use
-          sessionStorage.setItem('supabase.auth.token', JSON.stringify(authData.session));
-          
           if (isAdmin) {
             toast.success('Welcome back, Admin!');
-            window.location.href = "/admin";
+            navigate("/admin");
           } else {
             toast.success('Welcome back!');
-            window.location.href = "/dashboard";
+            navigate("/dashboard");
           }
         } catch (roleError) {
           console.warn("Role check failed:", roleError);
           toast.success('Welcome back!');
-          window.location.href = "/dashboard";
+          navigate("/dashboard");
         }
       } else {
-        window.location.href = "/dashboard";
+        navigate("/dashboard");
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
