@@ -251,30 +251,21 @@ const Auth = () => {
 
       if (authError) throw authError;
 
-      // After successful sign-in, transfer session to main client
-      if (authData.session) {
-        await supabase.auth.setSession({
-          access_token: authData.session.access_token,
-          refresh_token: authData.session.refresh_token,
-        });
-      }
-
-      // Check if user can login (membership status)
+      // Don't try to transfer session - just check permissions and navigate
       if (authData.user) {
         try {
-          const { data: loginCheck, error: checkError } = await supabase.rpc('can_user_login', {
+          // Use authClient for database queries too
+          const { data: loginCheck, error: checkError } = await authClient.rpc('can_user_login', {
             p_user_id: authData.user.id
           });
 
           if (checkError) {
             console.warn("Membership check failed:", checkError);
-            // Continue with login anyway - don't block access
           } else {
             const loginStatus = loginCheck as unknown as { can_login: boolean; reason: string };
             
             if (!loginStatus.can_login) {
-              // Sign out user immediately
-              await supabase.auth.signOut();
+              await authClient.auth.signOut();
               
               if (loginStatus.reason === 'membership_expired') {
                 toast.error('Your membership has expired. Please renew to continue accessing your account.');
@@ -289,32 +280,34 @@ const Auth = () => {
           }
         } catch (membershipError) {
           console.warn("Membership check error:", membershipError);
-          // Continue with login anyway - don't block access
         }
 
-        // Check if user is admin and redirect accordingly
+        // Check if user is admin
         try {
-          const { data: rolesData } = await supabase
+          const { data: rolesData } = await authClient
             .from("user_roles")
             .select("role")
             .eq("user_id", authData.user.id);
 
           const isAdmin = rolesData?.some(r => r.role === "admin");
           
+          // Store session info in sessionStorage for the app to use
+          sessionStorage.setItem('supabase.auth.token', JSON.stringify(authData.session));
+          
           if (isAdmin) {
             toast.success('Welcome back, Admin!');
-            navigate("/admin");
+            window.location.href = "/admin";
           } else {
             toast.success('Welcome back!');
-            navigate("/dashboard");
+            window.location.href = "/dashboard";
           }
         } catch (roleError) {
           console.warn("Role check failed:", roleError);
           toast.success('Welcome back!');
-          navigate("/dashboard");
+          window.location.href = "/dashboard";
         }
       } else {
-        navigate("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
