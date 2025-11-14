@@ -62,6 +62,13 @@ const PlaybookForLife = () => {
     loadData();
   }, []);
 
+  // Reload data when returning from a module view
+  useEffect(() => {
+    if (selectedModule === null) {
+      loadData();
+    }
+  }, [selectedModule]);
+
   const loadData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
