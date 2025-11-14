@@ -221,6 +221,20 @@ const Auth = () => {
     
     setLoading(true);
 
+    // Proactively clear localStorage to prevent quota errors, keeping only auth tokens
+    try {
+      const keysToKeep = ['sb-fejnevxardxejdvjbipc-auth-token'];
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
+          localStorage.removeItem(key);
+        }
+      });
+      console.log("Cleared localStorage to prevent quota issues");
+    } catch (clearError) {
+      console.warn("Could not clear localStorage:", clearError);
+    }
+
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
