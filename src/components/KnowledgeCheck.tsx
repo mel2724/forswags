@@ -58,16 +58,17 @@ export const KnowledgeCheck = ({ lessonId, onComplete }: KnowledgeCheckProps) =>
       // Get questions for this quiz
       const { data: questionsData, error: questionsError } = await supabase
         .from("questions")
-        .select("id, question_text, options, correct_answer, order_index, explanation")
+        .select("id, question_text, options, correct_answer, order_index")
         .eq("quiz_id", quizData.id)
         .order("order_index");
 
       if (questionsError) throw questionsError;
 
-      // Type-cast options from Json to string[]
+      // Type-cast options from Json to string[] and add placeholder explanation
       const formattedQuestions = (questionsData || []).map(q => ({
         ...q,
-        options: Array.isArray(q.options) ? q.options as string[] : []
+        options: Array.isArray(q.options) ? q.options as string[] : [],
+        explanation: null // Temporarily null until migration completes
       }));
 
       setQuestions(formattedQuestions);
