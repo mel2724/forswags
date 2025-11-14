@@ -289,8 +289,31 @@ const Auth = () => {
     } catch (error: any) {
       console.error("Sign in error:", error);
       
+      // Handle localStorage quota exceeded error
+      if (error.name === 'QuotaExceededError' || error.message?.toLowerCase().includes('quota')) {
+        // Clear localStorage to free up space (keep only Supabase auth keys)
+        try {
+          const keysToKeep = ['sb-fejnevxardxejdvjbipc-auth-token'];
+          const allKeys = Object.keys(localStorage);
+          allKeys.forEach(key => {
+            if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
+              localStorage.removeItem(key);
+            }
+          });
+          
+          toast.error("Storage quota exceeded", {
+            description: "We've cleared old data. Please try signing in again.",
+            duration: 8000,
+          });
+        } catch (clearError) {
+          toast.error("Storage quota exceeded", {
+            description: "Please clear your browser cache and try again.",
+            duration: 8000,
+          });
+        }
+      }
       // Handle invalid credentials specifically
-      if (error.message?.toLowerCase().includes('invalid login credentials') || 
+      else if (error.message?.toLowerCase().includes('invalid login credentials') || 
           error.message?.toLowerCase().includes('invalid password') ||
           error.code === 'invalid_credentials') {
         toast.error("Incorrect email or password", {
