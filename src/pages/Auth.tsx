@@ -270,22 +270,31 @@ const Auth = () => {
 
         // Check if user is admin
         try {
-          const { data: rolesData } = await supabase
+          console.log("Checking admin role for user:", authData.user.id);
+          const { data: rolesData, error: roleError } = await supabase
             .from("user_roles")
             .select("role")
             .eq("user_id", authData.user.id);
 
+          if (roleError) {
+            console.error("Role check error:", roleError);
+          }
+          
+          console.log("User roles data:", rolesData);
           const isAdmin = rolesData?.some(r => r.role === "admin");
+          console.log("Is admin:", isAdmin);
           
           if (isAdmin) {
             toast.success('Welcome back, Admin!');
+            console.log("Navigating to /admin");
             navigate("/admin");
           } else {
             toast.success('Welcome back!');
+            console.log("Navigating to /dashboard");
             navigate("/dashboard");
           }
         } catch (roleError) {
-          console.warn("Role check failed:", roleError);
+          console.error("Role check failed:", roleError);
           toast.success('Welcome back!');
           navigate("/dashboard");
         }
