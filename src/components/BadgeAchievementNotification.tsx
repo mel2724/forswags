@@ -223,7 +223,7 @@ export const BadgeAchievementNotification = ({
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 justify-center pt-4">
+            <div className="flex gap-3 justify-center pt-4" onClick={(e) => e.stopPropagation()}>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
