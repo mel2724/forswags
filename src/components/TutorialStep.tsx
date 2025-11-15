@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { X, ChevronRight, Play } from "lucide-react";
+import { X, ChevronRight } from "lucide-react";
 import { TutorialStep as TutorialStepType } from "@/config/tutorialSteps";
 
 interface TutorialStepProps {
@@ -42,23 +42,6 @@ export const TutorialStep = ({ step, onNext, onSkip, isLast, currentStep, totalS
         <p className="text-sm text-muted-foreground mb-6">
           {step.description}
         </p>
-
-        {step.videoId && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full mb-4"
-            onClick={(e) => {
-              e.stopPropagation();
-              // Will be handled by VideoWalkthroughModal
-              const event = new CustomEvent('open-tutorial-video', { detail: step.videoId });
-              window.dispatchEvent(event);
-            }}
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Watch Video Guide
-          </Button>
-        )}
         
         <div className="flex gap-2">
           <Button
