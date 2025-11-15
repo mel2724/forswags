@@ -1,36 +1,67 @@
 /**
- * LocalStorage Cleanup Service
- * Automatically cleans up old localStorage data to prevent quota issues
+ * Storage Cleanup Service
+ * Handles QuotaExceededError by clearing old localStorage/sessionStorage data
  */
 
 const CLEANUP_INTERVAL = 1000 * 60 * 60; // 1 hour
-const LAST_CLEANUP_KEY = 'last_localStorage_cleanup';
-const SUPABASE_AUTH_KEY_PATTERN = 'sb-fejnevxardxejdvjbipc-auth-token';
+const LAST_CLEANUP_KEY = 'last_storage_cleanup';
+const SUPABASE_SESSION_PREFIX = 'sb-fejnevxardxejdvjbipc-auth-token';
 
 /**
- * Clears localStorage except for critical auth tokens
+ * Clears localStorage except for critical data
  */
 export const cleanupLocalStorage = () => {
   try {
-    const keysToKeep = [SUPABASE_AUTH_KEY_PATTERN, LAST_CLEANUP_KEY];
+    const keysToKeep = [LAST_CLEANUP_KEY];
     const allKeys = Object.keys(localStorage);
     let removedCount = 0;
 
     allKeys.forEach(key => {
-      // Keep Supabase auth tokens and cleanup timestamp
       if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
         localStorage.removeItem(key);
         removedCount++;
       }
     });
 
-    // Update last cleanup timestamp
     localStorage.setItem(LAST_CLEANUP_KEY, Date.now().toString());
-    
-    console.log(`LocalStorage cleanup completed: removed ${removedCount} items`);
+    console.log(`LocalStorage cleanup: removed ${removedCount} items`);
     return { success: true, removedCount };
   } catch (error) {
     console.error('LocalStorage cleanup failed:', error);
+    return { success: false, error };
+  }
+};
+
+/**
+ * Emergency cleanup when QuotaExceededError occurs
+ * Clears everything except Supabase auth session
+ */
+export const emergencyStorageCleanup = () => {
+  try {
+    // Save Supabase session
+    const sessionKeys = Object.keys(sessionStorage).filter(key => 
+      key.startsWith(SUPABASE_SESSION_PREFIX)
+    );
+    const savedSessions: Record<string, string> = {};
+    sessionKeys.forEach(key => {
+      const value = sessionStorage.getItem(key);
+      if (value) savedSessions[key] = value;
+    });
+
+    // Clear everything
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Restore Supabase session
+    Object.entries(savedSessions).forEach(([key, value]) => {
+      sessionStorage.setItem(key, value);
+    });
+
+    localStorage.setItem(LAST_CLEANUP_KEY, Date.now().toString());
+    console.log('Emergency storage cleanup completed');
+    return { success: true };
+  } catch (error) {
+    console.error('Emergency cleanup failed:', error);
     return { success: false, error };
   }
 };

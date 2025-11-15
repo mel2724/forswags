@@ -2050,6 +2050,7 @@ export type Database = {
           order_index: number
           scorm_package_url: string | null
           scorm_version: string | null
+          thumbnail_url: string | null
           title: string
           updated_at: string
           video_url: string | null
@@ -2067,6 +2068,7 @@ export type Database = {
           order_index: number
           scorm_package_url?: string | null
           scorm_version?: string | null
+          thumbnail_url?: string | null
           title: string
           updated_at?: string
           video_url?: string | null
@@ -2084,6 +2086,7 @@ export type Database = {
           order_index?: number
           scorm_package_url?: string | null
           scorm_version?: string | null
+          thumbnail_url?: string | null
           title?: string
           updated_at?: string
           video_url?: string | null
@@ -2270,6 +2273,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      module_certificates: {
+        Row: {
+          certificate_url: string | null
+          course_id: string
+          created_at: string
+          emailed_at: string | null
+          id: string
+          issued_at: string
+          module_id: string
+          user_id: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          course_id: string
+          created_at?: string
+          emailed_at?: string | null
+          id?: string
+          issued_at?: string
+          module_id: string
+          user_id: string
+        }
+        Update: {
+          certificate_url?: string | null
+          course_id?: string
+          created_at?: string
+          emailed_at?: string | null
+          id?: string
+          issued_at?: string
+          module_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_certificates_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       modules: {
         Row: {
@@ -2964,6 +3015,7 @@ export type Database = {
         Row: {
           correct_answer: string
           created_at: string
+          explanation: string | null
           id: string
           options: Json
           order_index: number
@@ -2974,6 +3026,7 @@ export type Database = {
         Insert: {
           correct_answer: string
           created_at?: string
+          explanation?: string | null
           id?: string
           options: Json
           order_index: number
@@ -2984,6 +3037,7 @@ export type Database = {
         Update: {
           correct_answer?: string
           created_at?: string
+          explanation?: string | null
           id?: string
           options?: Json
           order_index?: number
@@ -2996,7 +3050,7 @@ export type Database = {
             foreignKeyName: "questions_quiz_id_fkey"
             columns: ["quiz_id"]
             isOneToOne: false
-            referencedRelation: "quizzes"
+            referencedRelation: "lesson_quizzes"
             referencedColumns: ["id"]
           },
         ]

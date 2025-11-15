@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BadgeNotificationProvider } from "@/contexts/BadgeNotificationContext";
-import { initLocalStorageCleanup } from "@/lib/localStorageCleanup";
+import { initLocalStorageCleanup, emergencyStorageCleanup } from "@/lib/localStorageCleanup";
 
 // Lazy load admin pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -117,13 +117,26 @@ const queryClient = new QueryClient({
 // Main Application Component
 // Build: FORCED-REBUILD-v9-CACHE-CLEAR
 const App = () => {
-  // Initialize localStorage cleanup service on app mount
+  // Initialize localStorage cleanup and quota error handling
   useEffect(() => {
     const cleanup = initLocalStorageCleanup();
+
+    // Global error handler for QuotaExceededError
+    const handleError = (event: ErrorEvent) => {
+      if (event.error?.name === 'QuotaExceededError' || 
+          event.message?.includes('quota')) {
+        console.warn('Storage quota exceeded, running emergency cleanup...');
+        emergencyStorageCleanup();
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('error', handleError);
     
     // Cleanup on unmount
     return () => {
       if (cleanup) cleanup();
+      window.removeEventListener('error', handleError);
     };
   }, []);
 
