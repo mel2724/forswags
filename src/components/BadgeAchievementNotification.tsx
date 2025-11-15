@@ -235,7 +235,7 @@ export const BadgeAchievementNotification = ({
                     Share
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="w-48">
+                <DropdownMenuContent align="center" className="w-48 z-[10000]">
                   <DropdownMenuItem onClick={handleNativeShare}>
                     <Share2 className="mr-2 h-4 w-4" />
                     Native Share
