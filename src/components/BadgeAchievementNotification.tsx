@@ -225,13 +225,13 @@ export const BadgeAchievementNotification = ({
       <div className="fixed -left-[9999px] -top-[9999px]">
         <div 
           id="badge-share-card"
-          className="w-[600px] h-[600px] bg-gradient-to-br from-primary/20 via-white to-secondary/20 flex flex-col items-center justify-center p-12 relative overflow-hidden"
+          className="w-[600px] h-[600px] bg-white flex flex-col items-center justify-center p-12 relative overflow-hidden"
         >
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute top-0 left-0 w-full h-full" 
               style={{ 
-                backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
+                backgroundImage: `radial-gradient(circle at 2px 2px, #9333ea 1px, transparent 0)`,
                 backgroundSize: '40px 40px'
               }} 
             />
@@ -240,7 +240,7 @@ export const BadgeAchievementNotification = ({
           {/* Content */}
           <div className="relative z-10 space-y-8 text-center">
             {/* Badge Icon */}
-            <div className="mx-auto h-40 w-40 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-2xl">
+            <div className="mx-auto h-40 w-40 rounded-full bg-gradient-to-br from-[#9333ea] to-[#f59e0b] flex items-center justify-center shadow-2xl">
               {badge.icon_url ? (
                 <img 
                   src={badge.icon_url} 
@@ -255,37 +255,37 @@ export const BadgeAchievementNotification = ({
 
             {/* Text */}
             <div className="space-y-4">
-              <div className="inline-block px-6 py-2 bg-secondary/20 rounded-full">
-                <p className="text-sm font-bold uppercase tracking-wider text-secondary">
+              <div className="inline-block px-6 py-2 bg-[#f59e0b]/20 rounded-full">
+                <p className="text-sm font-bold uppercase tracking-wider text-[#f59e0b]">
                   Achievement Unlocked
                 </p>
               </div>
-              <h2 className="text-5xl font-black uppercase tracking-tight text-foreground">
+              <h2 className="text-5xl font-black uppercase tracking-tight text-[#1a1a1a]">
                 {badge.name}
               </h2>
               {badge.description && (
-                <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
+                <p className="text-lg text-[#4a4a4a] max-w-md mx-auto leading-relaxed">
                   {badge.description}
                 </p>
               )}
             </div>
 
             {/* Footer */}
-            <div className="pt-8 border-t-2 border-primary/20">
-              <p className="text-2xl font-black uppercase tracking-wider bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <div className="pt-8 border-t-2 border-[#9333ea]/20">
+              <p className="text-2xl font-black uppercase tracking-wider text-[#9333ea]">
                 ForSWAGs
               </p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+              <p className="text-xs text-[#666666] uppercase tracking-wider">
                 Athletic Excellence Platform
               </p>
             </div>
           </div>
 
           {/* Decorative Corner Elements */}
-          <div className="absolute top-8 left-8 w-16 h-16 border-t-4 border-l-4 border-primary/30 rounded-tl-2xl" />
-          <div className="absolute top-8 right-8 w-16 h-16 border-t-4 border-r-4 border-secondary/30 rounded-tr-2xl" />
-          <div className="absolute bottom-8 left-8 w-16 h-16 border-b-4 border-l-4 border-secondary/30 rounded-bl-2xl" />
-          <div className="absolute bottom-8 right-8 w-16 h-16 border-b-4 border-r-4 border-primary/30 rounded-br-2xl" />
+          <div className="absolute top-8 left-8 w-16 h-16 border-t-4 border-l-4 border-[#9333ea]/40 rounded-tl-2xl" />
+          <div className="absolute top-8 right-8 w-16 h-16 border-t-4 border-r-4 border-[#f59e0b]/40 rounded-tr-2xl" />
+          <div className="absolute bottom-8 left-8 w-16 h-16 border-b-4 border-l-4 border-[#f59e0b]/40 rounded-bl-2xl" />
+          <div className="absolute bottom-8 right-8 w-16 h-16 border-b-4 border-r-4 border-[#9333ea]/40 rounded-br-2xl" />
         </div>
       </div>
     </>
