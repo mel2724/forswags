@@ -256,7 +256,7 @@ export const BadgeAchievementNotification = ({
                 <DropdownMenuContent align="center" className="w-48 z-[10000]">
                   <DropdownMenuItem onClick={handleNativeShare}>
                     <Share2 className="mr-2 h-4 w-4" />
-                    Native Share
+                    More Options
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleSocialShare('facebook')}>
                     <Facebook className="mr-2 h-4 w-4" />
