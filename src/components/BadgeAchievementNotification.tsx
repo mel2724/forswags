@@ -83,36 +83,33 @@ export const BadgeAchievementNotification = ({
 
       const response = await fetch(dataUrl);
       const blob = await response.blob();
+      const file = new File([blob], `${badge.name.replace(/\s+/g, '_')}_badge.png`, { type: 'image/png' });
 
-      // Check if Web Share API with files is supported
-      const canShareFiles = navigator.canShare && navigator.canShare({ files: [new File([blob], 'test.png', { type: 'image/png' })] });
-
-      if (canShareFiles) {
-        const file = new File([blob], `${badge.name.replace(/\s+/g, '_')}_badge.png`, { type: 'image/png' });
-        
-        await navigator.share({
-          title: `I earned the "${badge.name}" badge!`,
-          text: `Just earned the "${badge.name}" badge on ForSWAGs! 🎉`,
-          files: [file]
-        });
-        toast.success("Badge shared successfully!");
-      } else if (navigator.clipboard && navigator.clipboard.write) {
-        // Fallback: Copy image to clipboard
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]);
-        toast.success("Badge image copied to clipboard! You can now paste it anywhere.");
-      } else {
-        // Final fallback: Trigger download
-        const link = document.createElement('a');
-        link.download = `${badge.name.replace(/\s+/g, '_')}_badge.png`;
-        link.href = dataUrl;
-        link.click();
-        toast.success("Badge downloaded! You can now share it.");
+      // Try Web Share API first (works on mobile)
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: `I earned the "${badge.name}" badge!`,
+            text: `Just earned the "${badge.name}" badge on ForSWAGs! 🎉`,
+            files: [file]
+          });
+          toast.success("Badge shared successfully!");
+          return;
+        } catch (shareError: any) {
+          // User cancelled share, don't show error
+          if (shareError.name === 'AbortError') return;
+        }
       }
+
+      // Fallback to download
+      const link = document.createElement('a');
+      link.download = `${badge.name.replace(/\s+/g, '_')}_badge.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success("Badge downloaded! You can now share it from your files.");
     } catch (error) {
       console.error('Error sharing badge:', error);
-      toast.error("Failed to share badge. Try the download button instead.");
+      toast.error("Failed to prepare badge. Please try again.");
     }
   };
 
