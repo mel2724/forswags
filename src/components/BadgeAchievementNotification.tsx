@@ -293,12 +293,6 @@ export const BadgeAchievementNotification = ({
                   crossOrigin="anonymous"
                 />
               </div>
-              <p className="text-2xl font-black uppercase tracking-wider text-[#9333ea]">
-                ForSWAGs
-              </p>
-              <p className="text-xs text-[#666666] uppercase tracking-wider">
-                Athletic Excellence Platform
-              </p>
               <p className="text-sm font-bold text-[#9333ea] pt-2">
                 www.ForSWAGs.com
               </p>
