@@ -91,20 +91,37 @@ export const BadgeAchievementNotification = ({
       const blob = await response.blob();
       const file = new File([blob], `${badge.name.replace(/\s+/g, '_')}_badge.png`, { type: 'image/png' });
 
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({
-            title: `I earned the "${badge.name}" badge!`,
-            text: `Just earned the "${badge.name}" badge on ForSWAGs! 🎉`,
-            files: [file]
-          });
-          toast.success("Badge shared successfully!");
-        } catch (shareError: any) {
-          if (shareError.name === 'AbortError') return;
-          toast.error("Share cancelled");
+      // Check if Web Share API is available and supports files
+      if (navigator.share) {
+        // Try to share with file first
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: `I earned the "${badge.name}" badge!`,
+              text: `Just earned the "${badge.name}" badge on ForSWAGs! 🎉 - www.ForSWAGs.com`,
+              files: [file]
+            });
+            toast.success("Badge shared successfully!");
+          } catch (shareError: any) {
+            if (shareError.name === 'AbortError') return;
+            toast.error("Share cancelled");
+          }
+        } else {
+          // Fallback to sharing without file (text only)
+          try {
+            await navigator.share({
+              title: `I earned the "${badge.name}" badge!`,
+              text: `Just earned the "${badge.name}" badge on ForSWAGs! 🎉 - www.ForSWAGs.com`,
+              url: 'https://www.ForSWAGs.com'
+            });
+            toast.success("Shared successfully!");
+          } catch (shareError: any) {
+            if (shareError.name === 'AbortError') return;
+            toast.error("Share cancelled");
+          }
         }
       } else {
-        toast.error("Native sharing not supported on this device");
+        toast.error("Native sharing not supported on this device. Try the Download button instead!");
       }
     } catch (error) {
       console.error('Error sharing badge:', error);
@@ -119,7 +136,8 @@ export const BadgeAchievementNotification = ({
     
     switch (platform) {
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(websiteUrl)}`;
+        // Use Facebook's mobile-friendly share dialog
+        shareUrl = `https://m.facebook.com/sharer.php?u=${encodeURIComponent(websiteUrl)}`;
         break;
       case 'twitter':
         const twitterText = `I just earned the "${badge.name}" badge! 🎉 @ForSWAGs`;
@@ -130,8 +148,8 @@ export const BadgeAchievementNotification = ({
         break;
     }
     
-    window.open(shareUrl, '_blank', 'width=600,height=400');
-    toast.success(`Opening ${platform}...`);
+    // Use location.href instead of window.open to avoid CORS issues
+    window.location.href = shareUrl;
   };
 
   const handleDownload = async () => {
