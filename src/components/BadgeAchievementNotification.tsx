@@ -2,11 +2,17 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Share2, Download, Trophy } from "lucide-react";
+import { X, Share2, Download, Trophy, Facebook, Twitter, Linkedin } from "lucide-react";
 import confetti from "canvas-confetti";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 import forSwagsLogo from "@/assets/forswags-logo.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface BadgeAchievementNotificationProps {
   badge: {
@@ -67,7 +73,7 @@ export const BadgeAchievementNotification = ({
     setTimeout(onClose, 300);
   };
 
-  const handleShare = async () => {
+  const handleNativeShare = async () => {
     const badgeElement = document.getElementById('badge-share-card');
     if (!badgeElement) {
       toast.error("Badge image not found");
@@ -85,7 +91,6 @@ export const BadgeAchievementNotification = ({
       const blob = await response.blob();
       const file = new File([blob], `${badge.name.replace(/\s+/g, '_')}_badge.png`, { type: 'image/png' });
 
-      // Try Web Share API first (works on mobile)
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({
@@ -94,23 +99,39 @@ export const BadgeAchievementNotification = ({
             files: [file]
           });
           toast.success("Badge shared successfully!");
-          return;
         } catch (shareError: any) {
-          // User cancelled share, don't show error
           if (shareError.name === 'AbortError') return;
+          toast.error("Share cancelled");
         }
+      } else {
+        toast.error("Native sharing not supported on this device");
       }
-
-      // Fallback to download
-      const link = document.createElement('a');
-      link.download = `${badge.name.replace(/\s+/g, '_')}_badge.png`;
-      link.href = dataUrl;
-      link.click();
-      toast.success("Badge downloaded! You can now share it from your files.");
     } catch (error) {
       console.error('Error sharing badge:', error);
       toast.error("Failed to prepare badge. Please try again.");
     }
+  };
+
+  const handleSocialShare = (platform: 'facebook' | 'twitter' | 'linkedin') => {
+    const shareText = `I just earned the "${badge.name}" badge on ForSWAGs! 🎉`;
+    const currentUrl = window.location.origin;
+    
+    let shareUrl = '';
+    
+    switch (platform) {
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
+        break;
+    }
+    
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+    toast.success(`Opening ${platform}...`);
   };
 
   const handleDownload = async () => {
@@ -203,15 +224,36 @@ export const BadgeAchievementNotification = ({
 
             {/* Action Buttons */}
             <div className="flex gap-3 justify-center pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                className="hover:bg-primary/10 hover:border-primary transition-all"
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hover:bg-primary/10 hover:border-primary transition-all"
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-48">
+                  <DropdownMenuItem onClick={handleNativeShare}>
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Native Share
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSocialShare('facebook')}>
+                    <Facebook className="mr-2 h-4 w-4" />
+                    Facebook
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSocialShare('twitter')}>
+                    <Twitter className="mr-2 h-4 w-4" />
+                    Twitter/X
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSocialShare('linkedin')}>
+                    <Linkedin className="mr-2 h-4 w-4" />
+                    LinkedIn
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 variant="outline"
                 size="sm"
