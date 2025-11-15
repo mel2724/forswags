@@ -113,20 +113,20 @@ export const BadgeAchievementNotification = ({
   };
 
   const handleSocialShare = (platform: 'facebook' | 'twitter' | 'linkedin') => {
-    const shareText = `I just earned the "${badge.name}" badge on ForSWAGs! 🎉`;
-    const currentUrl = window.location.origin;
+    const websiteUrl = 'https://www.ForSWAGs.com';
     
     let shareUrl = '';
     
     switch (platform) {
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&quote=${encodeURIComponent(shareText)}`;
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(websiteUrl)}`;
         break;
       case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`;
+        const twitterText = `I just earned the "${badge.name}" badge! 🎉 @ForSWAGs`;
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(websiteUrl)}`;
         break;
       case 'linkedin':
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(websiteUrl)}`;
         break;
     }
     
