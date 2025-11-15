@@ -6,6 +6,7 @@ import { X, Share2, Download, Trophy } from "lucide-react";
 import confetti from "canvas-confetti";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
+import forSwagsLogo from "@/assets/forswags-logo.png";
 
 interface BadgeAchievementNotificationProps {
   badge: {
@@ -281,13 +282,25 @@ export const BadgeAchievementNotification = ({
               )}
             </div>
 
-            {/* Footer */}
-            <div className="pt-8 border-t-2 border-[#9333ea]/20">
+            {/* Footer with Logo */}
+            <div className="pt-8 space-y-3">
+              {/* Logo */}
+              <div className="flex justify-center mb-2">
+                <img 
+                  src={forSwagsLogo} 
+                  alt="ForSWAGs Logo" 
+                  className="h-12 w-auto"
+                  crossOrigin="anonymous"
+                />
+              </div>
               <p className="text-2xl font-black uppercase tracking-wider text-[#9333ea]">
                 ForSWAGs
               </p>
               <p className="text-xs text-[#666666] uppercase tracking-wider">
                 Athletic Excellence Platform
+              </p>
+              <p className="text-sm font-bold text-[#9333ea] pt-2">
+                www.ForSWAGs.com
               </p>
             </div>
           </div>
