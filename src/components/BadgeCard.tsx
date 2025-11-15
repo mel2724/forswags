@@ -104,55 +104,55 @@ export const BadgeCard = ({ badge, isEarned = false, earnedAt, athleteName, prof
 
               {/* Social Share Buttons - Only for earned badges */}
               {isEarned && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 space-y-1">
-                  <div className="flex items-center justify-center gap-1">
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  <div className="flex items-center justify-center gap-1.5">
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 w-7 p-0 hover:bg-primary/20"
+                      className="h-8 w-8 p-0 hover:bg-primary/20 hover:text-primary transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleShare('twitter');
                       }}
                       title="Share on Twitter"
                     >
-                      <Twitter className="h-3.5 w-3.5" />
+                      <Twitter className="h-4 w-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 w-7 p-0 hover:bg-primary/20"
+                      className="h-8 w-8 p-0 hover:bg-primary/20 hover:text-primary transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleShare('facebook');
                       }}
                       title="Share on Facebook"
                     >
-                      <Facebook className="h-3.5 w-3.5" />
+                      <Facebook className="h-4 w-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 w-7 p-0 hover:bg-primary/20"
+                      className="h-8 w-8 p-0 hover:bg-primary/20 hover:text-primary transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleShare('linkedin');
                       }}
                       title="Share on LinkedIn"
                     >
-                      <Linkedin className="h-3.5 w-3.5" />
+                      <Linkedin className="h-4 w-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 w-7 p-0 hover:bg-primary/20"
+                      className="h-8 w-8 p-0 hover:bg-primary/20 hover:text-primary transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleShare('copy');
                       }}
                       title="Copy to clipboard"
                     >
-                      <Share2 className="h-3.5 w-3.5" />
+                      <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
