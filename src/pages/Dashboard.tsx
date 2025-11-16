@@ -28,8 +28,10 @@ import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
   Video, User, MapPin, Calendar, Award, Share2, Users, 
-  MessageSquare, Eye, Sparkles, BookOpen, Briefcase, Search
+  MessageSquare, Eye, Sparkles, BookOpen, Briefcase, Search, Crown
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useFeatureAccess, useUserTier } from "@/hooks/useFeatureAccess";
 
 const Dashboard = () => {
   // Hooks MUST be called unconditionally at the top level
@@ -59,6 +61,9 @@ const Dashboard = () => {
 
   // Listen for badge achievements
   useBadgeListener(user?.id);
+  
+  // Get user tier for feature gating
+  const { tier, isLoading: tierLoading, isFree, isPaid } = useUserTier();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -358,6 +363,67 @@ const Dashboard = () => {
     }
   };
 
+  // Feature Card component for gating premium features
+  const FeatureCard = ({ 
+    title, 
+    subtitle, 
+    icon: Icon, 
+    onClick, 
+    requiresFeature,
+    isPremium = false 
+  }: {
+    title: string;
+    subtitle: string;
+    icon: any;
+    onClick: () => void;
+    requiresFeature?: string;
+    isPremium?: boolean;
+  }) => {
+    const { hasAccess } = useFeatureAccess(requiresFeature || 'profile_type');
+    const isLocked = requiresFeature && !hasAccess;
+
+    return (
+      <Card 
+        className={cn(
+          "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer transition-all hover:shadow-lg",
+          isLocked && "opacity-60 cursor-not-allowed"
+        )}
+        onClick={() => {
+          if (isLocked) {
+            toast.error('This feature requires a premium membership', {
+              action: {
+                label: 'Upgrade',
+                onClick: () => navigate('/membership'),
+              },
+            });
+          } else {
+            onClick();
+          }
+        }}
+      >
+        <CardContent className="p-6 relative">
+          {isLocked && (
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="gap-1">
+                <Crown className="h-3 w-3" />
+                Premium
+              </Badge>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">
+                {title}
+              </p>
+              <p className="text-lg font-bold">{subtitle}</p>
+            </div>
+            <Icon className="h-8 w-8 text-primary" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const profileCompleteness = () => {
     if (!athlete) return 0;
     const fields = [
@@ -502,6 +568,17 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8 pb-20 md:pb-8">
         <MembershipStatusBanner />
         
+        {isFree && !tierLoading && (
+          <div className="mb-6">
+            <UpgradeNudge 
+              variant="compact"
+              title="🚀 Unlock Premium Features"
+              description="Get college matching, rankings, and social media tools"
+              highlight="Premium athletes get 3x more profile views"
+            />
+          </div>
+        )}
+        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-5xl font-black mb-2 uppercase tracking-tight">
@@ -576,114 +653,81 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/profile")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Edit Profile</p>
-                      <p className="text-lg font-bold">Update Info</p>
-                    </div>
-                    <Edit className="h-8 w-8 text-secondary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="EDIT PROFILE"
+                    subtitle="Update Info"
+                    icon={Edit}
+                    onClick={() => navigate("/profile")}
+                    requiresFeature="profile_type"
+                  />
 
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/social-media")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Social Media</p>
-                      <p className="text-lg font-bold">Manage Content</p>
-                    </div>
-                    <Share2 className="h-8 w-8 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="SOCIAL MEDIA"
+                    subtitle="Manage Content"
+                    icon={Share2}
+                    onClick={() => navigate("/social-media")}
+                    requiresFeature="social_media_graphics"
+                    isPremium
+                  />
 
-              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/prime-dime")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Prime Dime</p>
-                      <p className="text-lg font-bold">College Matches</p>
-                    </div>
-                    <Target className="h-8 w-8 text-secondary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="PRIME DIME"
+                    subtitle="College Matches"
+                    icon={Target}
+                    onClick={() => navigate("/prime-dime")}
+                    requiresFeature="college_matching"
+                    isPremium
+                  />
 
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/rankings")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Rankings</p>
-                      <p className="text-lg font-bold">See Where You Stand</p>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="RANKINGS"
+                    subtitle="See Where You Stand"
+                    icon={TrendingUp}
+                    onClick={() => navigate("/rankings")}
+                    requiresFeature="rankings"
+                    isPremium
+                  />
 
-              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/school-search")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">School Search</p>
-                      <p className="text-lg font-bold">Find Colleges</p>
-                    </div>
-                    <Search className="h-8 w-8 text-secondary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="SCHOOL SEARCH"
+                    subtitle="Find Colleges"
+                    icon={Search}
+                    onClick={() => navigate("/school-search")}
+                    requiresFeature="profile_type"
+                  />
 
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/courses")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Playbook</p>
-                      <p className="text-lg font-bold">Life Skills</p>
-                    </div>
-                    <BookOpen className="h-8 w-8 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="PLAYBOOK"
+                    subtitle="Life Skills"
+                    icon={BookOpen}
+                    onClick={() => navigate("/courses")}
+                    requiresFeature="playbook_access"
+                  />
 
-              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/alumni-network")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Alumni Network</p>
-                      <p className="text-lg font-bold">Connect & Learn</p>
-                    </div>
-                    <Users className="h-8 w-8 text-secondary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="ALUMNI NETWORK"
+                    subtitle="Connect & Learn"
+                    icon={Users}
+                    onClick={() => navigate("/alumni-network")}
+                    requiresFeature="profile_type"
+                  />
 
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/evaluations")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Evaluations</p>
-                      <p className="text-lg font-bold">Coach Reviews</p>
-                    </div>
-                    <Star className="h-8 w-8 text-primary" />
-                  </div>
-                </CardContent>
-              </Card>
+                  <FeatureCard
+                    title="EVALUATIONS"
+                    subtitle="Coach Reviews"
+                    icon={Star}
+                    onClick={() => navigate("/evaluations")}
+                    requiresFeature="evaluation_initial_price"
+                  />
 
-              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/sponsors")}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Sponsors</p>
-                      <p className="text-lg font-bold">Partnerships</p>
-                    </div>
-                  <Briefcase className="h-8 w-8 text-secondary" />
+                  <FeatureCard
+                    title="SPONSORS"
+                    subtitle="Partnerships"
+                    icon={Briefcase}
+                    onClick={() => navigate("/sponsors")}
+                    requiresFeature="profile_type"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
         </CardContent>
       </Card>
 
