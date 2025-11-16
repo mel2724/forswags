@@ -537,6 +537,9 @@ const Onboarding = () => {
         }, 2000);
       }
       
+      // Small delay to ensure database writes are fully committed and readable
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       navigate("/dashboard");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
