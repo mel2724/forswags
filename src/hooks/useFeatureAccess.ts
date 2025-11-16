@@ -64,10 +64,12 @@ export function useUserTier() {
     enabled: !!session?.user?.id,
   });
 
+  const resolvedTier = tier ?? 'free';
+  
   return {
-    tier: tier ?? 'free',
+    tier: resolvedTier,
     isLoading,
-    isFree: tier === 'free',
-    isPaid: tier === 'pro_monthly' || tier === 'championship_yearly',
+    isFree: resolvedTier === 'free',
+    isPaid: resolvedTier === 'pro_monthly' || resolvedTier === 'championship_yearly',
   };
 }
