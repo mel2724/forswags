@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ProgressIndicator } from "@/components/ProgressIndicator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft, Zap } from "lucide-react";
+import { User, Users, Trophy, Search, Shield, ChevronRight, ChevronLeft, Zap, Check, Crown } from "lucide-react";
 import { z } from "zod";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { VideoWalkthroughModal, VideoWalkthroughButton } from "@/components/VideoWalkthroughModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { STRIPE_PRODUCTS, formatPrice } from "@/lib/stripeConfig";
 
 type Role = "athlete" | "parent" | "recruiter";
 
@@ -56,6 +57,8 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [setupMode, setSetupMode] = useState<"quick" | "complete">("quick");
   const [tutorialEnabled, setTutorialEnabled] = useState(true);
+  const [selectedMembershipTier, setSelectedMembershipTier] = useState<"free" | "monthly" | "yearly">("free");
+  const [processingCheckout, setProcessingCheckout] = useState(false);
   
   // Profile form data
   const [fullName, setFullName] = useState("");
@@ -103,9 +106,23 @@ const Onboarding = () => {
     // Check if this is a claimed profile
     const params = new URLSearchParams(window.location.search);
     const isClaimed = params.get('claimed') === 'true';
+    const subscriptionStatus = params.get('subscription');
     
     if (isClaimed) {
       toast.success("Welcome! Please complete your profile to get started.");
+    }
+
+    // Handle return from Stripe
+    if (subscriptionStatus === 'success') {
+      toast.success("Payment successful! Please complete your profile.");
+      setStep(3); // Move to profile completion
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (subscriptionStatus === 'canceled') {
+      toast.error("Payment was canceled. You can continue with a free account or try again.");
+      setStep(2); // Stay on membership selection
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     const checkAuth = async () => {
@@ -125,13 +142,47 @@ const Onboarding = () => {
     checkAuth();
   }, [navigate]);
 
-  const totalSteps = selectedRole === "athlete" ? (setupMode === "quick" ? 4 : 6) : 1;
+  const totalSteps = selectedRole === "athlete" ? (setupMode === "quick" ? 5 : 7) : 1;
 
   const handleRoleSelect = () => {
     if (selectedRole === "athlete") {
-      setStep(2);
+      setStep(2); // Go to membership selection
     } else {
       handleNonAthleteComplete();
+    }
+  };
+
+  const handleMembershipSelection = async () => {
+    if (selectedMembershipTier === "free") {
+      setStep(3); // Continue to profile completion
+      return;
+    }
+
+    // Handle paid membership - redirect to Stripe
+    setProcessingCheckout(true);
+    try {
+      const priceId = selectedMembershipTier === "monthly" 
+        ? STRIPE_PRODUCTS.membership.athlete.monthly.price_id
+        : STRIPE_PRODUCTS.membership.athlete.yearly.price_id;
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { 
+          priceId,
+          returnPath: '/onboarding?subscription=success'
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast.success("Opening Stripe checkout in a new tab. Complete payment and return here to finish setup.");
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast.error(error.message || "Failed to start checkout");
+    } finally {
+      setProcessingCheckout(false);
     }
   };
 
@@ -211,16 +262,15 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
-    // Step 1: Role selection - athletes continue to profile setup
+    // Step 1: Role selection - athletes continue to membership selection
     if (step === 1) {
       if (selectedRole === "parent" || selectedRole === "recruiter") {
-        // For now, redirect to onboarding - parent/recruiter flows to be added later
         toast.info("Parent and recruiter features coming soon!");
         return;
       }
     }
     
-    if (step === 2) {
+    if (step === 3) {
       const validation = profileSchema.safeParse({ full_name: fullName, phone });
       if (!validation.success) {
         toast.error(validation.error.errors[0].message);
@@ -228,15 +278,15 @@ const Onboarding = () => {
       }
     }
     
-    if (step === 3) {
+    if (step === 4) {
       if (!sport) {
         toast.error("Please select a sport");
         return;
       }
       
-      // In quick mode, skip from step 3 to final step (step 4 in quick mode = step 6 in complete mode)
+      // In quick mode, skip from step 4 to final step (step 7)
       if (setupMode === "quick") {
-        setStep(6); // Jump to final consent step
+        setStep(7); // Jump to final consent step
         return;
       }
     }
@@ -245,7 +295,11 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
-    setStep(step - 1);
+    if (step === 7 && setupMode === "quick") {
+      setStep(4); // Jump back to sport selection in quick mode
+    } else {
+      setStep(step - 1);
+    }
   };
 
   const handleComplete = async () => {
@@ -483,20 +537,22 @@ const Onboarding = () => {
               setupMode === "quick"
                 ? [
                     { title: "Role", completed: true },
-                    { title: "Basic Info", completed: step > 2 },
-                    { title: "Sport", completed: step > 3 },
-                    { title: "Consent", completed: step > 6 },
+                    { title: "Membership", completed: step > 2 },
+                    { title: "Basic Info", completed: step > 3 },
+                    { title: "Sport", completed: step > 4 },
+                    { title: "Consent", completed: step > 7 },
                   ]
                 : [
                     { title: "Role", completed: true },
-                    { title: "Basic Info", completed: step > 2 },
-                    { title: "Sport Details", completed: step > 3 },
-                    { title: "Measurements", completed: step > 4 },
-                    { title: "Academics", completed: step > 5 },
-                    { title: "Profile", completed: step > 6 },
+                    { title: "Membership", completed: step > 2 },
+                    { title: "Basic Info", completed: step > 3 },
+                    { title: "Sport Details", completed: step > 4 },
+                    { title: "Measurements", completed: step > 5 },
+                    { title: "Academics", completed: step > 6 },
+                    { title: "Profile", completed: step > 7 },
                   ]
             }
-            currentStep={setupMode === "quick" ? Math.min(step - 1, 3) : step - 2}
+            currentStep={setupMode === "quick" ? Math.min(step - 1, 4) : step - 1}
             variant="steps"
           />
         )}
@@ -569,8 +625,161 @@ const Onboarding = () => {
           </>
         )}
 
-        {/* Step 2: Basic Info */}
+        {/* Step 2: Membership Selection */}
         {step === 2 && (
+          <>
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black uppercase tracking-tight">Choose Your Plan</h2>
+              <p className="text-muted-foreground">Select the membership that fits your goals</p>
+            </div>
+
+            <div className="grid gap-4">
+              {/* Free Tier */}
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  selectedMembershipTier === "free" 
+                    ? "border-2 border-primary ring-2 ring-primary/20" 
+                    : "border-border hover:border-primary/50"
+                }`}
+                onClick={() => setSelectedMembershipTier("free")}
+              >
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold">{STRIPE_PRODUCTS.membership.athlete.free.name}</h3>
+                      <p className="text-3xl font-black mt-2">Free</p>
+                    </div>
+                    {selectedMembershipTier === "free" && (
+                      <Check className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span>Basic profile creation</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span>View public profiles</span>
+                    </li>
+                  </ul>
+                </div>
+              </Card>
+
+              {/* Pro Monthly */}
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-lg ${
+                  selectedMembershipTier === "monthly" 
+                    ? "border-2 border-primary ring-2 ring-primary/20" 
+                    : "border-border hover:border-primary/50"
+                }`}
+                onClick={() => setSelectedMembershipTier("monthly")}
+              >
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold flex items-center gap-2">
+                        {STRIPE_PRODUCTS.membership.athlete.monthly.name}
+                        <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">Popular</span>
+                      </h3>
+                      <p className="text-3xl font-black mt-2">
+                        {formatPrice(STRIPE_PRODUCTS.membership.athlete.monthly.price)}
+                        <span className="text-base font-normal text-muted-foreground">/month</span>
+                      </p>
+                    </div>
+                    {selectedMembershipTier === "monthly" && (
+                      <Check className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Everything in Free</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Advanced analytics</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>College matching tools</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Priority support</span>
+                    </li>
+                  </ul>
+                </div>
+              </Card>
+
+              {/* Championship Yearly */}
+              <Card 
+                className={`cursor-pointer transition-all hover:shadow-lg relative overflow-hidden ${
+                  selectedMembershipTier === "yearly" 
+                    ? "border-2 border-primary ring-2 ring-primary/20" 
+                    : "border-border hover:border-primary/50"
+                }`}
+                onClick={() => setSelectedMembershipTier("yearly")}
+              >
+                <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <Crown className="h-3 w-3" />
+                  Best Value
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold">{STRIPE_PRODUCTS.membership.athlete.yearly.name}</h3>
+                      <p className="text-3xl font-black mt-2">
+                        {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price)}
+                        <span className="text-base font-normal text-muted-foreground">/year</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">Save $82 compared to monthly</p>
+                    </div>
+                    {selectedMembershipTier === "yearly" && (
+                      <Check className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Everything in Pro Monthly</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Exclusive webinars & content</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Direct coach connections</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Premium badge on profile</span>
+                    </li>
+                  </ul>
+                </div>
+              </Card>
+            </div>
+
+            <div className="flex gap-3">
+              <Button onClick={handleBack} variant="outline" className="flex-1">
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <Button 
+                onClick={handleMembershipSelection} 
+                className="flex-1 btn-hero"
+                disabled={processingCheckout}
+              >
+                {processingCheckout ? "Processing..." : selectedMembershipTier === "free" ? "Continue with Free" : "Continue to Payment"}
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </>
+        )}
+
+        {/* Step 3: Basic Info */}
+        {step === 3 && (
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Basic Info</h2>
@@ -615,8 +824,8 @@ const Onboarding = () => {
           </>
         )}
 
-        {/* Step 3: Sport & Position */}
-        {step === 3 && (
+        {/* Step 4: Sport & Position */}
+        {step === 4 && (
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Your Sport</h2>
@@ -696,8 +905,8 @@ const Onboarding = () => {
           </>
         )}
 
-        {/* Step 4: Physical Stats (Complete mode only) */}
-        {step === 4 && setupMode === "complete" && (
+        {/* Step 5: Physical Stats (Complete mode only) */}
+        {step === 5 && setupMode === "complete" && (
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Physical Stats</h2>
@@ -756,8 +965,8 @@ const Onboarding = () => {
           </>
         )}
 
-        {/* Step 5: Academic Info (Complete mode only) */}
-        {step === 5 && setupMode === "complete" && (
+        {/* Step 6: Academic Info (Complete mode only) */}
+        {step === 6 && setupMode === "complete" && (
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Academics</h2>
@@ -844,8 +1053,8 @@ const Onboarding = () => {
           </>
         )}
 
-        {/* Step 6: Highlights & Bio */}
-        {step === 6 && (
+        {/* Step 7: Highlights & Bio */}
+        {step === 7 && (
           <>
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black uppercase tracking-tight">Final Touches</h2>
