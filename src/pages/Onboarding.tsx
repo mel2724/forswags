@@ -875,7 +875,7 @@ const Onboarding = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select your sport" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="item-aligned">
                     {sports.map((s) => (
                       <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
