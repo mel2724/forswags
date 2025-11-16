@@ -1380,8 +1380,8 @@ const Dashboard = () => {
                 <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
                   <Users className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">My Children</h3>
-                <p className="text-sm text-muted-foreground">View and manage your children's profiles</p>
+                <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">My Athletes</h3>
+                <p className="text-sm text-muted-foreground">View and manage your athletes' profiles</p>
               </Card>
             )}
 
