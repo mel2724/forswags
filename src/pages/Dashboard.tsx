@@ -518,6 +518,18 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 cursor-pointer hover:border-secondary transition-all hover:shadow-lg" onClick={() => navigate("/profile")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">Edit Profile</p>
+                      <p className="text-lg font-bold">Update Info</p>
+                    </div>
+                    <Edit className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary transition-all hover:shadow-lg" onClick={() => navigate("/social-media")}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
