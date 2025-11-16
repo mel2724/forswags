@@ -25,7 +25,7 @@ export function OnboardingProgressMeter({ profile, athlete, stats }: OnboardingP
     {
       id: "profile_complete",
       label: "Complete your profile",
-      completed: (profile?.profile_completion_pct || 0) >= 80,
+      completed: athlete ? (athlete.profile_completion_pct || 0) >= 80 : false,
     },
     {
       id: "tutorial_complete",
