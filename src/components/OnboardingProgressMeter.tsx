@@ -16,9 +16,10 @@ interface OnboardingProgressMeterProps {
 }
 
 export function OnboardingProgressMeter({ profile, athlete, stats }: OnboardingProgressMeterProps) {
-  const { isFree } = useUserTier();
+  const { isFree, isLoading } = useUserTier();
 
-  // Only show for free users
+  // Wait for tier data to load, then only show for free users
+  if (isLoading) return null;
   if (!isFree) return null;
 
   const steps: OnboardingStep[] = [
