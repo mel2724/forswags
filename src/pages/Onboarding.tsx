@@ -114,13 +114,15 @@ const Onboarding = () => {
 
     // Handle return from Stripe
     if (subscriptionStatus === 'success') {
-      toast.success("Payment successful! Please complete your profile.");
+      toast.success("Payment successful! Let's complete your profile.");
+      setSelectedMembershipTier('monthly'); // They paid, so mark as monthly
       setStep(3); // Move to profile completion
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (subscriptionStatus === 'canceled') {
-      toast.error("Payment was canceled. You can continue with a free account or try again.");
-      setStep(2); // Stay on membership selection
+      toast.info("Payment canceled. You can continue with a free account or try again.");
+      setSelectedMembershipTier('free');
+      setStep(2); // Stay on membership selection to choose free or retry
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -136,6 +138,38 @@ const Onboarding = () => {
       // Pre-fill name from auth metadata
       if (session.user.user_metadata?.full_name) {
         setFullName(session.user.user_metadata.full_name);
+      }
+
+      // Check for existing athlete data to pre-fill forms
+      const { data: athleteData } = await supabase
+        .from('athletes')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+      
+      if (athleteData) {
+        // Pre-fill form fields with existing data
+        setSport(athleteData.sport || '');
+        setPosition(athleteData.position || '');
+        setHighSchool(athleteData.high_school || '');
+        setGradYear(athleteData.graduation_year?.toString() || '');
+        setGpa(athleteData.gpa?.toString() || '');
+        setSatScore(athleteData.sat_score?.toString() || '');
+        setActScore(athleteData.act_score?.toString() || '');
+        setHighlightsUrl(athleteData.highlights_url || '');
+        setBio(athleteData.bio || '');
+        setHudlProfileUrl(athleteData.hudl_profile_url || '');
+        setMaxprepsProfileUrl(athleteData.maxpreps_profile_url || '');
+        setPublicProfileConsent(athleteData.public_profile_consent || false);
+        setDateOfBirth(athleteData.date_of_birth || '');
+        
+        if (athleteData.height_in) {
+          setHeightFeet(Math.floor(athleteData.height_in / 12).toString());
+          setHeightInches((athleteData.height_in % 12).toString());
+        }
+        setWeight(athleteData.weight_lb?.toString() || '');
+        
+        toast.info("We've pre-filled your existing information. Update as needed.");
       }
     };
 

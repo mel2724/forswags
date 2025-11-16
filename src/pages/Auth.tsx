@@ -268,9 +268,9 @@ const Auth = () => {
           console.warn("Membership check error:", membershipError);
         }
 
-        // Check if user is admin
+        // Check if user has completed onboarding
         try {
-          console.log("Checking admin role for user:", authData.user.id);
+          console.log("Checking user role for:", authData.user.id);
           const { data: rolesData, error: roleError } = await supabase
             .from("user_roles")
             .select("role")
@@ -281,6 +281,16 @@ const Auth = () => {
           }
           
           console.log("User roles data:", rolesData);
+          
+          // If user has no roles, they didn't complete onboarding
+          if (!rolesData || rolesData.length === 0) {
+            toast.info("Please complete your profile setup");
+            navigate("/onboarding");
+            setLoading(false);
+            return;
+          }
+          
+          // Check if user is admin
           const isAdmin = rolesData?.some(r => r.role === "admin");
           console.log("Is admin:", isAdmin);
           

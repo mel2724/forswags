@@ -95,38 +95,51 @@ const Dashboard = () => {
         setCurrentOnboardingStep(completedSteps);
       }
 
-      // Get user role
+      // SAFETY NET: Check if user has completed onboarding
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", effectiveUserId)
         .maybeSingle();
 
-      if (roleData) {
-        setRole(roleData.role);
+      // If no role, user didn't complete onboarding
+      if (!roleData) {
+        toast.info("Please complete your profile setup");
+        navigate("/onboarding");
+        return;
+      }
+
+      setRole(roleData.role);
+      
+      // If parent role, redirect to parent dashboard unless viewing athlete
+      if (roleData.role === "parent" && !parentViewingAthlete) {
+        navigate("/parent/dashboard");
+        return;
+      }
+      
+      // If athlete, get athlete data
+      if (roleData.role === "athlete") {
+        const { data: athleteData } = await supabase
+          .from("athletes")
+          .select(`
+            id, user_id, parent_id, sport, position, graduation_year, high_school,
+            height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
+            created_at, updated_at, dominant_hand, profile_photo_url, 
+            profile_completion_pct, visibility, secondary_sports, club_team_name,
+            ncaa_eligibility_number, jersey_number, username, twitter_handle,
+            instagram_handle, team_logo_url, profile_claimed
+          `)
+          .eq("user_id", effectiveUserId)
+          .maybeSingle();
         
-        // If parent role, redirect to parent dashboard unless viewing athlete
-        if (roleData.role === "parent" && !parentViewingAthlete) {
-          navigate("/parent/dashboard");
+        // If role is athlete but no athlete profile exists, redirect to onboarding
+        if (!athleteData) {
+          toast.info("Please complete your athlete profile");
+          navigate("/onboarding");
           return;
         }
         
-        // If athlete, get athlete data
-        if (roleData.role === "athlete") {
-          const { data: athleteData } = await supabase
-            .from("athletes")
-            .select(`
-              id, user_id, parent_id, sport, position, graduation_year, high_school,
-              height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
-              created_at, updated_at, dominant_hand, profile_photo_url, 
-              profile_completion_pct, visibility, secondary_sports, club_team_name,
-              ncaa_eligibility_number, jersey_number, username, twitter_handle,
-              instagram_handle, team_logo_url, profile_claimed
-            `)
-            .eq("user_id", effectiveUserId)
-            .maybeSingle();
-          
-          setAthlete(athleteData);
+        setAthlete(athleteData);
 
           // Get "Prime Dime" recommendations
           if (athleteData) {
@@ -231,10 +244,9 @@ const Dashboard = () => {
                 p_days: 30 
               });
             
-            setEngagementStats(engagementData?.[0] || null);
+              setEngagementStats(engagementData?.[0] || null);
           }
         }
-      }
 
       // Check for unread notifications
       const { data: notificationsData } = await supabase
