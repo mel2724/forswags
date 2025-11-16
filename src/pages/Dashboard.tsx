@@ -1361,16 +1361,31 @@ const Dashboard = () => {
             </div>
           )
         ) : (
-          // Non-athlete dashboard
+          // Non-athlete dashboard - Role-based cards
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/players")}>
-              <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
-                <Trophy className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Athletes</h3>
-              <p className="text-sm text-muted-foreground">Browse athlete profiles and talent</p>
-            </Card>
+            {/* Show Athlete Search ONLY for recruiters/college scouts */}
+            {role === "recruiter" && (
+              <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/recruiter/search")}>
+                <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Search className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Search Athletes</h3>
+                <p className="text-sm text-muted-foreground">Find and evaluate prospects</p>
+              </Card>
+            )}
 
+            {/* Show Parent Dashboard link for parents (backup if they land here) */}
+            {role === "parent" && (
+              <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/parent/dashboard")}>
+                <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">My Children</h3>
+                <p className="text-sm text-muted-foreground">View and manage your children's profiles</p>
+              </Card>
+            )}
+
+            {/* Playbook for Life - Available to everyone */}
             <Card className="p-6 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary hover:shadow-xl hover:shadow-secondary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/courses")}>
               <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-4 group-hover:bg-secondary/20 transition-colors">
                 <GraduationCap className="h-8 w-8 text-secondary" />
@@ -1379,6 +1394,7 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground">Master the game on and off the field</p>
             </Card>
 
+            {/* Achievements - Available to everyone */}
             <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/badges")}>
               <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
                 <Award className="h-8 w-8 text-primary" />
