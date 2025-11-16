@@ -162,6 +162,8 @@ const Onboarding = () => {
         setMaxprepsProfileUrl(athleteData.maxpreps_profile_url || '');
         setPublicProfileConsent(athleteData.public_profile_consent || false);
         setDateOfBirth(athleteData.date_of_birth || '');
+        setParentEmail(athleteData.parent_email || '');
+        setParentEmailVerified(!!athleteData.parent_verified_at);
         
         if (athleteData.height_in) {
           setHeightFeet(Math.floor(athleteData.height_in / 12).toString());
