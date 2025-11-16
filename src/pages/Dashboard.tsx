@@ -70,11 +70,26 @@ const Dashboard = () => {
           return;
         }
 
-        // Check if parent is viewing athlete's dashboard
-        const parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
+      // Check if parent is viewing athlete's dashboard
+      let parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
+      
+      // Validate sessionStorage value if present
+      if (parentViewingAthlete && parentViewingAthlete !== session.user.id) {
+        const { data: validChild } = await supabase
+          .from("athletes")
+          .select("user_id")
+          .eq("user_id", parentViewingAthlete)
+          .eq("parent_id", session.user.id)
+          .maybeSingle();
         
-        // Use impersonated user if available, parent viewing if available, otherwise use actual session user
-        const effectiveUserId = getEffectiveUserId() || parentViewingAthlete || session.user.id;
+        if (!validChild) {
+          sessionStorage.removeItem("parent_viewing_athlete");
+          parentViewingAthlete = null;
+        }
+      }
+      
+      // Use impersonated user if available, parent viewing if available, otherwise use actual session user
+      const effectiveUserId = getEffectiveUserId() || parentViewingAthlete || session.user.id;
         setUser(session.user);
 
       // Get profile
@@ -95,12 +110,28 @@ const Dashboard = () => {
         setCurrentOnboardingStep(completedSteps);
       }
 
-      // SAFETY NET: Check if user has completed onboarding
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", effectiveUserId)
-        .maybeSingle();
+      // SAFETY NET: Check if user has completed onboarding (with retry logic)
+      const checkOnboardingWithRetry = async (retries = 3) => {
+        for (let i = 0; i < retries; i++) {
+          const { data: roleData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", effectiveUserId)
+            .maybeSingle();
+
+          if (roleData) {
+            return roleData; // Success!
+          }
+          
+          // If no role found and not last retry, wait and try again
+          if (i < retries - 1) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+        }
+        return null; // All retries failed
+      };
+
+      const roleData = await checkOnboardingWithRetry();
 
       // If no role, user didn't complete onboarding
       if (!roleData) {
@@ -117,20 +148,35 @@ const Dashboard = () => {
         return;
       }
       
-      // If athlete, get athlete data
+      // If athlete, get athlete data (with retry logic)
       if (roleData.role === "athlete") {
-        const { data: athleteData } = await supabase
-          .from("athletes")
-          .select(`
-            id, user_id, parent_id, sport, position, graduation_year, high_school,
-            height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
-            created_at, updated_at, dominant_hand, profile_photo_url, 
-            profile_completion_pct, visibility, secondary_sports, club_team_name,
-            ncaa_eligibility_number, jersey_number, username, twitter_handle,
-            instagram_handle, team_logo_url, profile_claimed
-          `)
-          .eq("user_id", effectiveUserId)
-          .maybeSingle();
+        const checkAthleteWithRetry = async (retries = 3) => {
+          for (let i = 0; i < retries; i++) {
+            const { data: athleteData } = await supabase
+              .from("athletes")
+              .select(`
+                id, user_id, parent_id, sport, position, graduation_year, high_school,
+                height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
+                created_at, updated_at, dominant_hand, profile_photo_url, 
+                profile_completion_pct, visibility, secondary_sports, club_team_name,
+                ncaa_eligibility_number, jersey_number, username, twitter_handle,
+                instagram_handle, team_logo_url, profile_claimed
+              `)
+              .eq("user_id", effectiveUserId)
+              .maybeSingle();
+
+            if (athleteData) {
+              return athleteData;
+            }
+            
+            if (i < retries - 1) {
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
+          }
+          return null;
+        };
+
+        const athleteData = await checkAthleteWithRetry();
         
         // If role is athlete but no athlete profile exists, redirect to onboarding
         if (!athleteData) {
