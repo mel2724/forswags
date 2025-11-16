@@ -23,6 +23,7 @@ import { Footer } from "@/components/Footer";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { useBadgeListener } from "@/hooks/useBadgeListener";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { OnboardingProgressMeter } from "@/components/OnboardingProgressMeter";
 import {
   Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
   School, Target, CheckCircle2, Clock, Edit, BarChart3,
@@ -1318,6 +1319,13 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Onboarding Progress for Free Users */}
+              <OnboardingProgressMeter 
+                profile={profile}
+                athlete={athlete}
+                stats={stats}
+              />
 
               {/* Tutorial Progress */}
               {user?.id && (
