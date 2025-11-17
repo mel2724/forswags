@@ -25,8 +25,8 @@ export default function Landing() {
     "@type": "Organization",
     "name": "ForSWAGs",
     "description": "Student athlete development and &quot;Prime Dime&quot; matching platform",
-    "url": "https://forswags.org",
-    "logo": "https://forswags.org/src/assets/forswags-logo.png",
+    "url": "https://app.forswags.com",
+    "logo": "https://app.forswags.com/images/forswags-logo.png",
     "offers": [
       {
         "@type": "Offer",

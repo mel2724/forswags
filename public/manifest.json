@@ -9,13 +9,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/src/assets/logo-icon.png",
+      "src": "/images/logo-icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/src/assets/logo-icon.png",
+      "src": "/images/logo-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -41,7 +41,7 @@
   ],
   "screenshots": [
     {
-      "src": "/src/assets/logo-full.jpeg",
+      "src": "/images/logo-full.jpeg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide"
