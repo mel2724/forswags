@@ -1,3 +1,4 @@
+# Deployment workflow for Namecheap hosting
 name: Deploy sandbox to Namecheap (Vite/React)
 on:
   push:
