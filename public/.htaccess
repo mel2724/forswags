@@ -2,11 +2,11 @@ DirectoryIndex index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /sandbox/
+  RewriteBase /
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /sandbox/index.html [L]
+  RewriteRule . /index.html [L]
 </IfModule>
 
 Options -Indexes
