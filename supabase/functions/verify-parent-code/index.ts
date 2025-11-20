@@ -19,6 +19,11 @@ serve(async (req) => {
 
   try {
     const { parent_email, verification_code } = await req.json();
+    
+    // Extract client IP address for audit trail
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('x-real-ip') || 
+                     'unknown';
 
     if (!parent_email || !verification_code) {
       return new Response(
@@ -119,7 +124,7 @@ serve(async (req) => {
       throw athleteError;
     }
 
-    // Log security event
+    // Log security event with IP address for COPPA compliance
     await supabaseClient.rpc("log_security_event", {
       p_event_type: "parent_email_verified",
       p_severity: "medium",
@@ -128,6 +133,7 @@ serve(async (req) => {
         athlete_id: verification.athlete_id,
         parent_email,
         verification_id: verification.id,
+        ip_address: clientIp,
       },
     });
 
