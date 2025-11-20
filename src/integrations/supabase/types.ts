@@ -436,7 +436,7 @@ export type Database = {
           committed_school_id: string | null
           community_involvement: string | null
           consent_expires_at: string | null
-          consent_ip_address: unknown
+          consent_ip_address: string | null
           consent_timestamp: string | null
           consent_verified_by: string | null
           converted_at: string | null
@@ -525,7 +525,7 @@ export type Database = {
           committed_school_id?: string | null
           community_involvement?: string | null
           consent_expires_at?: string | null
-          consent_ip_address?: unknown
+          consent_ip_address?: string | null
           consent_timestamp?: string | null
           consent_verified_by?: string | null
           converted_at?: string | null
@@ -614,7 +614,7 @@ export type Database = {
           committed_school_id?: string | null
           community_involvement?: string | null
           consent_expires_at?: string | null
-          consent_ip_address?: unknown
+          consent_ip_address?: string | null
           consent_timestamp?: string | null
           consent_verified_by?: string | null
           converted_at?: string | null
@@ -932,6 +932,7 @@ export type Database = {
           coach_type: string
           created_at: string
           id: string
+          system_coach_id: string | null
           updated_at: string
         }
         Insert: {
@@ -942,6 +943,7 @@ export type Database = {
           coach_type: string
           created_at?: string
           id?: string
+          system_coach_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -952,6 +954,7 @@ export type Database = {
           coach_type?: string
           created_at?: string
           id?: string
+          system_coach_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -961,6 +964,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "athletes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_contacts_system_coach_id_fkey"
+            columns: ["system_coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1369,7 +1379,7 @@ export type Database = {
         Row: {
           email: string
           id: string
-          ip_address: unknown
+          ip_address: string
           submitted_at: string
           success: boolean | null
           user_agent: string | null
@@ -1377,7 +1387,7 @@ export type Database = {
         Insert: {
           email: string
           id?: string
-          ip_address: unknown
+          ip_address: string
           submitted_at?: string
           success?: boolean | null
           user_agent?: string | null
@@ -1385,7 +1395,7 @@ export type Database = {
         Update: {
           email?: string
           id?: string
-          ip_address?: unknown
+          ip_address?: string
           submitted_at?: string
           success?: boolean | null
           user_agent?: string | null
@@ -2206,6 +2216,7 @@ export type Database = {
         Row: {
           archived_data: Json | null
           auto_renew: boolean | null
+          billing_interval: string | null
           created_at: string
           downgraded_at: string | null
           end_date: string | null
@@ -2215,12 +2226,14 @@ export type Database = {
           start_date: string
           status: string
           stripe_subscription_id: string | null
+          tier: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           archived_data?: Json | null
           auto_renew?: boolean | null
+          billing_interval?: string | null
           created_at?: string
           downgraded_at?: string | null
           end_date?: string | null
@@ -2230,12 +2243,14 @@ export type Database = {
           start_date?: string
           status?: string
           stripe_subscription_id?: string | null
+          tier?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           archived_data?: Json | null
           auto_renew?: boolean | null
+          billing_interval?: string | null
           created_at?: string
           downgraded_at?: string | null
           end_date?: string | null
@@ -2245,6 +2260,7 @@ export type Database = {
           start_date?: string
           status?: string
           stripe_subscription_id?: string | null
+          tier?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2575,7 +2591,7 @@ export type Database = {
           created_at: string | null
           expires_at: string | null
           id: string
-          ip_address: unknown
+          ip_address: string | null
           parent_email: string
           user_id: string | null
           verification_code: string
@@ -2586,7 +2602,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
-          ip_address?: unknown
+          ip_address?: string | null
           parent_email: string
           user_id?: string | null
           verification_code: string
@@ -2597,7 +2613,7 @@ export type Database = {
           created_at?: string | null
           expires_at?: string | null
           id?: string
-          ip_address?: unknown
+          ip_address?: string | null
           parent_email?: string
           user_id?: string | null
           verification_code?: string
