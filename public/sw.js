@@ -1,5 +1,5 @@
-const CACHE_NAME = 'forswags-v11';
-const RUNTIME_CACHE = 'forswags-runtime-v11';
+const CACHE_NAME = 'forswags-v12';
+const RUNTIME_CACHE = 'forswags-runtime-v12';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
