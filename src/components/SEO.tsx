@@ -13,7 +13,7 @@ export function SEO({
   title, 
   description, 
   keywords, 
-  ogImage = "/src/assets/forswags-logo.png",
+  ogImage = "/images/forswags-logo.png",
   canonical,
   structuredData 
 }: SEOProps) {
