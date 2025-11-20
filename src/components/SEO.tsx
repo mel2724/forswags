@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import defaultOgImage from "@/assets/forswags-logo.png";
 
 interface SEOProps {
   title: string;
@@ -13,7 +14,7 @@ export function SEO({
   title, 
   description, 
   keywords, 
-  ogImage = "/images/forswags-logo.png",
+  ogImage = defaultOgImage,
   canonical,
   structuredData 
 }: SEOProps) {
@@ -22,6 +23,7 @@ export function SEO({
   const baseUrl = window.location.origin;
   const currentUrl = `${baseUrl}${window.location.pathname}`;
   const canonicalUrl = canonical || currentUrl;
+  const resolvedOgImage = ogImage.startsWith("http") ? ogImage : `${baseUrl}${ogImage}`;
 
   useEffect(() => {
     // Update title
@@ -49,14 +51,14 @@ export function SEO({
     updateMetaTag('og:title', fullTitle, true);
     updateMetaTag('og:description', description, true);
     updateMetaTag('og:url', currentUrl, true);
-    updateMetaTag('og:image', `${baseUrl}${ogImage}`, true);
+    updateMetaTag('og:image', resolvedOgImage, true);
     updateMetaTag('og:type', 'website', true);
 
     // Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image');
     updateMetaTag('twitter:title', fullTitle);
     updateMetaTag('twitter:description', description);
-    updateMetaTag('twitter:image', `${baseUrl}${ogImage}`);
+    updateMetaTag('twitter:image', resolvedOgImage);
 
     // Update or create canonical link
     let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -78,7 +80,7 @@ export function SEO({
       scriptTag.textContent = JSON.stringify(structuredData);
     }
 
-  }, [title, description, keywords, ogImage, canonicalUrl, currentUrl, fullTitle, baseUrl, structuredData]);
+  }, [title, description, keywords, ogImage, canonicalUrl, currentUrl, fullTitle, baseUrl, structuredData, resolvedOgImage]);
 
   return null;
 }
