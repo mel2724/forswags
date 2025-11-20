@@ -5,7 +5,7 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Version check - force reload if version mismatch
-const CURRENT_VERSION = 'v11';
+const CURRENT_VERSION = 'v12';
 const storedVersion = sessionStorage.getItem('app_version');
 if (storedVersion && storedVersion !== CURRENT_VERSION) {
   sessionStorage.setItem('app_version', CURRENT_VERSION);
