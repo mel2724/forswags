@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Share2, QrCode, FileDown, Copy, Download } from "lucide-react";
 import QRCodeLib from "qrcode";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import {
   Dialog,
   DialogContent,
@@ -100,14 +100,17 @@ export const ProfileActions = ({ athleteId, athleteName, athleteUsername, onGene
           try {
             const content = printWindow.document.body;
             
-            // Capture the page as canvas
-            const canvas = await html2canvas(content, {
-              scale: 2,
-              useCORS: true,
-              logging: false,
+            // Capture the page as image
+            const imgData = await toPng(content, {
+              quality: 1.0,
+              pixelRatio: 2,
             });
 
-            const imgData = canvas.toDataURL('image/png');
+            // Create a temporary image to get dimensions
+            const img = new Image();
+            img.src = imgData;
+            await new Promise(resolve => img.onload = resolve);
+
             const pdf = new jsPDF({
               orientation: 'portrait',
               unit: 'mm',
@@ -116,7 +119,7 @@ export const ProfileActions = ({ athleteId, athleteName, athleteUsername, onGene
 
             const imgWidth = 210; // A4 width in mm
             const pageHeight = 297; // A4 height in mm
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const imgHeight = (img.height * imgWidth) / img.width;
             let heightLeft = imgHeight;
             let position = 0;
 
