@@ -67,7 +67,7 @@ const AdminRankings = lazy(() => import("./pages/admin/AdminRankings"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
 const AdminEvaluations = lazy(() => import("./pages/admin/AdminEvaluations"));
 const AdminSponsors = lazy(() => import("./pages/admin/AdminSponsors"));
-const AdminPayPalSetup = lazy(() => import("./pages/admin/AdminPayPalSetup"));
+
 const AdminPromoCodes = lazy(() => import("./pages/admin/AdminPromoCodes"));
 const AdminRefunds = lazy(() => import("./pages/admin/AdminRefunds"));
 const AdminConsentMonitoring = lazy(() => import("./pages/admin/AdminConsentMonitoring"));
@@ -229,7 +229,7 @@ const App = () => {
                 <Route path="sponsors" element={<AdminSponsors />} />
                 <Route path="promo-codes" element={<AdminPromoCodes />} />
                 <Route path="refunds" element={<AdminRefunds />} />
-                <Route path="paypal-setup" element={<AdminPayPalSetup />} />
+                
                 <Route path="consent-monitoring" element={<AdminConsentMonitoring />} />
                 <Route path="archived-media" element={<AdminArchivedMedia />} />
                 <Route path="import-athletes" element={<AdminImportAthletes />} />
