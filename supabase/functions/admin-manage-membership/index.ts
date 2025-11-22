@@ -38,15 +38,14 @@ serve(async (req) => {
     const adminUser = userData.user;
     logStep("User authenticated", { userId: adminUser.id, email: adminUser.email });
 
-    // Verify admin role
-    const { data: roleData, error: roleError } = await supabaseClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", adminUser.id)
-      .eq("role", "admin")
-      .single();
+    // Verify admin role using RPC function
+    const { data: isAdmin, error: roleError } = await supabaseClient
+      .rpc('has_role', {
+        _user_id: adminUser.id,
+        _role: 'admin'
+      });
 
-    if (roleError || !roleData) {
+    if (roleError || !isAdmin) {
       throw new Error("Unauthorized: Admin access required");
     }
 

@@ -46,17 +46,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user is admin
-    const { data: roleData, error: roleError } = await supabaseAdmin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
+    // Check if user is admin using RPC function
+    const { data: isAdmin, error: roleError } = await supabaseAdmin
+      .rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
 
-    if (roleError || roleData?.role !== 'admin') {
+    if (roleError || !isAdmin) {
       return new Response(
         JSON.stringify({ success: false, error: 'Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Input validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(archivedMediaId)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid media ID format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
