@@ -63,6 +63,23 @@ export default function RecruiterDashboard() {
         return;
       }
 
+      // Verify recruiter profile exists
+      const { data: recruiterProfileCheck } = await supabase
+        .from("recruiter_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!recruiterProfileCheck) {
+        toast({
+          title: "Profile Incomplete",
+          description: "Please complete your recruiter profile setup",
+          variant: "destructive",
+        });
+        navigate("/recruiter/profile");
+        return;
+      }
+
       // Get user profile for tutorial status
       const { data: userProfileData } = await supabase
         .from("profiles")

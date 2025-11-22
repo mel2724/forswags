@@ -75,7 +75,29 @@ const CoachDashboard = () => {
       const hasCoachRole = rolesData?.some(r => r.role === "coach");
 
       if (!hasCoachRole) {
+        toast({
+          title: "Access Denied",
+          description: "You need coach access to view this page",
+          variant: "destructive",
+        });
         navigate("/dashboard");
+        return;
+      }
+
+      // Verify coach profile exists
+      const { data: coachProfileCheck } = await supabase
+        .from("coach_profiles")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!coachProfileCheck) {
+        toast({
+          title: "Profile Incomplete",
+          description: "Please complete your coach profile setup",
+          variant: "destructive",
+        });
+        navigate("/coach/profile");
         return;
       }
 

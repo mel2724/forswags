@@ -62,6 +62,9 @@ const Auth = () => {
   const [isStaffSignup, setIsStaffSignup] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, feedback: [], label: 'Weak' });
   const [showManualContinue, setShowManualContinue] = useState(false);
+  const [lastResetAttempt, setLastResetAttempt] = useState<number>(0);
+
+  const RESET_COOLDOWN_MS = 60000; // 1 minute
 
   useEffect(() => {
     // Check if this is a college staff signup
@@ -110,6 +113,23 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Password strength validation
+    const strength = checkPasswordStrength(password);
+    if (strength.strength < 3) {
+      toast.error("Password is too weak", {
+        description: strength.feedback.join(", "),
+        duration: 5000,
+      });
+      return;
+    }
     
     if (!termsAccepted) {
       toast.error("Please accept the Terms and Conditions to continue");
@@ -225,8 +245,15 @@ const Auth = () => {
     
     console.log("Sign in attempt:", { email, password: password ? "***" : "empty" });
     
+    // Input validation
     if (!email || !password) {
       toast.error("Please enter both email and password");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error("Please enter a valid email address");
       return;
     }
     
@@ -374,10 +401,27 @@ const Auth = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(resetEmail.trim())) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Rate limiting
+    const now = Date.now();
+    if (now - lastResetAttempt < RESET_COOLDOWN_MS) {
+      const remainingSeconds = Math.ceil((RESET_COOLDOWN_MS - (now - lastResetAttempt)) / 1000);
+      toast.error(`Please wait ${remainingSeconds} seconds before trying again`);
+      return;
+    }
+
     setLoading(true);
+    setLastResetAttempt(now);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
         redirectTo: `${window.location.origin}/auth`,
       });
 
@@ -401,8 +445,13 @@ const Auth = () => {
       return;
     }
 
-    if (newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    // Check password strength
+    const strength = checkPasswordStrength(newPassword);
+    if (strength.strength < 3) {
+      toast.error("Password is too weak", {
+        description: strength.feedback.join(", "),
+        duration: 5000,
+      });
       return;
     }
 
