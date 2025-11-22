@@ -94,7 +94,7 @@ const menuGroups: MenuGroup[] = [
       { title: "Refunds", url: "/admin/refunds" },
       { title: "Promo Codes", url: "/admin/promo-codes" },
       { title: "Sponsors", url: "/admin/sponsors" },
-      { title: "PayPal Setup", url: "/admin/paypal-setup" },
+      
     ],
   },
   {

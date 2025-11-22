@@ -24,7 +24,9 @@ export default function Membership() {
   const [promoCode, setPromoCode] = useState("");
   const [promoCodeLoading, setPromoCodeLoading] = useState(false);
   const [validPromoCode, setValidPromoCode] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "paypal">("stripe");
+  const [lastPromoAttempt, setLastPromoAttempt] = useState<number>(0);
+  const PROMO_COOLDOWN_MS = 3000; // 3 second cooldown between attempts
+  
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -84,35 +86,14 @@ export default function Membership() {
   const handleSubscribe = async (priceId: string, productName: string, priceAmount: number, interval: string) => {
     setLoading(true);
     try {
-      if (paymentMethod === "stripe") {
-        const { data, error } = await supabase.functions.invoke("create-checkout", {
-          body: { priceId, promoCode: validPromoCode },
-        });
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId, promoCode: validPromoCode },
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (data?.url) {
-          window.open(data.url, "_blank");
-        }
-      } else {
-        // PayPal checkout - note: requires PayPal plan IDs to be configured
-        toast({
-          title: "PayPal Integration",
-          description: "PayPal subscription plans need to be set up in your PayPal Business account first.",
-        });
-        
-        // Uncomment when PayPal plans are configured:
-        // const { data, error } = await supabase.functions.invoke("create-paypal-checkout", {
-        //   body: { 
-        //     plan: "YOUR_PAYPAL_PLAN_ID", // Replace with actual PayPal plan ID
-        //     price: priceAmount,
-        //     interval: interval
-        //   },
-        // });
-        // if (error) throw error;
-        // if (data?.url) {
-        //   window.open(data.url, "_blank");
-        // }
+      if (data?.url) {
+        window.open(data.url, "_blank");
       }
     } catch (error: any) {
       console.error("Checkout error:", error);
@@ -129,6 +110,19 @@ export default function Membership() {
   const validatePromoCode = async () => {
     if (!promoCode.trim()) return;
     
+    // Rate limiting
+    const now = Date.now();
+    const timeSinceLastAttempt = now - lastPromoAttempt;
+    if (timeSinceLastAttempt < PROMO_COOLDOWN_MS) {
+      toast({
+        title: "Please wait",
+        description: `Try again in ${Math.ceil((PROMO_COOLDOWN_MS - timeSinceLastAttempt) / 1000)} seconds`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLastPromoAttempt(now);
     setPromoCodeLoading(true);
     try {
       const { data, error } = await supabase
@@ -260,43 +254,6 @@ export default function Membership() {
               </div>
             )}
 
-            {/* Payment Method Selection */}
-            {!subscriptionStatus?.subscribed && (
-              <div className="mb-8 max-w-md mx-auto">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Select Payment Method</CardTitle>
-                    <CardDescription>Choose how you'd like to pay</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <RadioGroup value={paymentMethod} onValueChange={(value: any) => setPaymentMethod(value)}>
-                      <div className="flex items-center space-x-3 p-3 border rounded-lg hover:border-primary cursor-pointer">
-                        <RadioGroupItem value="stripe" id="stripe" />
-                        <Label htmlFor="stripe" className="flex items-center gap-2 cursor-pointer flex-1">
-                          <CreditCard className="h-5 w-5" />
-                          <div>
-                            <div className="font-semibold">Credit Card (Stripe)</div>
-                            <div className="text-sm text-muted-foreground">Visa, Mastercard, Amex</div>
-                          </div>
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-3 p-3 border rounded-lg hover:border-primary cursor-pointer">
-                        <RadioGroupItem value="paypal" id="paypal" />
-                        <Label htmlFor="paypal" className="flex items-center gap-2 cursor-pointer flex-1">
-                          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.773.773 0 0 1 .762-.64h8.236c2.747 0 4.971 2.223 4.971 4.97 0 2.746-2.224 4.97-4.971 4.97h-4.61l-1.255 7.676a.641.641 0 0 1-.632.641h-.369zm12.738-7.676h-4.61l-1.255 7.676a.641.641 0 0 1-.633.641h-.369l.001-.001H8.34a.641.641 0 0 1-.633-.74l3.107-16.877a.773.773 0 0 1 .762-.64h8.236c2.747 0 4.971 2.223 4.971 4.97 0 2.746-2.224 4.97-4.971 4.97h.002z"/>
-                          </svg>
-                          <div>
-                            <div className="font-semibold">PayPal</div>
-                            <div className="text-sm text-muted-foreground">Fast & secure</div>
-                          </div>
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
 
             {/* Promo Code Section */}
             {!subscriptionStatus?.subscribed && (

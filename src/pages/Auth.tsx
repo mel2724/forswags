@@ -86,10 +86,21 @@ const Auth = () => {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Only navigate to onboarding for NEW signups, not for sign-ins
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Sync membership status on sign in
+      if (event === "SIGNED_IN" && session) {
+        try {
+          await supabase.functions.invoke("check-subscription", {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          console.log("[AUTH] Membership status synced after sign in");
+        } catch (error) {
+          console.error("[AUTH] Failed to sync membership:", error);
+        }
+      }
+      
+      // Navigate to dashboard for existing users, don't interfere with signup flow
       if (event === "SIGNED_IN" && session && window.location.pathname === "/auth") {
-        // This will be handled by handleSignIn instead
         return;
       }
     });
