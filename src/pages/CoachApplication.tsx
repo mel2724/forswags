@@ -8,6 +8,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, X } from "lucide-react";
+import { z } from "zod";
+
+const ALLOWED_RESUME_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+const MAX_RESUME_SIZE = 5 * 1024 * 1024; // 5MB
+
+const coachApplicationSchema = z.object({
+  full_name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
+  email: z.string().trim().email("Invalid email").max(255, "Email too long"),
+  phone: z.string().trim().max(20, "Phone too long").optional().or(z.literal('')),
+  experience_years: z.number().min(0, "Must be positive").max(99, "Invalid years").optional(),
+  certifications: z.string().trim().max(1000, "Certifications too long").optional().or(z.literal('')),
+  coaching_background: z.string().trim().min(10, "Please provide more details").max(2000, "Background too long"),
+  why_mentor: z.string().trim().min(10, "Please provide more details").max(2000, "Response too long"),
+  specializations: z.string().trim().max(500, "Specializations too long").optional().or(z.literal('')),
+  twitter_handle: z.string().trim().max(50, "Handle too long").optional().or(z.literal('')),
+  instagram_handle: z.string().trim().max(50, "Handle too long").optional().or(z.literal('')),
+  facebook_handle: z.string().trim().max(100, "Handle too long").optional().or(z.literal('')),
+  tiktok_handle: z.string().trim().max(50, "Handle too long").optional().or(z.literal('')),
+});
 
 const CoachApplication = () => {
   const navigate = useNavigate();
@@ -37,7 +56,8 @@ const CoachApplication = () => {
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size
+      if (file.size > MAX_RESUME_SIZE) {
         toast({
           title: "File too large",
           description: "Resume must be less than 5MB",
@@ -45,6 +65,17 @@ const CoachApplication = () => {
         });
         return;
       }
+      
+      // Validate file type
+      if (!ALLOWED_RESUME_TYPES.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF or Word document",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setResumeFile(file);
       setResumePreview(file.name);
     }
@@ -60,17 +91,58 @@ const CoachApplication = () => {
     setLoading(true);
 
     try {
-      const specializationsArray = formData.specializations
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
+      // Validate form data
+      const validation = coachApplicationSchema.safeParse({
+        ...formData,
+        experience_years: formData.experience_years ? parseInt(formData.experience_years) : undefined,
+      });
+
+      if (!validation.success) {
+        toast({
+          title: "Validation Error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Rate limiting check - max 3 applications per day per email
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: recentApplications } = await supabase
+        .from("coach_applications")
+        .select("id")
+        .eq("email", validation.data.email)
+        .gte("created_at", oneDayAgo);
+
+      if (recentApplications && recentApplications.length >= 3) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "You can only submit 3 applications per day. Please try again later.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const specializationsArray = validation.data.specializations
+        ? validation.data.specializations.split(",").map((s) => s.trim()).filter((s) => s.length > 0)
+        : [];
 
       let resumeUrl = null;
 
       // Upload resume if provided
       if (resumeFile) {
+        // Re-validate file before upload
+        if (!ALLOWED_RESUME_TYPES.includes(resumeFile.type)) {
+          throw new Error("Invalid file type");
+        }
+        if (resumeFile.size > MAX_RESUME_SIZE) {
+          throw new Error("File too large");
+        }
+
         const fileExt = resumeFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
         const filePath = `resumes/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
@@ -87,19 +159,19 @@ const CoachApplication = () => {
       }
 
       const { error } = await supabase.from("coach_applications").insert({
-        full_name: formData.full_name,
-        email: formData.email,
-        phone: formData.phone,
-        experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
-        certifications: formData.certifications,
-        coaching_background: formData.coaching_background,
-        why_mentor: formData.why_mentor,
-        specializations: specializationsArray,
+        full_name: validation.data.full_name,
+        email: validation.data.email,
+        phone: validation.data.phone || null,
+        experience_years: validation.data.experience_years || null,
+        certifications: validation.data.certifications || null,
+        coaching_background: validation.data.coaching_background,
+        why_mentor: validation.data.why_mentor,
+        specializations: specializationsArray.length > 0 ? specializationsArray : null,
         resume_url: resumeUrl,
-        twitter_handle: formData.twitter_handle || null,
-        instagram_handle: formData.instagram_handle || null,
-        facebook_handle: formData.facebook_handle || null,
-        tiktok_handle: formData.tiktok_handle || null,
+        twitter_handle: validation.data.twitter_handle || null,
+        instagram_handle: validation.data.instagram_handle || null,
+        facebook_handle: validation.data.facebook_handle || null,
+        tiktok_handle: validation.data.tiktok_handle || null,
       });
 
       if (error) throw error;
