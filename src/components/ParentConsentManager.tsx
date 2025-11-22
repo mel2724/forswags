@@ -270,7 +270,7 @@ export const ParentConsentManager = ({ athlete, onConsentUpdate }: ParentConsent
             <p className="flex items-start gap-1">
               <Shield className="h-3 w-3 mt-0.5 flex-shrink-0" />
               <span>
-                As required by COPPA, parental consent is needed for minors under 18. 
+                As required by COPPA, parental consent is needed for minors under 13. 
                 You may revoke consent at any time.
               </span>
             </p>
