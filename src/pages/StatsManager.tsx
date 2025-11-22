@@ -206,17 +206,32 @@ const StatsManager = () => {
     const file = event.target.files?.[0];
     if (!file || !athleteId) return;
 
-    // Validate file type
-    if (!file.name.endsWith('.csv')) {
-      toast.error("Please upload a CSV file");
+    // Validate file type (extension and MIME type)
+    if (!file.name.endsWith('.csv') || file.type !== 'text/csv') {
+      toast.error("Please upload a valid CSV file");
+      event.target.value = '';
       return;
     }
 
-    // Validate file size (max 1MB)
-    if (file.size > 1024 * 1024) {
-      toast.error("File size must be less than 1MB");
+    // Validate file size (max 500KB for CSV)
+    const MAX_CSV_SIZE = 500 * 1024; // 500KB
+    if (file.size > MAX_CSV_SIZE) {
+      toast.error("CSV file must be less than 500KB");
+      event.target.value = '';
       return;
     }
+
+    // Rate limiting - max 1 import per minute
+    const lastImportKey = `csv_import_${athleteId}`;
+    const lastImport = localStorage.getItem(lastImportKey);
+    const now = Date.now();
+    if (lastImport && now - parseInt(lastImport) < 60000) {
+      const secondsLeft = Math.ceil((60000 - (now - parseInt(lastImport))) / 1000);
+      toast.error(`Please wait ${secondsLeft} seconds before importing again`);
+      event.target.value = '';
+      return;
+    }
+    localStorage.setItem(lastImportKey, now.toString());
 
     setSaving(true);
     const errors: string[] = [];
@@ -225,10 +240,22 @@ const StatsManager = () => {
 
     try {
       const text = await file.text();
+      
+      // Validate file signature (CSV should start with text characters)
+      const firstBytes = text.substring(0, 100);
+      if (!/^[\x20-\x7E\r\n\t]+$/.test(firstBytes)) {
+        throw new Error("Invalid CSV file format - file appears to be corrupted or binary");
+      }
       const lines = text.split('\n').filter(line => line.trim());
       
       if (lines.length < 2) {
         throw new Error("CSV file is empty or has no data rows");
+      }
+      
+      // Limit total rows to prevent abuse (max 100 rows)
+      const MAX_ROWS = 100;
+      if (lines.length - 1 > MAX_ROWS) {
+        throw new Error(`CSV file exceeds maximum allowed rows (${MAX_ROWS}). Please split your data into smaller files.`);
       }
 
       // Parse header - support multiple CSV formats (ForSwags, Hudl, MaxPreps)
@@ -294,7 +321,7 @@ const StatsManager = () => {
       }
 
       // Process each row
-      for (let i = 1; i < lines.length && i <= 100; i++) { // Limit to 100 rows
+      for (let i = 1; i < lines.length; i++) {
         try {
           const values = lines[i].split(',').map(v => v.trim());
           
@@ -305,23 +332,37 @@ const StatsManager = () => {
           }
 
           const statName = values[indices.name];
-          const statValue = parseFloat(values[indices.value]);
+          const rawStatValue = values[indices.value];
           const season = indices.season >= 0 && values[indices.season] 
             ? values[indices.season] 
-            : new Date().getFullYear().toString(); // Default to current year if no season
+            : new Date().getFullYear().toString();
           const unit = indices.unit >= 0 ? values[indices.unit] : undefined;
           const category = indices.category >= 0 ? values[indices.category] : undefined;
           const isHighlighted = indices.highlighted >= 0 
             ? values[indices.highlighted].toLowerCase() === 'yes' || values[indices.highlighted] === '1'
             : false;
 
+          // Sanitize inputs to prevent injection
+          const sanitizedStatName = statName.replace(/[<>]/g, '').substring(0, 100);
+          const sanitizedSeason = season.replace(/[<>]/g, '').substring(0, 20);
+          const sanitizedUnit = unit?.replace(/[<>]/g, '').substring(0, 20);
+          const sanitizedCategory = category?.replace(/[<>]/g, '').substring(0, 50);
+          
+          // Parse and validate stat value
+          const statValue = parseFloat(rawStatValue);
+          if (isNaN(statValue)) {
+            errors.push(`Row ${i + 1}: Invalid numeric value`);
+            failedCount++;
+            continue;
+          }
+
           // Validate data
           const validation = statSchema.safeParse({
-            stat_name: statName,
+            stat_name: sanitizedStatName,
             stat_value: statValue,
-            season: season,
-            category: category || undefined,
-            unit: unit || undefined,
+            season: sanitizedSeason,
+            category: sanitizedCategory || undefined,
+            unit: sanitizedUnit || undefined,
             is_highlighted: isHighlighted,
           });
 
@@ -329,6 +370,23 @@ const StatsManager = () => {
             errors.push(`Row ${i + 1}: ${validation.error.errors[0].message}`);
             failedCount++;
             continue;
+          }
+
+          // Verify ownership - ensure athleteId belongs to current user
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            throw new Error("Session expired. Please log in again.");
+          }
+          
+          const { data: athlete } = await supabase
+            .from("athletes")
+            .select("id")
+            .eq("id", athleteId)
+            .eq("user_id", session.user.id)
+            .single();
+            
+          if (!athlete) {
+            throw new Error("Unauthorized: Cannot import stats for this athlete");
           }
 
           // Insert stat
