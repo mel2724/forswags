@@ -147,14 +147,39 @@ export default function SocialMedia() {
     return `${content}\n\n${handle} ${FORSWAGS_TAG}`;
   };
 
+  const sanitizeContent = (content: string): string => {
+    // Remove potential XSS patterns
+    return content
+      .replace(/<script[^>]*>.*?<\/script>/gi, '')
+      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .trim();
+  };
+
   const shareToTwitter = async () => {
     if (!postContent.trim()) {
       toast.error("Please enter some content to share");
       return;
     }
+
+    // Validate length
+    if (postContent.length > PLATFORM_LIMITS.twitter) {
+      toast.error(`Twitter posts must be ${PLATFORM_LIMITS.twitter} characters or less`);
+      return;
+    }
+
+    // Rate limiting check
+    const lastPostKey = 'lastTwitterPost';
+    const lastPost = localStorage.getItem(lastPostKey);
+    if (lastPost && Date.now() - parseInt(lastPost) < 60000) {
+      toast.error("Please wait a minute before posting again");
+      return;
+    }
     
     try {
-      const formattedContent = formatPostContent(postContent);
+      const sanitizedContent = sanitizeContent(postContent);
+      const formattedContent = formatPostContent(sanitizedContent);
       
       const { data, error } = await supabase.functions.invoke('twitter-post', {
         body: { text: formattedContent }
@@ -162,6 +187,7 @@ export default function SocialMedia() {
 
       if (error) throw error;
 
+      localStorage.setItem(lastPostKey, Date.now().toString());
       toast.success("Posted to Twitter successfully!");
       setPostContent("");
     } catch (error: any) {
@@ -179,7 +205,14 @@ export default function SocialMedia() {
       toast.error("Please enter some content to share");
       return;
     }
-    const formattedContent = formatPostContent(postContent);
+
+    if (postContent.length > PLATFORM_LIMITS.facebook) {
+      toast.error(`Facebook posts must be ${PLATFORM_LIMITS.facebook} characters or less`);
+      return;
+    }
+
+    const sanitizedContent = sanitizeContent(postContent);
+    const formattedContent = formatPostContent(sanitizedContent);
     const url = `https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(formattedContent)}`;
     window.open(url, "_blank");
     toast.success("Opening Facebook to share your post!");
@@ -190,9 +223,14 @@ export default function SocialMedia() {
       toast.error("Please enter some content to share");
       return;
     }
+
+    if (postContent.length > PLATFORM_LIMITS.instagram) {
+      toast.error(`Instagram posts must be ${PLATFORM_LIMITS.instagram} characters or less`);
+      return;
+    }
     
-    // Instagram requires an image, so we'll copy to clipboard for now
-    const formattedContent = formatPostContent(postContent);
+    const sanitizedContent = sanitizeContent(postContent);
+    const formattedContent = formatPostContent(sanitizedContent);
     navigator.clipboard.writeText(formattedContent);
     toast.success("Content copied! Open Instagram and paste your post", {
       description: "The caption has been copied to your clipboard with ForSWAGs branding. To post directly, use the Graphics tab to create an image first."
@@ -204,7 +242,14 @@ export default function SocialMedia() {
       toast.error("Please enter some content to share");
       return;
     }
-    const formattedContent = formatPostContent(postContent);
+
+    if (postContent.length > PLATFORM_LIMITS.tiktok) {
+      toast.error(`TikTok posts must be ${PLATFORM_LIMITS.tiktok} characters or less`);
+      return;
+    }
+
+    const sanitizedContent = sanitizeContent(postContent);
+    const formattedContent = formatPostContent(sanitizedContent);
     navigator.clipboard.writeText(formattedContent);
     toast.success("Content copied! Open TikTok and paste your post", {
       description: "The caption has been copied to your clipboard with ForSWAGs branding"

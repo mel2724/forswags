@@ -13,6 +13,24 @@ import OfferComparison from "@/components/OfferComparison";
 import DecisionTimeline from "@/components/DecisionTimeline";
 import { OfferForm } from "@/components/offer/OfferForm";
 import { OfferCard } from "@/components/offer/OfferCard";
+import { z } from "zod";
+
+const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB
+
+const offerSchema = z.object({
+  school_id: z.string().min(1, "School is required"),
+  offer_type: z.string().min(1, "Offer type is required"),
+  scholarship_amount: z.number().min(0, "Amount must be positive").optional().nullable(),
+  offer_date: z.string().min(1, "Offer date is required"),
+  response_deadline: z.string().optional().nullable(),
+  status: z.string().min(1, "Status is required"),
+  contact_name: z.string().trim().max(100, "Name too long").optional().or(z.literal('')),
+  contact_email: z.string().trim().email("Invalid email").max(255, "Email too long").optional().or(z.literal('')),
+  contact_phone: z.string().trim().max(20, "Phone too long").optional().or(z.literal('')),
+  notes: z.string().trim().max(2000, "Notes too long").optional().or(z.literal('')),
+  negotiation_notes: z.string().trim().max(2000, "Notes too long").optional().or(z.literal('')),
+});
 
 interface School {
   id: string;
@@ -145,10 +163,22 @@ const OfferTracker = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
+      toast.error("Invalid file type. Please upload PDF, JPEG, or PNG files only.");
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_DOCUMENT_SIZE) {
+      toast.error("File too large. Maximum size is 10MB.");
+      return;
+    }
+
     setUploadingDocument(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('offer-documents')
@@ -178,6 +208,37 @@ const OfferTracker = () => {
     e.preventDefault();
 
     try {
+      // Validate form data
+      const validation = offerSchema.safeParse({
+        school_id: formData.school_id,
+        offer_type: formData.offer_type,
+        scholarship_amount: formData.scholarship_amount ? parseFloat(formData.scholarship_amount) : null,
+        offer_date: formData.offer_date,
+        response_deadline: formData.response_deadline || null,
+        status: formData.status,
+        contact_name: formData.contact_name,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone,
+        notes: formData.notes,
+        negotiation_notes: formData.negotiation_notes,
+      });
+
+      if (!validation.success) {
+        toast.error(validation.error.errors[0].message);
+        return;
+      }
+
+      // Verify athlete ownership
+      const { data: athlete } = await supabase
+        .from("athletes")
+        .select("user_id")
+        .eq("id", athleteId)
+        .single();
+
+      if (!athlete || athlete.user_id !== userId) {
+        toast.error("Unauthorized: You can only manage your own offers");
+        return;
+      }
       const offerData = {
         athlete_id: athleteId,
         school_id: formData.school_id,

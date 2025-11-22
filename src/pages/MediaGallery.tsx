@@ -87,6 +87,22 @@ const MediaGallery = () => {
     }
   };
 
+  const validateVideoFile = (file: File): boolean => {
+    const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/mpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Invalid file type. Please upload MP4, MOV, AVI, or MPEG videos only.");
+      return false;
+    }
+
+    const maxSize = 500 * 1024 * 1024; // 500MB
+    if (file.size > maxSize) {
+      toast.error("File too large. Maximum video size is 500MB.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleUpload = async (
     file: File,
     mediaType: "introduction_video" | "community_video" | "game_video",
@@ -96,6 +112,11 @@ const MediaGallery = () => {
     onSuccess?: () => void
   ) => {
     if (!athleteId) return false;
+
+    // Validate file
+    if (!validateVideoFile(file)) {
+      return false;
+    }
 
     // Check free tier limit
     if (isFree && totalVideos >= 1) {
@@ -118,6 +139,20 @@ const MediaGallery = () => {
       setUploading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+
+      // Rate limiting - max 5 uploads per hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: recentUploads } = await supabase
+        .from("media_assets")
+        .select("id")
+        .eq("user_id", user.id)
+        .gte("created_at", oneHourAgo);
+
+      if (recentUploads && recentUploads.length >= 5) {
+        toast.error("Rate limit exceeded. Maximum 5 uploads per hour. Please try again later.");
+        setUploading(false);
+        return false;
+      }
 
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/${mediaType}_${Date.now()}.${fileExt}`;
