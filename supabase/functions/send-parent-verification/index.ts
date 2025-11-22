@@ -30,9 +30,6 @@ serve(async (req) => {
       );
     }
 
-    // Generate 6-digit verification code
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
     // Get user session
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -51,6 +48,34 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // SECURITY: Validate parent email is different from user email
+    if (user.email && parent_email.toLowerCase() === user.email.toLowerCase()) {
+      return new Response(
+        JSON.stringify({ error: "Parent email must be different from account email" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // RATE LIMITING: Check for recent verification sends to prevent spam
+    const { data: recentVerifications } = await supabaseClient
+      .from("parent_verifications")
+      .select("created_at")
+      .eq("user_id", user.id)
+      .eq("parent_email", parent_email)
+      .gte("created_at", new Date(Date.now() - 60000).toISOString()) // Last minute
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (recentVerifications && recentVerifications.length > 0) {
+      return new Response(
+        JSON.stringify({ error: "Please wait at least 1 minute before requesting another verification code" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Get athlete_id for this user (may not exist yet during onboarding)
     const { data: athlete, error: athleteError } = await supabaseClient
@@ -147,6 +172,21 @@ serve(async (req) => {
     });
 
     console.log("Email sent:", emailResponse);
+
+    // Log security event for audit trail
+    await supabaseClient.from("security_events").insert({
+      user_id: user.id,
+      event_type: "parent_verification_sent",
+      severity: "info",
+      description: `Parent verification email sent to ${parent_email} for child ${child_name}`,
+      ip_address: ipAddress,
+      metadata: {
+        parent_email,
+        child_name,
+        child_dob,
+        verification_id: insertedVerification.id,
+      }
+    });
 
     if (emailResponse.error) {
       console.error("Failed to send email:", emailResponse.error);

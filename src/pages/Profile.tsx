@@ -19,7 +19,13 @@ import { useUserTier } from "@/hooks/useFeatureAccess";
 const profileSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
   phone: z.string().optional(),
-  date_of_birth: z.string().optional(),
+  date_of_birth: z.string().refine((dob) => {
+    if (!dob) return true; // Optional
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    return !isNaN(birthDate.getTime()) && age >= 0 && age <= 120;
+  }, "Please enter a valid date of birth").optional(),
   gender: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -75,7 +81,21 @@ const athleteSchema = z.object({
   message_to_coaches: z.string().optional(),
   highlights_url: z.string().url().optional().or(z.literal("")),
   bio: z.string().max(1000).optional(),
-});
+  parent_email: z.string().email("Invalid parent email").optional().or(z.literal("")),
+  date_of_birth: z.string().refine((dob) => {
+    if (!dob) return true;
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    return !isNaN(birthDate.getTime()) && age >= 0 && age <= 120;
+  }, "Please enter a valid date of birth").optional(),
+}).refine((data) => {
+  // If parent_email is provided, it must be different from athlete's email
+  if (data.parent_email && data.parent_email !== "") {
+    return true; // Will validate separately in frontend
+  }
+  return true;
+}, "Parent email must be different from athlete email");
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -215,6 +235,26 @@ const Profile = () => {
         ? parseInt(heightFeet) * 12 + parseInt(heightInches)
         : undefined;
 
+      // Fetch current athlete data to check consent status
+      const { data: currentAthlete } = await supabase
+        .from("athletes")
+        .select("date_of_birth, parent_email, consent_expires_at, is_parent_verified")
+        .eq("id", athleteId)
+        .single();
+
+      // Check if consent has expired for minors
+      let shouldBePrivate = false;
+      if (currentAthlete?.date_of_birth) {
+        const age = new Date().getFullYear() - new Date(currentAthlete.date_of_birth).getFullYear();
+        if (age < 18 && currentAthlete.consent_expires_at) {
+          const consentExpired = new Date(currentAthlete.consent_expires_at) < new Date();
+          if (consentExpired) {
+            shouldBePrivate = true;
+            toast.warning("Parental consent has expired. Profile set to private.");
+          }
+        }
+      }
+
       // Validate athlete data
       const athleteData = athleteSchema.parse({
         sport,
@@ -248,23 +288,30 @@ const Profile = () => {
         : undefined;
 
       // Update athlete profile
+      const updateData: any = {
+        username: formattedUsername,
+        sport: athleteData.sport,
+        position: athleteData.position,
+        height_in: athleteData.height_in,
+        weight_lb: athleteData.weight_lb,
+        high_school: athleteData.high_school,
+        graduation_year: athleteData.graduation_year,
+        gpa: athleteData.gpa,
+        sat_score: athleteData.sat_score,
+        act_score: athleteData.act_score,
+        highlights_url: athleteData.highlights_url,
+        bio: athleteData.bio,
+        team_logo_url: teamLogoUrl,
+      };
+
+      // Auto-set to private if consent expired
+      if (shouldBePrivate) {
+        updateData.visibility = 'private';
+      }
+
       const { error: athleteError } = await supabase
         .from("athletes")
-        .update({
-          username: formattedUsername,
-          sport: athleteData.sport,
-          position: athleteData.position,
-          height_in: athleteData.height_in,
-          weight_lb: athleteData.weight_lb,
-          high_school: athleteData.high_school,
-          graduation_year: athleteData.graduation_year,
-          gpa: athleteData.gpa,
-          sat_score: athleteData.sat_score,
-          act_score: athleteData.act_score,
-          highlights_url: athleteData.highlights_url,
-          bio: athleteData.bio,
-          team_logo_url: teamLogoUrl,
-        })
+        .update(updateData)
         .eq("id", athleteId);
 
       if (athleteError) throw athleteError;
