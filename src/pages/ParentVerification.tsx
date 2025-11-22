@@ -7,6 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const verificationSchema = z.object({
+  email: z.string().email("Please enter a valid email address").max(255, "Email must be less than 255 characters"),
+  code: z.string().length(6, "Verification code must be exactly 6 digits").regex(/^\d+$/, "Code must only contain numbers"),
+});
 
 const ParentVerification = () => {
   const [searchParams] = useSearchParams();
@@ -17,6 +23,8 @@ const ParentVerification = () => {
   const [verified, setVerified] = useState(false);
   const [childName, setChildName] = useState("");
   const [resending, setResending] = useState(false);
+  const [lastResendTime, setLastResendTime] = useState<number>(0);
+  const RESEND_COOLDOWN_MS = 60000; // 1 minute cooldown
 
   useEffect(() => {
     // Get child name from URL param
@@ -27,8 +35,11 @@ const ParentVerification = () => {
   }, [searchParams]);
 
   const handleVerify = async () => {
-    if (!email || !code) {
-      toast.error("Please enter both email and verification code");
+    // Validate inputs
+    const validation = verificationSchema.safeParse({ email, code });
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
+      toast.error("Validation Error", { description: errors });
       return;
     }
 
@@ -60,12 +71,26 @@ const ParentVerification = () => {
   };
 
   const handleResend = async () => {
-    if (!email) {
-      toast.error("Please enter your email address");
+    // Rate limiting check
+    const now = Date.now();
+    const timeSinceLastResend = now - lastResendTime;
+    if (timeSinceLastResend < RESEND_COOLDOWN_MS) {
+      const remainingSeconds = Math.ceil((RESEND_COOLDOWN_MS - timeSinceLastResend) / 1000);
+      toast.error("Please wait before resending", {
+        description: `You can resend in ${remainingSeconds} seconds.`
+      });
+      return;
+    }
+
+    // Validate email
+    const emailValidation = z.string().email().max(255).safeParse(email);
+    if (!emailValidation.success) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
     setResending(true);
+    setLastResendTime(now);
     try {
       const { data, error } = await supabase.functions.invoke("resend-parent-verification", {
         body: { 

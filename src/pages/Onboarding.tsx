@@ -1165,7 +1165,7 @@ const Onboarding = () => {
                 </div>
 
                 {/* Parent/Guardian Consent for Minors */}
-                {dateOfBirth && age !== null && age < 18 && publicProfileConsent && (
+                {dateOfBirth && age !== null && age < 13 && publicProfileConsent && (
                   <div className="pt-4 border-t border-border space-y-4">
                     <div className={`space-y-4 p-4 rounded-lg ${isUnder13 ? 'border border-amber-500 bg-amber-50 dark:bg-amber-950/20' : 'border border-border bg-muted/50'}`}>
                       <h3 className={`font-semibold ${isUnder13 ? 'text-amber-900 dark:text-amber-100' : ''}`}>
@@ -1251,7 +1251,7 @@ const Onboarding = () => {
               <Button 
                 onClick={handleComplete} 
                 className="flex-1 btn-hero" 
-                disabled={loading || (age !== null && age < 18 && publicProfileConsent && !parentEmail)}
+                disabled={loading || (age !== null && age < 13 && publicProfileConsent && !parentEmail)}
               >
                 {loading ? "Creating Profile..." : "Complete Setup"}
               </Button>
