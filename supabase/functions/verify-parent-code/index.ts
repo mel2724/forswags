@@ -137,6 +137,20 @@ serve(async (req) => {
       },
     });
 
+    // Log security event for audit trail
+    await supabaseClient.from("security_events").insert({
+      user_id: verification.user_id,
+      event_type: "parent_verification_completed",
+      severity: "info",
+      description: `Parent email ${parent_email} successfully verified for athlete`,
+      ip_address: clientIp,
+      metadata: {
+        parent_email,
+        athlete_id: verification.athlete_id,
+        verification_id: verification.id,
+      }
+    });
+
     return new Response(
       JSON.stringify({ valid: true }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

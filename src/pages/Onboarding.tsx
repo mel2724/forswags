@@ -228,6 +228,13 @@ const Onboarding = () => {
       return;
     }
 
+    // SECURITY: Validate parent email is different from athlete email
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.email && parentEmail.toLowerCase() === user.email.toLowerCase()) {
+      toast.error("Parent email must be different from your account email");
+      return;
+    }
+
     setSendingVerification(true);
     try {
       const { error } = await supabase.functions.invoke('send-parent-verification', {

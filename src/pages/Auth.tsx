@@ -52,6 +52,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [isResettingPassword, setIsResettingPassword] = useState(false);
@@ -121,6 +122,21 @@ const Auth = () => {
       return;
     }
 
+    // Date of birth validation (COPPA compliance)
+    if (!dateOfBirth) {
+      toast.error("Date of birth is required for COPPA compliance");
+      return;
+    }
+    
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    
+    if (isNaN(birthDate.getTime()) || age < 0 || age > 120) {
+      toast.error("Please enter a valid date of birth");
+      return;
+    }
+
     // Password strength validation
     const strength = checkPasswordStrength(password);
     if (strength.strength < 3) {
@@ -157,6 +173,7 @@ const Auth = () => {
         options: {
           data: {
             full_name: fullName,
+            date_of_birth: dateOfBirth,
           },
           emailRedirectTo: `${window.location.origin}/onboarding`,
         },
@@ -641,6 +658,21 @@ const Auth = () => {
                   autoComplete="name"
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-dob">Date of Birth *</Label>
+                <Input
+                  id="signup-dob"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Required for COPPA compliance. Minors under 13 need parental consent.
+                </p>
               </div>
 
               <div className="space-y-2">
