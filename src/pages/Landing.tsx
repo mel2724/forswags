@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import heroImage from "@/assets/hero5.png";
+import logoImage from "@/assets/forswags-logo.png";
 
 export default function Landing() {
   // Use direct navigation to avoid Router context dependency
@@ -26,7 +27,7 @@ export default function Landing() {
     "name": "ForSWAGs",
     "description": "Student athlete development and &quot;Prime Dime&quot; matching platform",
     "url": "https://app.forswags.com",
-    "logo": "https://app.forswags.com/images/forswags-logo.png",
+    "logo": logoImage,
     "offers": [
       {
         "@type": "Offer",
