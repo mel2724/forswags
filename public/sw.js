@@ -1,5 +1,5 @@
-const CACHE_NAME = 'forswags-v12';
-const RUNTIME_CACHE = 'forswags-runtime-v12';
+const CACHE_NAME = 'forswags-v13';
+const RUNTIME_CACHE = 'forswags-runtime-v13';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
@@ -8,6 +8,8 @@ const STATIC_ASSETS = [
   '/manifest.json',
   '/images/logo-icon.png',
   '/images/logo-full.jpeg',
+  '/images/forswags-logo.png',
+  '/favicon-v2.png',
 ];
 
 // Install event - cache static assets
