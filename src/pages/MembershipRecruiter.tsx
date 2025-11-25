@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, ArrowLeft, Target, Star } from "lucide-react";
-import { STRIPE_PRODUCTS, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
+import { STRIPE_PRODUCTS, getStripeProducts, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
+
+const PRODUCTS = getStripeProducts();
 
 interface SubscriptionStatus {
   subscribed: boolean;
@@ -212,13 +214,13 @@ export default function MembershipRecruiter() {
                   <div className="flex justify-center mb-4">
                     <Star className="h-12 w-12 text-secondary" />
                   </div>
-                  <CardTitle className="text-2xl text-center">{STRIPE_PRODUCTS.membership.recruiter.yearly.name}</CardTitle>
+                  <CardTitle className="text-2xl text-center">{PRODUCTS.membership.recruiter.yearly.name}</CardTitle>
                   <div className="text-3xl font-bold text-center">
-                    {formatPrice(STRIPE_PRODUCTS.membership.recruiter.yearly.price)}
+                    {formatPrice(PRODUCTS.membership.recruiter.yearly.price)}
                     <span className="text-base font-normal text-muted-foreground">/year</span>
                   </div>
                   <CardDescription className="text-center">
-                    {formatPrice(STRIPE_PRODUCTS.membership.recruiter.yearly.price / 12)}/month when paid annually
+                    {formatPrice(PRODUCTS.membership.recruiter.yearly.price / 12)}/month when paid annually
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -247,7 +249,7 @@ export default function MembershipRecruiter() {
                   <Button
                     className="w-full"
                     variant="secondary"
-                    onClick={() => handleSubscribe(STRIPE_PRODUCTS.membership.recruiter.yearly.price_id)}
+                    onClick={() => handleSubscribe(PRODUCTS.membership.recruiter.yearly.price_id)}
                     disabled={loading || currentTier?.tier === "yearly"}
                   >
                     {currentTier?.tier === "yearly" ? "Current Plan" : "Subscribe Yearly"}

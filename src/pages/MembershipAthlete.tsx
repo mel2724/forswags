@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, ArrowLeft } from "lucide-react";
-import { STRIPE_PRODUCTS, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
+import { STRIPE_PRODUCTS, getStripeProducts, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
+
+const PRODUCTS = getStripeProducts();
 
 interface SubscriptionStatus {
   subscribed: boolean;
@@ -207,9 +209,9 @@ export default function MembershipAthlete() {
                   {currentTier?.tier === "monthly" && (
                     <Badge className="w-fit mb-2">Current Plan</Badge>
                   )}
-                  <CardTitle className="text-2xl">{STRIPE_PRODUCTS.membership.athlete.monthly.name}</CardTitle>
+                  <CardTitle className="text-2xl">{PRODUCTS.membership.athlete.monthly.name}</CardTitle>
                   <div className="text-3xl font-bold">
-                    {formatPrice(STRIPE_PRODUCTS.membership.athlete.monthly.price)}
+                    {formatPrice(PRODUCTS.membership.athlete.monthly.price)}
                     <span className="text-base font-normal text-muted-foreground">/month</span>
                   </div>
                   <CardDescription>Billed monthly</CardDescription>
@@ -239,7 +241,7 @@ export default function MembershipAthlete() {
                   </ul>
                   <Button
                     className="w-full"
-                    onClick={() => handleSubscribe(STRIPE_PRODUCTS.membership.athlete.monthly.price_id)}
+                    onClick={() => handleSubscribe(PRODUCTS.membership.athlete.monthly.price_id)}
                     disabled={loading || currentTier?.tier === "monthly"}
                   >
                     {currentTier?.tier === "monthly" ? "Current Plan" : "Subscribe Monthly"}
@@ -254,13 +256,13 @@ export default function MembershipAthlete() {
                     <Badge className="w-fit mb-2">Current Plan</Badge>
                   )}
                   <Badge variant="secondary" className="w-fit mb-2">Save 46%</Badge>
-                  <CardTitle className="text-2xl">{STRIPE_PRODUCTS.membership.athlete.yearly.name}</CardTitle>
+                  <CardTitle className="text-2xl">{PRODUCTS.membership.athlete.yearly.name}</CardTitle>
                   <div className="text-3xl font-bold">
-                    {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price)}
+                    {formatPrice(PRODUCTS.membership.athlete.yearly.price)}
                     <span className="text-base font-normal text-muted-foreground">/year</span>
                   </div>
                   <CardDescription>
-                    {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price / 12)}/month when paid annually
+                    {formatPrice(PRODUCTS.membership.athlete.yearly.price / 12)}/month when paid annually
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -280,7 +282,7 @@ export default function MembershipAthlete() {
                   </ul>
                   <Button
                     className="w-full"
-                    onClick={() => handleSubscribe(STRIPE_PRODUCTS.membership.athlete.yearly.price_id)}
+                    onClick={() => handleSubscribe(PRODUCTS.membership.athlete.yearly.price_id)}
                     disabled={loading || currentTier?.tier === "yearly"}
                   >
                     {currentTier?.tier === "yearly" ? "Current Plan" : "Subscribe Yearly"}

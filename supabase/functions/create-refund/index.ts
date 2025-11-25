@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { getStripeKey } from "../_shared/stripeHelper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,9 +54,8 @@ serve(async (req) => {
     if (!user_id) throw new Error("User ID is required");
     logStep("Request data", { payment_intent_id, amount, reason, user_id });
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
+    // Initialize Stripe with environment-aware key
+    const stripeKey = await getStripeKey(req);
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Create refund in Stripe

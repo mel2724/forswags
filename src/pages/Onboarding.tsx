@@ -16,7 +16,9 @@ import { z } from "zod";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { VideoWalkthroughModal, VideoWalkthroughButton } from "@/components/VideoWalkthroughModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { STRIPE_PRODUCTS, formatPrice } from "@/lib/stripeConfig";
+import { STRIPE_PRODUCTS, getStripeProducts, formatPrice } from "@/lib/stripeConfig";
+
+const PRODUCTS = getStripeProducts();
 
 type Role = "athlete" | "parent" | "recruiter";
 
@@ -198,8 +200,8 @@ const Onboarding = () => {
     setProcessingCheckout(true);
     try {
       const priceId = selectedMembershipTier === "monthly" 
-        ? STRIPE_PRODUCTS.membership.athlete.monthly.price_id
-        : STRIPE_PRODUCTS.membership.athlete.yearly.price_id;
+        ? PRODUCTS.membership.athlete.monthly.price_id
+        : PRODUCTS.membership.athlete.yearly.price_id;
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { 
@@ -692,7 +694,7 @@ const Onboarding = () => {
                 <div className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-xl font-bold">{STRIPE_PRODUCTS.membership.athlete.free.name}</h3>
+                      <h3 className="text-xl font-bold">{PRODUCTS.membership.athlete.free.name}</h3>
                       <p className="text-3xl font-black mt-2">Free</p>
                     </div>
                     {selectedMembershipTier === "free" && (
@@ -725,11 +727,11 @@ const Onboarding = () => {
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-xl font-bold flex items-center gap-2">
-                        {STRIPE_PRODUCTS.membership.athlete.monthly.name}
+                        {PRODUCTS.membership.athlete.monthly.name}
                         <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">Popular</span>
                       </h3>
                       <p className="text-3xl font-black mt-2">
-                        {formatPrice(STRIPE_PRODUCTS.membership.athlete.monthly.price)}
+                        {formatPrice(PRODUCTS.membership.athlete.monthly.price)}
                         <span className="text-base font-normal text-muted-foreground">/month</span>
                       </p>
                     </div>
@@ -774,9 +776,9 @@ const Onboarding = () => {
                 <div className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-xl font-bold">{STRIPE_PRODUCTS.membership.athlete.yearly.name}</h3>
+                      <h3 className="text-xl font-bold">{PRODUCTS.membership.athlete.yearly.name}</h3>
                       <p className="text-3xl font-black mt-2">
-                        {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price)}
+                        {formatPrice(PRODUCTS.membership.athlete.yearly.price)}
                         <span className="text-base font-normal text-muted-foreground">/year</span>
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">Save $82 compared to monthly</p>
