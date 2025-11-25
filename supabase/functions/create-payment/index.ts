@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { getStripeKey } from "../_shared/stripeHelper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,8 @@ serve(async (req) => {
     const { priceId } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
+    const stripeKey = await getStripeKey(req);
+    const stripe = new Stripe(stripeKey, { 
       apiVersion: "2025-08-27.basil" 
     });
 

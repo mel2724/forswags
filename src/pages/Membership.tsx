@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, ArrowLeft } from "lucide-react";
-import { STRIPE_PRODUCTS, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
+import { STRIPE_PRODUCTS, getStripeProducts, formatPrice, getMembershipTier } from "@/lib/stripeConfig";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+
+const PRODUCTS = getStripeProducts();
 
 interface SubscriptionStatus {
   subscribed: boolean;
@@ -128,7 +130,7 @@ export default function Membership() {
       const { data, error } = await supabase
         .rpc('validate_promo_code', { 
           p_code: promoCode.trim(),
-          p_product_id: STRIPE_PRODUCTS.membership.athlete.monthly.product_id
+          p_product_id: PRODUCTS.membership.athlete.monthly.product_id
         });
 
       if (error) throw error;
@@ -296,9 +298,9 @@ export default function Membership() {
                   {currentTier?.role === "athlete" && currentTier?.tier === "monthly" && (
                     <Badge className="w-fit mb-2 bg-primary">✓ Current Plan</Badge>
                   )}
-                  <CardTitle className="text-2xl font-black">{STRIPE_PRODUCTS.membership.athlete.monthly.name}</CardTitle>
+                  <CardTitle className="text-2xl font-black">{PRODUCTS.membership.athlete.monthly.name}</CardTitle>
                   <div className="text-4xl font-black">
-                    {formatPrice(STRIPE_PRODUCTS.membership.athlete.monthly.price)}
+                    {formatPrice(PRODUCTS.membership.athlete.monthly.price)}
                     <span className="text-lg font-normal text-muted-foreground">/month</span>
                   </div>
                   <CardDescription className="text-base">Billed monthly • Cancel anytime</CardDescription>
@@ -345,9 +347,9 @@ export default function Membership() {
                     className="w-full font-bold"
                     size="lg"
                     onClick={() => handleSubscribe(
-                      STRIPE_PRODUCTS.membership.athlete.monthly.price_id,
-                      STRIPE_PRODUCTS.membership.athlete.monthly.name,
-                      STRIPE_PRODUCTS.membership.athlete.monthly.price,
+                      PRODUCTS.membership.athlete.monthly.price_id,
+                      PRODUCTS.membership.athlete.monthly.name,
+                      PRODUCTS.membership.athlete.monthly.price,
                       "month"
                     )}
                     disabled={loading || (currentTier?.role === "athlete" && currentTier?.tier === "monthly")}
@@ -371,13 +373,13 @@ export default function Membership() {
                     <Badge className="w-fit mb-2 bg-primary">✓ Current Plan</Badge>
                   )}
                   <Badge variant="secondary" className="w-fit mb-2 font-bold">💰 Save 46% = 2 Months FREE</Badge>
-                  <CardTitle className="text-2xl font-black">{STRIPE_PRODUCTS.membership.athlete.yearly.name}</CardTitle>
+                  <CardTitle className="text-2xl font-black">{PRODUCTS.membership.athlete.yearly.name}</CardTitle>
                   <div className="text-4xl font-black">
-                    {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price)}
+                    {formatPrice(PRODUCTS.membership.athlete.yearly.price)}
                     <span className="text-lg font-normal text-muted-foreground">/year</span>
                   </div>
                   <CardDescription className="text-base font-semibold">
-                    Just {formatPrice(STRIPE_PRODUCTS.membership.athlete.yearly.price / 12)}/month • Best deal!
+                    Just {formatPrice(PRODUCTS.membership.athlete.yearly.price / 12)}/month • Best deal!
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -401,9 +403,9 @@ export default function Membership() {
                     className="w-full font-bold"
                     size="lg"
                     onClick={() => handleSubscribe(
-                      STRIPE_PRODUCTS.membership.athlete.yearly.price_id,
-                      STRIPE_PRODUCTS.membership.athlete.yearly.name,
-                      STRIPE_PRODUCTS.membership.athlete.yearly.price,
+                      PRODUCTS.membership.athlete.yearly.price_id,
+                      PRODUCTS.membership.athlete.yearly.name,
+                      PRODUCTS.membership.athlete.yearly.price,
                       "year"
                     )}
                     disabled={loading || (currentTier?.role === "athlete" && currentTier?.tier === "yearly")}
