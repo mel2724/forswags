@@ -1,7 +1,11 @@
 import React from "react";
 import logoFull from "@/assets/forswags-logo.png";
 
-export const Footer = React.memo(() => {
+interface FooterProps {
+  hideNavigation?: boolean;
+}
+
+export const Footer = React.memo(({ hideNavigation = false }: FooterProps) => {
   return (
     <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
       <div className="container mx-auto px-4">
@@ -9,6 +13,29 @@ export const Footer = React.memo(() => {
           <div>
             <img src={logoFull} alt="ForSWAGs" className="h-20 mx-auto" />
           </div>
+          
+          {!hideNavigation && (
+            <nav className="flex flex-wrap justify-center gap-6 text-sm">
+              <a href="/#features" className="text-muted-foreground hover:text-primary transition-colors">
+                Features
+              </a>
+              <a href="/#pricing" className="text-muted-foreground hover:text-primary transition-colors">
+                Pricing
+              </a>
+              <a href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                About
+              </a>
+              <a href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
+                Contact
+              </a>
+              <a href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
+                Privacy Policy
+              </a>
+              <a href="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+                Terms of Service
+              </a>
+            </nav>
+          )}
           
           <div className="max-w-3xl mx-auto">
             <p className="text-xs text-muted-foreground leading-relaxed text-center">

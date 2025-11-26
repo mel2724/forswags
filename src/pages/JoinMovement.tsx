@@ -71,7 +71,7 @@ export default function JoinMovement() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header hideNavigation />
         
         <div className="flex items-center justify-center relative overflow-hidden py-20">
           <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background"></div>
@@ -98,14 +98,14 @@ export default function JoinMovement() {
           </div>
         </div>
         
-        <Footer />
+        <Footer hideNavigation />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header hideNavigation />
       
       {/* Animated background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background pointer-events-none"></div>
@@ -286,7 +286,7 @@ export default function JoinMovement() {
         </div>
       </section>
       
-      <Footer />
+      <Footer hideNavigation />
     </div>
   );
 }
