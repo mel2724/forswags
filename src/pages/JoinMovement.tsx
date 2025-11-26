@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Zap, Users, BookOpen, TrendingUp } from "lucide-react";
 import logoImage from "@/assets/forswags-logo.png";
+import athletesImage from "@/assets/join-movement-athletes.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
@@ -128,48 +129,61 @@ export default function JoinMovement() {
               </p>
             </div>
 
-            <div>
-              <h3 className="text-2xl font-bold mb-6 uppercase tracking-wide">Why You Should Join</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                    <Users className="h-6 w-6 text-primary" />
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+              {/* Benefits List */}
+              <div>
+                <h3 className="text-2xl font-bold mb-6 uppercase tracking-wide">Why You Should Join</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                      <Users className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Guidance Navigating the Recruiting Journey</h4>
+                      <p className="text-muted-foreground">Expert support every step of the way</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">Guidance Navigating the Recruiting Journey</h4>
-                    <p className="text-muted-foreground">Expert support every step of the way</p>
-                  </div>
-                </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-secondary/10 rounded-lg flex-shrink-0">
-                    <TrendingUp className="h-6 w-6 text-secondary" />
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-secondary/10 rounded-lg flex-shrink-0">
+                      <TrendingUp className="h-6 w-6 text-secondary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Social Media Marketing</h4>
+                      <p className="text-muted-foreground">Build your brand and get noticed</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">Social Media Marketing</h4>
-                    <p className="text-muted-foreground">Build your brand and get noticed</p>
-                  </div>
-                </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                    <BookOpen className="h-6 w-6 text-primary" />
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                      <BookOpen className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Academic & Life Coaching</h4>
+                      <p className="text-muted-foreground">Develop skills beyond the field</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">Academic & Life Coaching</h4>
-                    <p className="text-muted-foreground">Develop skills beyond the field</p>
-                  </div>
-                </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-secondary/10 rounded-lg flex-shrink-0">
-                    <Zap className="h-6 w-6 text-secondary" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-1">Access to the Playbook for Life</h4>
-                    <p className="text-muted-foreground">Exclusive training and resources</p>
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-secondary/10 rounded-lg flex-shrink-0">
+                      <Zap className="h-6 w-6 text-secondary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-1">Access to the Playbook for Life</h4>
+                      <p className="text-muted-foreground">Exclusive training and resources</p>
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Sports Image */}
+              <div className="relative rounded-xl overflow-hidden border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 group">
+                <img 
+                  src={athletesImage} 
+                  alt="Athletes in action" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent"></div>
               </div>
             </div>
           </div>
