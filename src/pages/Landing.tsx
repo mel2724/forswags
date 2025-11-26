@@ -230,10 +230,10 @@ export default function Landing() {
               </Card>
 
               <Card className="p-8 bg-gradient-to-b from-primary/10 to-card/50 backdrop-blur border-4 border-primary relative transform scale-105 shadow-2xl">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-secondary to-secondary-glow text-black px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
-                  ⚡ Most Popular
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-secondary to-secondary-glow text-black px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
+                  Most Popular
                 </div>
-                <h3 className="text-2xl font-bold mb-4 uppercase tracking-wide text-primary">Pro Monthly</h3>
+                <h3 className="text-2xl font-bold mb-6 uppercase tracking-wide text-primary">Pro Monthly</h3>
                 <div className="mb-6">
                   <div className="text-5xl font-black mb-2">
                     $14<span className="text-3xl">.99</span>
