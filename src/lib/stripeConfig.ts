@@ -126,7 +126,7 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
     recruiter: {
       monthly: {
         product_id: "prod_TMZrZBV8hx02zr",
-        price_id: "price_1SPqhoQiODnJ02PJz3FUFKUV,
+        price_id: "price_1SPqhoQiODnJ02PJz3FUFKUV",
         name: "Recruiter Monthly",
         price: 9700,
         interval: "month" as const
