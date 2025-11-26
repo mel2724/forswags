@@ -1,10 +1,36 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { getStripeKey, getEnvironmentName } from "../_shared/stripeHelper.ts";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-  apiVersion: "2025-08-27.basil",
-});
+// Helper to get webhook secret based on environment
+function getWebhookSecret(req: Request): string {
+  const origin = req.headers.get("origin") || "";
+  const isProduction = origin.includes("www.forswags.com");
+  
+  const secret = isProduction 
+    ? Deno.env.get("STRIPE_WEBHOOK_SECRET_PRODUCTION")
+    : Deno.env.get("STRIPE_WEBHOOK_SECRET_SANDBOX") || Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  
+  if (!secret) {
+    throw new Error("Stripe webhook secret not configured for this environment");
+  }
+  
+  console.log(`[WEBHOOK] Using ${isProduction ? 'PRODUCTION' : 'SANDBOX'} webhook secret`);
+  return secret;
+}
+
+// Environment-aware product ID mapping
+const PRODUCT_ID_MAP = {
+  sandbox: {
+    pro_monthly: 'prod_SoqPRCb0fKL4OW',
+    championship_yearly: 'prod_SoqOdBi1QDaZTE'
+  },
+  production: {
+    pro_monthly: 'prod_TF4xtIZXfWy5sa',
+    championship_yearly: 'prod_TF4zr2EcShQH1M'
+  }
+};
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -15,12 +41,19 @@ serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
 
+  // Initialize Stripe with environment-aware key
+  const stripeKey = await getStripeKey(req);
+  const stripe = new Stripe(stripeKey, {
+    apiVersion: "2025-08-27.basil",
+  });
+
   let event;
   try {
+    const webhookSecret = getWebhookSecret(req);
     event = await stripe.webhooks.constructEventAsync(
       body,
       signature!,
-      Deno.env.get("STRIPE_WEBHOOK_SECRET") || ""
+      webhookSecret
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
@@ -28,6 +61,9 @@ serve(async (req) => {
       status: 400,
     });
   }
+  
+  const environment = getEnvironmentName(req);
+  const productMap = PRODUCT_ID_MAP[environment];
 
   console.log("Processing webhook event:", event.type);
 
@@ -83,10 +119,12 @@ serve(async (req) => {
           if (user) {
             const productId = subscription.items.data[0].price.product as string;
             
-            // Map product ID to plan
+            // Map product ID to plan using environment-aware mapping
             let plan = 'free';
-            if (productId === 'prod_SoqPRCb0fKL4OW') plan = 'pro_monthly';
-            if (productId === 'prod_SoqOdBi1QDaZTE') plan = 'championship_yearly';
+            if (productId === productMap.pro_monthly) plan = 'pro_monthly';
+            if (productId === productMap.championship_yearly) plan = 'championship_yearly';
+            
+            console.log(`[WEBHOOK] Product ID ${productId} mapped to plan: ${plan}`);
 
             // Check if upgrading from free
             const { data: currentMembership } = await supabase
