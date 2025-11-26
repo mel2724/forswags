@@ -49,7 +49,7 @@ export function Header({ hideNavigation = false }: HeaderProps) {
                 </NavigationMenuItem>
                 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-gray-800">
+                  <NavigationMenuTrigger className="text-primary hover:text-primary/80">
                     Discover
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
