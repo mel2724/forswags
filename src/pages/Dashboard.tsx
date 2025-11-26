@@ -370,7 +370,8 @@ const Dashboard = () => {
     icon: Icon, 
     onClick, 
     requiresFeature,
-    isPremium = false 
+    isPremium = false,
+    comingSoon = false 
   }: {
     title: string;
     subtitle: string;
@@ -378,6 +379,7 @@ const Dashboard = () => {
     onClick: () => void;
     requiresFeature?: string;
     isPremium?: boolean;
+    comingSoon?: boolean;
   }) => {
     const { hasAccess } = useFeatureAccess(requiresFeature || 'profile_type');
     const isLocked = requiresFeature && !hasAccess;
@@ -385,10 +387,15 @@ const Dashboard = () => {
     return (
       <Card 
         className={cn(
-          "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer transition-all hover:shadow-lg",
-          isLocked && "opacity-60 cursor-not-allowed"
+          "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 transition-all",
+          comingSoon ? "opacity-50 cursor-not-allowed grayscale" : "cursor-pointer hover:shadow-lg",
+          isLocked && !comingSoon && "opacity-60 cursor-not-allowed"
         )}
         onClick={() => {
+          if (comingSoon) {
+            toast.info('This feature is coming soon!');
+            return;
+          }
           if (isLocked) {
             toast.error('This feature requires a premium membership', {
               action: {
@@ -402,7 +409,14 @@ const Dashboard = () => {
         }}
       >
         <CardContent className="p-6 relative">
-          {isLocked && (
+          {comingSoon && (
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="gap-1">
+                Coming Soon
+              </Badge>
+            </div>
+          )}
+          {isLocked && !comingSoon && (
             <div className="absolute top-2 right-2">
               <Badge variant="secondary" className="gap-1">
                 <Crown className="h-3 w-3" />
@@ -668,6 +682,7 @@ const Dashboard = () => {
                     onClick={() => navigate("/social-media")}
                     requiresFeature="social_media_graphics"
                     isPremium
+                    comingSoon
                   />
 
                   <FeatureCard
@@ -686,6 +701,7 @@ const Dashboard = () => {
                     onClick={() => navigate("/rankings")}
                     requiresFeature="rankings"
                     isPremium
+                    comingSoon
                   />
 
                   <FeatureCard
