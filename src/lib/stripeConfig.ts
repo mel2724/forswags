@@ -144,9 +144,8 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
 
 // Auto-select products based on current environment
 export function getStripeProducts() {
-  // Check if we're on production domains (both www and app subdomains)
-  const isProduction = typeof window !== 'undefined' && 
-    (window.location.hostname === 'www.forswags.com' || window.location.hostname === 'app.forswags.com');
+  // Check if we're on production domain
+  const isProduction = typeof window !== 'undefined' && window.location.hostname === 'www.forswags.com';
   
   if (isProduction) {
     console.log('[STRIPE-CONFIG] Using PRODUCTION Stripe products');
