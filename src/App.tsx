@@ -1,11 +1,12 @@
 // Main Application Entry Point - v11
-import { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BadgeNotificationProvider } from "@/contexts/BadgeNotificationContext";
 import { initLocalStorageCleanup, emergencyStorageCleanup } from "@/lib/localStorageCleanup";
+import { AlertCircle } from "lucide-react";
 
 // Lazy load admin pages
 const Landing = lazy(() => import("./pages/Landing"));
@@ -94,15 +95,49 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const About = lazy(() => import("./pages/About"));
 
-// Loading fallback component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="text-center space-y-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-      <p className="text-muted-foreground">Loading...</p>
+// Loading fallback component with timeout
+const PageLoader = () => {
+  const [showError, setShowError] = React.useState(false);
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      setShowError(true);
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (showError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-destructive">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4" />
+          </div>
+          <h2 className="text-xl font-semibold">Loading timeout</h2>
+          <p className="text-muted-foreground">
+            The page is taking too long to load. Please refresh the page or try again later.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Optimized React Query client with caching
 const queryClient = new QueryClient({

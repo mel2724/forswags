@@ -137,9 +137,12 @@ const Onboarding = () => {
       }
       setUserId(session.user.id);
       
-      // Pre-fill name from auth metadata
+      // Pre-fill name and DOB from auth metadata
       if (session.user.user_metadata?.full_name) {
         setFullName(session.user.user_metadata.full_name);
+      }
+      if (session.user.user_metadata?.date_of_birth) {
+        setDateOfBirth(session.user.user_metadata.date_of_birth);
       }
 
       // Check for existing athlete data to pre-fill forms
