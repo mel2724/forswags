@@ -154,7 +154,21 @@ export default function PurchaseEvaluation() {
     setLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to purchase evaluation.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-evaluation-payment', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: {
           video_url: videoUrl,
           previous_evaluation_id: previousEvaluationId,
@@ -173,9 +187,25 @@ export default function PurchaseEvaluation() {
       }
     } catch (error: any) {
       console.error("Error creating payment:", error);
+      
+      // Enhanced error handling
+      const errorType = error.error_type || (error.message?.includes("config") ? "config_error" : "unknown_error");
+      
+      let errorMessage = "Failed to initiate payment. Please try again.";
+      if (errorType === "config_error") {
+        errorMessage = "Payment system is being configured. Please try again later or contact support.";
+      } else if (errorType === "auth_error") {
+        errorMessage = "Please log in again to continue with your purchase.";
+        setTimeout(() => navigate("/auth"), 2000);
+      } else if (errorType === "network_error") {
+        errorMessage = "Unable to connect to payment server. Please check your connection.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to initiate payment",
+        title: "Payment Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

@@ -5,6 +5,7 @@
 
 export async function getStripeKey(req: Request): Promise<string> {
   const origin = req.headers.get("origin") || "";
+  console.log("[STRIPE-ENV] Request origin:", origin);
   
   // Determine environment based on hostname
   const isProduction = origin.includes("www.forswags.com");
@@ -26,9 +27,16 @@ export async function getStripeKey(req: Request): Promise<string> {
   }
   
   if (!stripeKey) {
+    console.error("[STRIPE-ENV] No Stripe key found! Key availability:", {
+      hasProduction: !!Deno.env.get("STRIPE_SECRET_KEY_PRODUCTION"),
+      hasSandbox: !!Deno.env.get("STRIPE_SECRET_KEY_SANDBOX"),
+      hasDefault: !!Deno.env.get("STRIPE_SECRET_KEY"),
+      origin,
+    });
     throw new Error("Stripe API key not configured for this environment");
   }
   
+  console.log("[STRIPE-ENV] Successfully retrieved Stripe key");
   return stripeKey;
 }
 

@@ -141,8 +141,21 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    logStep("ERROR", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
+    
+    // Determine error type for frontend handling
+    const errorType = errorMessage.includes("Stripe API key") || errorMessage.includes("not configured")
+      ? "config_error" 
+      : errorMessage.includes("authenticated") || errorMessage.includes("authorization")
+      ? "auth_error"
+      : errorMessage.includes("network") || errorMessage.includes("fetch")
+      ? "network_error"
+      : "unknown_error";
+    
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      error_type: errorType 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
