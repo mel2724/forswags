@@ -72,19 +72,18 @@ export const STRIPE_PRODUCTS_SANDBOX = {
 } as const;
 
 // PRODUCTION (Live Mode) Products - for www.forswags.com
-// TODO: Replace these with actual live Stripe product/price IDs after creating them in live mode
 export const STRIPE_PRODUCTS_PRODUCTION = {
   evaluation: {
     initial: {
-      product_id: "prod_LIVE_REPLACE_ME",
-      price_id: "price_LIVE_REPLACE_ME",
+      product_id: "prod_TMZr6YzJ6bA3iy",
+      price_id: "price_1SPqhPQiODnJ02PJsdjNV3B7",
       name: "Skills Evaluation - Initial",
       price: 9700,
       description: "First professional video evaluation from certified coaches"
     },
     reevaluation: {
-      product_id: "prod_LIVE_REPLACE_ME_2",
-      price_id: "price_LIVE_REPLACE_ME_2",
+      product_id: "prod_TMZqSQaITHcELv",
+      price_id: "price_1SPqhFQiODnJ02PJL11bdEKQ",
       name: "Skills Evaluation - Re-evaluation",
       price: 4900,
       description: "Re-evaluation for athletes who purchased within the last year"
@@ -93,22 +92,22 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
   membership: {
     athlete: {
       free: {
-        product_id: "prod_LIVE_REPLACE_ME_3",
-        price_id: "price_LIVE_REPLACE_ME_3",
+        product_id: "prod_TUYYuXrNvpsK0B",
+        price_id: "price_1SXZR7QiODnJ02PJiPqpf1uy",
         name: "Free Starter",
         price: 0,
         interval: "month" as const
       },
       monthly: {
-        product_id: "prod_LIVE_REPLACE_ME_4",
-        price_id: "price_LIVE_REPLACE_ME_4",
+        product_id: "prod_TF4xtIZXfWy5sa",
+        price_id: "price_1SIanqQiODnJ02PJV1bZBNhH",
         name: "Pro Monthly",
         price: 1499,
         interval: "month" as const
       },
       yearly: {
-        product_id: "prod_LIVE_REPLACE_ME_5",
-        price_id: "price_LIVE_REPLACE_ME_5",
+        product_id: "prod_TF4zr2EcShQH1M",
+        price_id: "price_1SIapiQiODnJ02PJot4z8Koy",
         name: "Championship Yearly",
         price: 9700,
         interval: "year" as const
@@ -116,8 +115,8 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
     },
     parent: {
       free: {
-        product_id: "parent_free",
-        price_id: "parent_free",
+        product_id: "prod_TUYrJPWNd36Ger",
+        price_id: "price_1SXZjUQiODnJ02PJDVXWpJIR",
         name: "Parent Access",
         price: 0,
         interval: "month" as const,
@@ -126,15 +125,15 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
     },
     recruiter: {
       monthly: {
-        product_id: "prod_LIVE_REPLACE_ME_6",
-        price_id: "price_LIVE_REPLACE_ME_6",
+        product_id: "prod_TMZrZBV8hx02zr",
+        price_id: "price_1SPqhoQiODnJ02PJz3FUFKUV,
         name: "Recruiter Monthly",
         price: 9700,
         interval: "month" as const
       },
       yearly: {
-        product_id: "prod_LIVE_REPLACE_ME_7",
-        price_id: "price_LIVE_REPLACE_ME_7",
+        product_id: "prod_TMZrLjFnDrJODd",
+        price_id: "price_1SPqhgQiODnJ02PJUo7p7TR9",
         name: "Recruiter Yearly",
         price: 99700,
         interval: "year" as const
