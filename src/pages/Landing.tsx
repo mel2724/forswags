@@ -221,7 +221,7 @@ export default function Landing() {
                     <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                       <div className="h-2 w-2 rounded-full bg-primary"></div>
                     </div>
-                    <span>Access to 3 training courses</span>
+                    <span>Access to Playbook for Life courses</span>
                   </li>
                 </ul>
                 <Button className="w-full" variant="outline" onClick={() => navigateTo("/auth")}>
@@ -247,7 +247,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="font-semibold">Unlimited training courses</span>
+                    <span className="font-semibold">Playbook for Life courses</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
@@ -260,6 +260,14 @@ export default function Landing() {
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Performance analytics</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Social media tools</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span className="font-semibold">Direct recruiter messaging</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
@@ -282,19 +290,27 @@ export default function Landing() {
                 <ul className="space-y-4 mb-8 text-sm">
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                    <span className="font-semibold">Everything in Pro</span>
+                    <span className="font-semibold">Full athlete profile & highlights</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                    <span className="font-semibold">Priority coach support</span>
+                    <span className="font-semibold">Playbook for Life courses</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                    <span className="font-semibold">Advanced analytics dashboard</span>
+                    <span className="font-semibold">Coach evaluations & feedback</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                    <span className="font-semibold">Exclusive training content</span>
+                    <span className="font-semibold">Expert "Prime Dime" matching</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Performance analytics</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Award className="h-5 w-5 text-secondary flex-shrink-0" />
+                    <span className="font-semibold">Social media tools</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
