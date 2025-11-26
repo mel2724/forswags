@@ -2,7 +2,7 @@
 name: Deploy to Sandbox (app.forswags.com)
 on:
   push:
-    branches: [ "sandbox" ]
+    branches: [ "main", "sandbox" ]
 jobs:
   deploy:
     runs-on: ubuntu-latest
