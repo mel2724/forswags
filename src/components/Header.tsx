@@ -25,28 +25,16 @@ export function Header({ hideNavigation = false }: HeaderProps) {
           
           {!hideNavigation && (
             <NavigationMenu>
-              <NavigationMenuList>
+              <NavigationMenuList className="gap-2">
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Features</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4">
-                      <li className="row-span-3">
-                        <NavigationMenuLink asChild>
-                          <a
-                            className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-primary/50 to-primary p-6 no-underline outline-none focus:shadow-md"
-                            href="/#features"
-                          >
-                            <div className="mb-2 mt-4 text-lg font-medium text-white">
-                              For Athletes
-                            </div>
-                            <p className="text-sm leading-tight text-white/90">
-                              Professional evaluations, college matching, and life skills training
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                    </ul>
-                  </NavigationMenuContent>
+                  <NavigationMenuLink asChild>
+                    <a
+                      className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+                      href="/#features"
+                    >
+                      Features
+                    </a>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
                 
                 <NavigationMenuItem>
@@ -61,8 +49,57 @@ export function Header({ hideNavigation = false }: HeaderProps) {
                 </NavigationMenuItem>
                 
                 <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-accent text-accent-foreground">
+                    Discover
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[300px] gap-1 p-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            href="/about"
+                          >
+                            <div className="text-sm font-medium leading-none">About</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Learn more about ForSWAGs and our mission
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            href="/for-recruiters"
+                          >
+                            <div className="text-sm font-medium leading-none">For College Scouts</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Tools and resources for college scouts
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <a
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            href="/sponsors"
+                          >
+                            <div className="text-sm font-medium leading-none">Sponsors</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              View our sponsors and partners
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+                
+                <NavigationMenuItem>
                   <Button variant="default" asChild>
-                    <a href="/auth">Sign In</a>
+                    <a href="/auth">Log-in</a>
                   </Button>
                 </NavigationMenuItem>
               </NavigationMenuList>
