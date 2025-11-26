@@ -274,10 +274,10 @@ export default function Landing() {
                     <span className="font-semibold">Free parent account included</span>
                   </li>
                 </ul>
-                <p className="text-xs text-muted-foreground mb-4">*Coach evaluations require an additional fee</p>
-                <Button className="w-full btn-hero" onClick={() => navigateTo("/auth")}>
+                <Button className="w-full btn-hero mb-4" onClick={() => navigateTo("/auth")}>
                   Start Training
                 </Button>
+                <p className="text-xs text-muted-foreground">*Coach evaluations require an additional fee</p>
               </Card>
 
               <Card className="p-8 bg-card/50 backdrop-blur border-2 border-secondary/30 hover:border-secondary/50 transition-all duration-300">
@@ -321,11 +321,11 @@ export default function Landing() {
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Free parent account included</span>
                   </li>
-                </ul>
-                <p className="text-xs text-muted-foreground mb-4">*Coach evaluations require an additional fee</p>
-                <Button className="w-full btn-accent" onClick={() => navigateTo("/auth")}>
+                 </ul>
+                <Button className="w-full btn-accent mb-4" onClick={() => navigateTo("/auth")}>
                   Go Championship
                 </Button>
+                <p className="text-xs text-muted-foreground">*Coach evaluations require an additional fee</p>
               </Card>
             </div>
           )}
