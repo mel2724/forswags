@@ -4141,6 +4141,54 @@ export type Database = {
           },
         ]
       }
+      waitlist: {
+        Row: {
+          claim_token: string | null
+          claim_token_expires_at: string | null
+          created_at: string
+          email: string
+          email_sent: boolean | null
+          full_name: string
+          graduation_year: number | null
+          high_school: string | null
+          id: string
+          parent_email: string | null
+          profile_created: boolean | null
+          sport: string | null
+          updated_at: string
+        }
+        Insert: {
+          claim_token?: string | null
+          claim_token_expires_at?: string | null
+          created_at?: string
+          email: string
+          email_sent?: boolean | null
+          full_name: string
+          graduation_year?: number | null
+          high_school?: string | null
+          id?: string
+          parent_email?: string | null
+          profile_created?: boolean | null
+          sport?: string | null
+          updated_at?: string
+        }
+        Update: {
+          claim_token?: string | null
+          claim_token_expires_at?: string | null
+          created_at?: string
+          email?: string
+          email_sent?: boolean | null
+          full_name?: string
+          graduation_year?: number | null
+          high_school?: string | null
+          id?: string
+          parent_email?: string | null
+          profile_created?: boolean | null
+          sport?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       waitlist_signups: {
         Row: {
           additional_notes: string | null
