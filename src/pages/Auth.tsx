@@ -287,91 +287,95 @@ const Auth = () => {
     try {
       // Now using sessionStorage in main client to avoid localStorage quota issues
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: email.trim(),
+        password: password,
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+
+      if (!authData.user) {
+        throw new Error("Sign in failed - no user data returned");
+      }
 
       // Check if user can login (membership status)
-      if (authData.user) {
-        try {
-          const { data: loginCheck, error: checkError } = await supabase.rpc('can_user_login', {
-            p_user_id: authData.user.id
-          });
+      try {
+        const { data: loginCheck, error: checkError } = await supabase.rpc('can_user_login', {
+          p_user_id: authData.user.id
+        });
 
-          if (checkError) {
-            console.warn("Membership check failed:", checkError);
-          } else {
-            const loginStatus = loginCheck as unknown as { can_login: boolean; reason: string };
+        if (checkError) {
+          console.warn("Membership check failed:", checkError);
+        } else {
+          const loginStatus = loginCheck as unknown as { can_login: boolean; reason: string };
+          
+          if (!loginStatus.can_login) {
+            await supabase.auth.signOut();
             
-            if (!loginStatus.can_login) {
-              await supabase.auth.signOut();
-              
-              if (loginStatus.reason === 'membership_expired') {
-                toast.error('Your membership has expired. Please renew to continue accessing your account.');
-              } else if (loginStatus.reason === 'payment_failed') {
-                toast.error('Your payment has failed. Please update your payment method to continue.');
-              } else {
-                toast.error('Unable to login. Please contact support.');
-              }
-              setLoading(false);
-              return;
+            if (loginStatus.reason === 'membership_expired') {
+              toast.error('Your membership has expired. Please renew to continue accessing your account.');
+            } else if (loginStatus.reason === 'payment_failed') {
+              toast.error('Your payment has failed. Please update your payment method to continue.');
+            } else {
+              toast.error('Unable to login. Please contact support.');
             }
-          }
-        } catch (membershipError) {
-          console.warn("Membership check error:", membershipError);
-        }
-
-        // Check if user has completed onboarding
-        try {
-          console.log("Checking user role for:", authData.user.id);
-          const { data: rolesData, error: roleError } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", authData.user.id);
-
-          if (roleError) {
-            console.error("Role check error:", roleError);
-          }
-          
-          console.log("User roles data:", rolesData);
-          
-          // If user has no roles, they didn't complete onboarding
-          if (!rolesData || rolesData.length === 0) {
-            toast.info("Please complete your profile setup");
-            navigate("/onboarding");
             setLoading(false);
             return;
           }
-          
-          // Check if user is admin
-          const isAdmin = rolesData?.some(r => r.role === "admin");
-          console.log("Is admin:", isAdmin);
-          
-          if (isAdmin) {
-            toast.success('Welcome back, Admin!');
-            console.log("Navigating to /admin");
-            navigate("/admin");
-          } else {
-            toast.success('Welcome back!');
-            console.log("Navigating to /dashboard");
-            navigate("/dashboard");
-          }
-        } catch (roleError) {
-          console.error("Role check failed:", roleError);
+        }
+      } catch (membershipError) {
+        console.warn("Membership check error:", membershipError);
+      }
+
+      // Check if user has completed onboarding
+      try {
+        console.log("Checking user role for:", authData.user.id);
+        const { data: rolesData, error: roleError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", authData.user.id);
+
+        if (roleError) {
+          console.error("Role check error:", roleError);
+        }
+        
+        console.log("User roles data:", rolesData);
+        
+        // If user has no roles, they didn't complete onboarding
+        if (!rolesData || rolesData.length === 0) {
+          toast.info("Please complete your profile setup");
+          navigate("/onboarding");
+          return;
+        }
+        
+        // Check if user is admin
+        const isAdmin = rolesData?.some(r => r.role === "admin");
+        console.log("Is admin:", isAdmin);
+        
+        if (isAdmin) {
+          toast.success('Welcome back, Admin!');
+          console.log("Navigating to /admin");
+          navigate("/admin");
+        } else {
           toast.success('Welcome back!');
+          console.log("Navigating to /dashboard");
           navigate("/dashboard");
         }
-      } else {
+      } catch (roleError) {
+        console.error("Role check failed:", roleError);
+        toast.success('Welcome back!');
         navigate("/dashboard");
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
       
+      // Ensure loading state is reset
+      setLoading(false);
+      
       // Handle localStorage quota exceeded error
       if (error.name === 'QuotaExceededError' || error.message?.toLowerCase().includes('quota')) {
-        // Clear localStorage to free up space (keep only Supabase auth keys)
         try {
           const keysToKeep = ['sb-fejnevxardxejdvjbipc-auth-token'];
           const allKeys = Object.keys(localStorage);
@@ -395,6 +399,7 @@ const Auth = () => {
       // Handle invalid credentials specifically
       else if (error.message?.toLowerCase().includes('invalid login credentials') || 
           error.message?.toLowerCase().includes('invalid password') ||
+          error.message?.toLowerCase().includes('invalid credentials') ||
           error.code === 'invalid_credentials') {
         toast.error("Incorrect email or password", {
           description: "Please check your credentials and try again, or use 'Forgot Password' to reset.",
@@ -412,6 +417,7 @@ const Auth = () => {
         });
       }
     } finally {
+      // Ensure loading is always reset
       setLoading(false);
     }
   };
