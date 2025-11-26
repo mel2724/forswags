@@ -88,7 +88,21 @@ export default function Membership() {
   const handleSubscribe = async (priceId: string, productName: string, priceAmount: number, interval: string) => {
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to subscribe.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: { priceId, promoCode: validPromoCode },
       });
 
@@ -99,9 +113,25 @@ export default function Membership() {
       }
     } catch (error: any) {
       console.error("Checkout error:", error);
+      
+      // Enhanced error handling based on error type
+      const errorType = error.error_type || (error.message?.includes("config") ? "config_error" : "unknown_error");
+      
+      let errorMessage = "Failed to start checkout process. Please try again.";
+      if (errorType === "config_error") {
+        errorMessage = "Payment system is being configured. Please try again later or contact support.";
+      } else if (errorType === "auth_error") {
+        errorMessage = "Please log in again to continue with your subscription.";
+        setTimeout(() => navigate("/auth"), 2000);
+      } else if (errorType === "network_error") {
+        errorMessage = "Unable to connect to payment server. Please check your connection and try again.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to start checkout process",
+        title: "Payment Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
