@@ -64,6 +64,8 @@ const Auth = () => {
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, feedback: [], label: 'Weak' });
   const [showManualContinue, setShowManualContinue] = useState(false);
   const [lastResetAttempt, setLastResetAttempt] = useState<number>(0);
+  const [signInError, setSignInError] = useState<string>("");
+  const [signUpError, setSignUpError] = useState<string>("");
 
   const RESET_COOLDOWN_MS = 60000; // 1 minute
 
@@ -114,11 +116,14 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSignUpError(""); // Clear previous errors
     
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      toast.error("Please enter a valid email address");
+      const errorMsg = "Please enter a valid email address";
+      setSignUpError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -232,45 +237,52 @@ const Auth = () => {
       if (errorCode === 'user_already_exists' || 
           errorMsg.includes('already registered') ||
           errorMsg.includes('already exists')) {
+        const errorMessage = "This email already has an account. Please use the Login tab instead, or use a different email address.";
+        setSignUpError(errorMessage);
         toast.error("Email Already Registered!", {
-          description: "This email already has an account. Please use the Login tab instead, or use a different email address.",
+          description: errorMessage,
           duration: 8000,
         });
       } else if (errorMsg.includes('weak_password') ||
           errorMsg.includes('password is too weak') ||
           errorMsg.includes('password does not meet') ||
           errorMsg.includes('pwned')) {
-        toast.error(
-          "Password not secure enough. Please use a unique, strong password with uppercase, lowercase, numbers, and special characters.",
-          { duration: 6000 }
-        );
+        const errorMessage = "Password not secure enough. Please use a unique, strong password with uppercase, lowercase, numbers, and special characters.";
+        setSignUpError(errorMessage);
+        toast.error(errorMessage, { duration: 6000 });
       } else if (errorMsg.includes('quota') || 
                  errorMsg.includes('storage') ||
                  error.name === 'QuotaExceededError') {
-        toast.error(
-          "Browser storage is full. Please clear your browser's localStorage (F12 → Application → Local Storage → Clear) and try again.",
-          { duration: 8000 }
-        );
+        const errorMessage = "Browser storage is full. Please clear your browser's localStorage (F12 → Application → Local Storage → Clear) and try again.";
+        setSignUpError(errorMessage);
+        toast.error(errorMessage, { duration: 8000 });
       } else {
-        toast.error(error.message || "Error creating account");
+        const errorMessage = error.message || "Error creating account";
+        setSignUpError(errorMessage);
+        toast.error(errorMessage);
       }
     }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSignInError(""); // Clear previous errors
     
     console.log("Sign in attempt:", { email, password: password ? "***" : "empty" });
     
     // Input validation
     if (!email || !password) {
-      toast.error("Please enter both email and password");
+      const errorMsg = "Please enter both email and password";
+      setSignInError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      toast.error("Please enter a valid email address");
+      const errorMsg = "Please enter a valid email address";
+      setSignInError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
     
@@ -401,18 +413,24 @@ const Auth = () => {
           error.message?.toLowerCase().includes('invalid password') ||
           error.message?.toLowerCase().includes('invalid credentials') ||
           error.code === 'invalid_credentials') {
+        const errorMsg = "Incorrect email or password. Please check your credentials and try again, or use 'Forgot Password' to reset.";
+        setSignInError(errorMsg);
         toast.error("Incorrect email or password", {
           description: "Please check your credentials and try again, or use 'Forgot Password' to reset.",
           duration: 8000,
         });
       } else if (error.message?.toLowerCase().includes('email not confirmed')) {
+        const errorMsg = "Please verify your email. Check your inbox for a verification email.";
+        setSignInError(errorMsg);
         toast.error("Please verify your email", {
           description: "Check your inbox for a verification email.",
           duration: 6000,
         });
       } else {
+        const errorMsg = error.message || "An error occurred. Please try again.";
+        setSignInError(errorMsg);
         toast.error("Sign in failed", {
-          description: error.message || "An error occurred. Please try again.",
+          description: errorMsg,
           duration: 6000,
         });
       }
@@ -605,6 +623,13 @@ const Auth = () => {
                 <Button type="submit" className="w-full btn-hero" disabled={loading}>
                   {loading ? "Signing in..." : "Sign In"}
                 </Button>
+
+                {signInError && (
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-destructive">{signInError}</p>
+                  </div>
+                )}
 
                 <div className="text-center">
                   <button
@@ -835,6 +860,13 @@ const Auth = () => {
               <Button type="submit" className="w-full btn-hero" disabled={loading || !termsAccepted || !privacyAccepted}>
                 {loading ? "Creating account..." : "Sign Up"}
               </Button>
+
+              {signUpError && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-destructive">{signUpError}</p>
+                </div>
+              )}
 
               {showManualContinue && (
                 <Button 

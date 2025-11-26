@@ -38,18 +38,25 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <Card className="max-w-md">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+          <Card className="max-w-md w-full">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-destructive" />
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="h-5 w-5" />
                 Something went wrong
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                An error occurred while rendering this page. This sometimes happens during development.
+                An error occurred while loading this page. Please try refreshing the page or contact support if the problem persists.
               </p>
+              {this.state.error && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                  <p className="text-xs text-destructive font-mono break-all">
+                    {this.state.error.message}
+                  </p>
+                </div>
+              )}
               <p className="text-sm text-muted-foreground">
                 If this error persists, please contact our technical support team at{' '}
                 <a href="mailto:tech@forswags.com" className="text-primary hover:underline">
