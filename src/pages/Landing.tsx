@@ -251,11 +251,11 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="font-semibold">Coach evaluations & feedback</span>
+                    <span className="font-semibold">Coach evaluations & feedback*</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="font-semibold">Expert "Prime Dime" matching</span>
+                    <span className="font-semibold">Prime Dime Expert College Matching Reports</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
@@ -267,13 +267,14 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="font-semibold">Direct recruiter messaging</span>
+                    <span className="font-semibold">Direct College scout messaging</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Zap className="h-5 w-5 text-primary flex-shrink-0" />
                     <span className="font-semibold">Free parent account included</span>
                   </li>
                 </ul>
+                <p className="text-xs text-muted-foreground mb-4">*Coach evaluations require an additional fee</p>
                 <Button className="w-full btn-hero" onClick={() => navigateTo("/auth")}>
                   Start Training
                 </Button>
@@ -298,11 +299,11 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                    <span className="font-semibold">Coach evaluations & feedback</span>
+                    <span className="font-semibold">Coach evaluations & feedback*</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                    <span className="font-semibold">Expert "Prime Dime" matching</span>
+                    <span className="font-semibold">Prime Dime Expert College Matching Reports</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
@@ -314,13 +315,14 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
-                    <span className="font-semibold">Direct recruiter messaging</span>
+                    <span className="font-semibold">Direct College scout messaging</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <Award className="h-5 w-5 text-secondary flex-shrink-0" />
                     <span className="font-semibold">Free parent account included</span>
                   </li>
                 </ul>
+                <p className="text-xs text-muted-foreground mb-4">*Coach evaluations require an additional fee</p>
                 <Button className="w-full btn-accent" onClick={() => navigateTo("/auth")}>
                   Go Championship
                 </Button>
