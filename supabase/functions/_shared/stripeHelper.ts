@@ -8,8 +8,8 @@ export async function getStripeKey(req: Request): Promise<string> {
   console.log("[STRIPE-ENV] Request origin:", origin);
   
   // Determine environment based on hostname
-  const isProduction = origin.includes("www.forswags.com");
-  const isSandbox = origin.includes("app.forswags.com");
+  // Both www.forswags.com and app.forswags.com are production
+  const isProduction = origin.includes("www.forswags.com") || origin.includes("app.forswags.com");
   
   // Select appropriate Stripe key
   let stripeKey: string | undefined;
@@ -17,11 +17,8 @@ export async function getStripeKey(req: Request): Promise<string> {
   if (isProduction) {
     stripeKey = Deno.env.get("STRIPE_SECRET_KEY_PRODUCTION");
     console.log("[STRIPE-ENV] Using PRODUCTION Stripe key for:", origin);
-  } else if (isSandbox) {
-    stripeKey = Deno.env.get("STRIPE_SECRET_KEY_SANDBOX");
-    console.log("[STRIPE-ENV] Using SANDBOX Stripe key for:", origin);
   } else {
-    // Default to sandbox for localhost and other environments
+    // Default to sandbox for localhost and other test environments
     stripeKey = Deno.env.get("STRIPE_SECRET_KEY_SANDBOX") || Deno.env.get("STRIPE_SECRET_KEY");
     console.log("[STRIPE-ENV] Using SANDBOX (default) Stripe key for:", origin);
   }
@@ -42,5 +39,5 @@ export async function getStripeKey(req: Request): Promise<string> {
 
 export function getEnvironmentName(req: Request): "production" | "sandbox" {
   const origin = req.headers.get("origin") || "";
-  return origin.includes("www.forswags.com") ? "production" : "sandbox";
+  return (origin.includes("www.forswags.com") || origin.includes("app.forswags.com")) ? "production" : "sandbox";
 }
