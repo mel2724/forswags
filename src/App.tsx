@@ -9,6 +9,7 @@ import { initLocalStorageCleanup, emergencyStorageCleanup } from "@/lib/localSto
 
 // Lazy load admin pages
 const Landing = lazy(() => import("./pages/Landing"));
+const Maintenance = lazy(() => import("./pages/Maintenance"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 const ParentVerification = lazy(() => import("./pages/ParentVerification"));
@@ -149,6 +150,7 @@ const App = () => {
               <Suspense fallback={<PageLoader />}>
                 <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/maintenance" element={<Maintenance />} />
               <Route path="/athlete/:username" element={<PublicProfile />} />
               <Route path="/profile/:id" element={<PublicProfile />} />
               <Route path="/auth" element={<Auth />} />
