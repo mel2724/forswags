@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Zap, Users, BookOpen, TrendingUp } from "lucide-react";
-import logoImage from "@/assets/forswags-logo.png";
 import athletesImage from "@/assets/join-movement-athletes.jpg";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
@@ -69,43 +70,46 @@ export default function JoinMovement() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)]"></div>
+      <div className="min-h-screen bg-background">
+        <Header />
         
-        <div className="container mx-auto px-4 text-center relative z-10 max-w-2xl">
-          <div className="mb-8">
-            <div className="inline-flex p-6 bg-primary/10 rounded-full mb-6">
-              <Check className="h-16 w-16 text-primary" />
+        <div className="flex items-center justify-center relative overflow-hidden py-20">
+          <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)]"></div>
+          
+          <div className="container mx-auto px-4 text-center relative z-10 max-w-2xl">
+            <div className="mb-8">
+              <div className="inline-flex p-6 bg-primary/10 rounded-full mb-6">
+                <Check className="h-16 w-16 text-primary" />
+              </div>
             </div>
+            
+            <h1 className="text-4xl md:text-6xl font-black mb-6">
+              <span className="text-gradient-primary">YOU'RE IN!</span>
+            </h1>
+            
+            <p className="text-xl mb-8 text-muted-foreground font-medium">
+              Welcome to the ForSWAGs movement. We'll email you as soon as memberships open with instructions to claim your free profile.
+            </p>
+            
+            <p className="text-sm text-muted-foreground">
+              Check your email for updates • Follow us on social media to stay connected
+            </p>
           </div>
-          
-          <h1 className="text-4xl md:text-6xl font-black mb-6">
-            <span className="text-gradient-primary">YOU'RE IN!</span>
-          </h1>
-          
-          <p className="text-xl mb-8 text-muted-foreground font-medium">
-            Welcome to the ForSWAGs movement. We'll email you as soon as memberships open with instructions to claim your free profile.
-          </p>
-          
-          <p className="text-sm text-muted-foreground">
-            Check your email for updates • Follow us on social media to stay connected
-          </p>
         </div>
+        
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)]"></div>
+    <div className="min-h-screen bg-background">
+      <Header />
       
-      {/* Header */}
-      <div className="relative z-10 container mx-auto px-4 pt-8">
-        <img src={logoImage} alt="ForSWAGs" className="h-16 md:h-20" />
-      </div>
+      {/* Animated background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,81,224,0.1),transparent_50%)] pointer-events-none"></div>
 
       {/* Hero Section */}
       <section className="relative z-10 container mx-auto px-4 py-12 md:py-20">
@@ -281,6 +285,8 @@ export default function JoinMovement() {
           </div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   );
 }
