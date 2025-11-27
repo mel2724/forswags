@@ -52,13 +52,13 @@ export const SocialAccountsManager = () => {
 
           toast.success(`Connected to ${platform} as @${data.username || data.accountId}`);
           queryClient.invalidateQueries({ queryKey: ["connected-accounts"] });
-          sessionStorage.removeItem('oauth_platform');
-          
-          // Clean URL
-          window.history.replaceState({}, '', window.location.pathname);
         } catch (error) {
           console.error('OAuth callback error:', error);
           toast.error("Failed to complete OAuth flow");
+        } finally {
+          // CRITICAL: Always clean up sensitive data from URL and session storage
+          sessionStorage.removeItem('oauth_platform');
+          window.history.replaceState({}, '', window.location.pathname);
         }
       }
     };
