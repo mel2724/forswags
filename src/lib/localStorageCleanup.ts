@@ -12,7 +12,7 @@ const SUPABASE_SESSION_PREFIX = 'sb-fejnevxardxejdvjbipc-auth-token';
  */
 export const cleanupLocalStorage = () => {
   try {
-    const keysToKeep = [LAST_CLEANUP_KEY];
+    const keysToKeep = [LAST_CLEANUP_KEY, SUPABASE_SESSION_PREFIX];
     const allKeys = Object.keys(localStorage);
     let removedCount = 0;
 

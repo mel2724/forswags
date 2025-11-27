@@ -288,10 +288,16 @@ const Auth = () => {
     
     setLoading(true);
 
-    // Clear localStorage to prevent quota errors
+    // Selective cleanup - preserve Supabase auth tokens
     try {
-      localStorage.clear();
-      console.log("Cleared localStorage");
+      const keysToKeep = ['sb-', 'supabase'];
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (!keysToKeep.some(prefix => key.startsWith(prefix))) {
+          localStorage.removeItem(key);
+        }
+      });
+      console.log("Cleared non-auth localStorage items");
     } catch (clearError) {
       console.warn("Could not clear localStorage:", clearError);
     }

@@ -77,12 +77,17 @@ const Dashboard = () => {
 
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // First, refresh the session to ensure it's valid
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
         
-        if (!session) {
+        if (refreshError || !refreshData.session) {
+          console.error("Session refresh failed:", refreshError);
           navigate("/auth");
           return;
         }
+        
+        const session = refreshData.session;
+        setUser(session.user);
 
       // Check if parent is viewing athlete's dashboard
       let parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
@@ -104,14 +109,22 @@ const Dashboard = () => {
       
       // Use impersonated user if available, parent viewing if available, otherwise use actual session user
       const effectiveUserId = getEffectiveUserId() || parentViewingAthlete || session.user.id;
-        setUser(session.user);
 
-      // Get profile
-      const { data: profileData } = await supabase
+      // Get profile with error handling
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", effectiveUserId)
         .maybeSingle();
+
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
+        if (profileError.message?.includes('JWT') || profileError.code === 'PGRST301') {
+          toast.error("Session expired. Please log in again.");
+          navigate("/auth");
+          return;
+        }
+      }
 
       setProfile(profileData);
 
