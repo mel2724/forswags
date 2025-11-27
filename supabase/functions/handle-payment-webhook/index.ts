@@ -134,23 +134,23 @@ serve(async (req) => {
               .single();
 
             if (currentMembership?.plan === 'free' && plan !== 'free') {
-              // Restore archived data if within 6 months
               const archivedData = currentMembership.archived_data as any;
-              if (archivedData?.restore_until) {
+              
+              if (archivedData && archivedData.restore_until) {
                 const restoreUntil = new Date(archivedData.restore_until);
                 if (new Date() < restoreUntil) {
-                  // Restore college matches
-                  if (archivedData.college_matches) {
+                  if (Array.isArray(archivedData.college_matches)) {
                     for (const match of archivedData.college_matches) {
                       await supabase.from('college_matches').insert(match);
                     }
                   }
-                  // Restore profile views
-                  if (archivedData.profile_views) {
+                  
+                  if (Array.isArray(archivedData.profile_views)) {
                     for (const view of archivedData.profile_views) {
                       await supabase.from('profile_views').insert(view);
                     }
                   }
+                  
                   console.log(`Restored archived data for user ${userId}`);
                 }
               }
