@@ -21,7 +21,11 @@ serve(async (req) => {
       );
     }
 
-    const { redirectUri } = await req.json();
+    const { redirectUri, state } = await req.json();
+    
+    if (!state || typeof state !== 'string') {
+      throw new Error('State parameter is required');
+    }
     
     // Generate PKCE code verifier and challenge
     const codeVerifier = generateCodeVerifier();
@@ -51,17 +55,17 @@ serve(async (req) => {
       throw new Error('Invalid user');
     }
 
-    // Store code verifier for this user
+    // Store code verifier and state for this user
     await supabaseClient
       .from('oauth_state')
       .upsert({
         user_id: user.id,
         platform: 'twitter',
         code_verifier: codeVerifier,
+        state: state,
         created_at: new Date().toISOString(),
       });
 
-    const state = crypto.randomUUID();
     const scopes = ['tweet.read', 'tweet.write', 'users.read', 'offline.access'];
     
     const authUrl = new URL('https://twitter.com/i/oauth2/authorize');

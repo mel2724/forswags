@@ -14,6 +14,20 @@ interface SocialAccount {
   updated_at: string;
 }
 
+// Generate secure state parameter for OAuth CSRF protection
+const generateOAuthState = (platform: string): string => {
+  const timestamp = Date.now().toString(36);
+  const randomBytes = crypto.getRandomValues(new Uint8Array(16));
+  const randomString = Array.from(randomBytes, byte => byte.toString(36)).join('');
+  return `${platform}_${timestamp}_${randomString}`;
+};
+
+// Parse platform from state parameter
+const parsePlatformFromState = (state: string): string | null => {
+  const parts = state.split('_');
+  return parts[0] || null;
+};
+
 export const SocialAccountsManager = () => {
   const queryClient = useQueryClient();
   const [isConnecting, setIsConnecting] = useState(false);
@@ -37,15 +51,23 @@ export const SocialAccountsManager = () => {
     const handleCallback = async () => {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
-      const platform = sessionStorage.getItem('oauth_platform');
+      const state = params.get('state');
 
-      if (code && platform) {
+      if (code && state) {
+        const platform = parsePlatformFromState(state);
+        
+        if (!platform || (platform !== 'twitter' && platform !== 'instagram')) {
+          toast.error("Invalid OAuth state parameter");
+          window.history.replaceState({}, '', window.location.pathname);
+          return;
+        }
+
         try {
           const redirectUri = `${window.location.origin}${window.location.pathname}`;
           const functionName = platform === 'twitter' ? 'twitter-oauth-callback' : 'instagram-oauth-callback';
           
           const { data, error } = await supabase.functions.invoke(functionName, {
-            body: { code, redirectUri }
+            body: { code, state, redirectUri }
           });
 
           if (error) throw error;
@@ -56,8 +78,7 @@ export const SocialAccountsManager = () => {
           console.error('OAuth callback error:', error);
           toast.error("Failed to complete OAuth flow");
         } finally {
-          // CRITICAL: Always clean up sensitive data from URL and session storage
-          sessionStorage.removeItem('oauth_platform');
+          // CRITICAL: Always clean up sensitive code from URL
           window.history.replaceState({}, '', window.location.pathname);
         }
       }
@@ -70,13 +91,14 @@ export const SocialAccountsManager = () => {
   const startOAuthFlow = async (platform: 'twitter' | 'instagram') => {
     try {
       setIsConnecting(true);
-      sessionStorage.setItem('oauth_platform', platform);
       
+      // Generate secure state parameter for CSRF protection
+      const state = generateOAuthState(platform);
       const redirectUri = `${window.location.origin}${window.location.pathname}`;
       const functionName = platform === 'twitter' ? 'twitter-oauth-start' : 'instagram-oauth-start';
       
       const { data, error } = await supabase.functions.invoke(functionName, {
-        body: { redirectUri }
+        body: { redirectUri, state }
       });
 
       if (error) throw error;

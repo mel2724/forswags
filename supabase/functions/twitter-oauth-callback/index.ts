@@ -17,7 +17,11 @@ serve(async (req) => {
       throw new Error('TWITTER_CLIENT_ID not configured');
     }
 
-    const { code, redirectUri } = await req.json();
+    const { code, state, redirectUri } = await req.json();
+    
+    if (!state || typeof state !== 'string') {
+      throw new Error('State parameter is required');
+    }
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -42,16 +46,21 @@ serve(async (req) => {
       throw new Error('Invalid user');
     }
 
-    // Get code verifier from database
+    // Get code verifier from database and validate state
     const { data: oauthState, error: stateError } = await supabaseClient
       .from('oauth_state')
-      .select('code_verifier')
+      .select('code_verifier, state')
       .eq('user_id', user.id)
       .eq('platform', 'twitter')
       .single();
 
     if (stateError || !oauthState) {
       throw new Error('OAuth state not found');
+    }
+
+    // Validate state parameter matches what we stored (CSRF protection)
+    if (oauthState.state !== state) {
+      throw new Error('Invalid state parameter - possible CSRF attack');
     }
 
     // Exchange code for token
