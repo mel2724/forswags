@@ -1,7 +1,15 @@
 // 404 Page - Rebuilt from scratch v5
+import { SEO } from "@/components/SEO";
+
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <>
+      <SEO 
+        title="Page Not Found"
+        description="The page you're looking for doesn't exist. Return to ForSWAGs to explore athlete profiles, college recruiting tools, and life skills training."
+        keywords="404, page not found, ForSWAGs"
+      />
+      <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <h1 className="text-6xl font-bold text-foreground">404</h1>
         <p className="text-xl text-muted-foreground">Page not found</p>
@@ -13,5 +21,6 @@ export default function NotFound() {
         </a>
       </div>
     </div>
+    </>
   );
 }
