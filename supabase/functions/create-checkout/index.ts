@@ -11,7 +11,7 @@ const corsHeaders = {
 
 const checkoutRequestSchema = z.object({
   priceId: z.string().min(1, "Price ID is required").startsWith("price_", "Invalid Stripe price ID format"),
-  promoCode: z.string().max(50, "Promo code must be less than 50 characters").optional(),
+  promoCode: z.string().max(50, "Promo code must be less than 50 characters").nullish(),
   returnPath: z.string().optional().default("/membership"),
 });
 
