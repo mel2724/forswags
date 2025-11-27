@@ -68,14 +68,19 @@ serve(async (req) => {
         const email = (customer as Stripe.Customer).email;
 
         if (email) {
-          const { data: authData } = await supabase.auth.admin.listUsers();
-          const user = authData?.users.find(u => u.email === email);
+          // Query profiles table directly by email - much more efficient
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', email)
+            .single();
           
-          if (user) {
+          if (profile && !profileError) {
+            const userId = profile.id;
             // Archive user data including all media before downgrade
-            await supabase.rpc('archive_user_data', { p_user_id: user.id });
+            await supabase.rpc('archive_user_data', { p_user_id: userId });
             
-            console.log(`Archived all data and media for user ${user.id}`);
+            console.log(`Archived all data and media for user ${userId}`);
 
             // Update membership to free tier
             await supabase
@@ -85,10 +90,10 @@ serve(async (req) => {
                 status: 'active',
                 payment_failed_at: event.type === 'invoice.payment_failed' ? new Date().toISOString() : null,
               })
-              .eq('user_id', user.id)
+              .eq('user_id', userId)
               .eq('stripe_subscription_id', subscription.id);
 
-            console.log(`Downgraded user ${user.id} to free tier`);
+            console.log(`Downgraded user ${userId} to free tier`);
           }
         }
         break;
@@ -102,10 +107,15 @@ serve(async (req) => {
         const email = (customer as Stripe.Customer).email;
 
         if (email && subscription.status === 'active') {
-          const { data: authData } = await supabase.auth.admin.listUsers();
-          const user = authData?.users.find(u => u.email === email);
+          // Query profiles table directly by email - much more efficient
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', email)
+            .single();
           
-          if (user) {
+          if (profile && !profileError) {
+            const userId = profile.id;
             const productId = subscription.items.data[0].price.product as string;
             
             // Map product ID to plan using centralized config
@@ -117,7 +127,7 @@ serve(async (req) => {
             const { data: currentMembership } = await supabase
               .from('memberships')
               .select('*')
-              .eq('user_id', user.id)
+              .eq('user_id', userId)
               .eq('status', 'active')
               .order('created_at', { ascending: false })
               .limit(1)
@@ -141,7 +151,7 @@ serve(async (req) => {
                       await supabase.from('profile_views').insert(view);
                     }
                   }
-                  console.log(`Restored archived data for user ${user.id}`);
+                  console.log(`Restored archived data for user ${userId}`);
                 }
               }
             }
@@ -150,7 +160,7 @@ serve(async (req) => {
             await supabase
               .from('memberships')
               .upsert({
-                user_id: user.id,
+                user_id: userId,
                 plan,
                 status: 'active',
                 stripe_subscription_id: subscription.id,
@@ -159,7 +169,7 @@ serve(async (req) => {
                 payment_failed_at: null,
               });
 
-            console.log(`Updated membership for user ${user.id} to ${plan}`);
+            console.log(`Updated membership for user ${userId} to ${plan}`);
           }
         }
         break;
