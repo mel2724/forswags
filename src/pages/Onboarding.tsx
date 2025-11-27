@@ -202,11 +202,22 @@ const Onboarding = () => {
     // Handle paid membership - redirect to Stripe
     setProcessingCheckout(true);
     try {
+      // Get and validate session FIRST
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in to subscribe.");
+        navigate("/auth");
+        return;
+      }
+
       const priceId = selectedMembershipTier === "monthly" 
         ? PRODUCTS.membership.athlete.monthly.price_id
         : PRODUCTS.membership.athlete.yearly.price_id;
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: { 
           priceId,
           returnPath: '/onboarding?subscription=success'
@@ -221,7 +232,13 @@ const Onboarding = () => {
       }
     } catch (error: any) {
       console.error("Checkout error:", error);
-      toast.error(error.message || "Failed to start checkout");
+      const errorMessage = error.message || "Failed to start checkout";
+      if (errorMessage.includes("Authentication") || errorMessage.includes("token")) {
+        toast.error("Session expired. Please log in again.");
+        navigate("/auth");
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setProcessingCheckout(false);
     }
