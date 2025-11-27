@@ -21,7 +21,11 @@ serve(async (req) => {
       );
     }
 
-    const { redirectUri } = await req.json();
+    const { redirectUri, state } = await req.json();
+    
+    if (!state || typeof state !== 'string') {
+      throw new Error('State parameter is required');
+    }
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -45,8 +49,6 @@ serve(async (req) => {
     if (userError || !user) {
       throw new Error('Invalid user');
     }
-
-    const state = crypto.randomUUID();
     
     // Store state for verification
     await supabaseClient
@@ -55,6 +57,7 @@ serve(async (req) => {
         user_id: user.id,
         platform: 'instagram',
         code_verifier: state, // Reusing this field for state
+        state: state,
         created_at: new Date().toISOString(),
       });
 

@@ -19,7 +19,11 @@ serve(async (req) => {
       throw new Error('Instagram credentials not configured');
     }
 
-    const { code, redirectUri } = await req.json();
+    const { code, state, redirectUri } = await req.json();
+    
+    if (!state || typeof state !== 'string') {
+      throw new Error('State parameter is required');
+    }
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -42,6 +46,22 @@ serve(async (req) => {
     
     if (userError || !user) {
       throw new Error('Invalid user');
+    }
+
+    // Validate state parameter (CSRF protection)
+    const { data: oauthState, error: stateError } = await supabaseClient
+      .from('oauth_state')
+      .select('state')
+      .eq('user_id', user.id)
+      .eq('platform', 'instagram')
+      .single();
+
+    if (stateError || !oauthState) {
+      throw new Error('OAuth state not found');
+    }
+
+    if (oauthState.state !== state) {
+      throw new Error('Invalid state parameter - possible CSRF attack');
     }
 
     // Exchange code for token
