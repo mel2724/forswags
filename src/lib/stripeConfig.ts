@@ -144,14 +144,27 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
 
 // Auto-select products based on current environment
 export function getStripeProducts() {
+  if (typeof window === 'undefined') {
+    console.log('[STRIPE-CONFIG] Server-side rendering - defaulting to SANDBOX');
+    return STRIPE_PRODUCTS_SANDBOX;
+  }
+  
+  const hostname = window.location.hostname;
+  
   // Check if we're on production domain
-  const isProduction = typeof window !== 'undefined' && window.location.hostname === 'www.forswags.com';
+  const isProduction = hostname === 'www.forswags.com';
+  
+  // Explicitly check for sandbox environments
+  const isSandbox = hostname === 'app.forswags.com' || 
+                    hostname.includes('lovable.app') || 
+                    hostname === 'localhost';
   
   if (isProduction) {
-    console.log('[STRIPE-CONFIG] Using PRODUCTION Stripe products');
+    console.log('[STRIPE-CONFIG] Using PRODUCTION Stripe products for:', hostname);
     return STRIPE_PRODUCTS_PRODUCTION;
   } else {
-    console.log('[STRIPE-CONFIG] Using SANDBOX Stripe products');
+    console.log('[STRIPE-CONFIG] Using SANDBOX Stripe products for:', hostname, 
+                isSandbox ? '(explicit sandbox)' : '(default sandbox)');
     return STRIPE_PRODUCTS_SANDBOX;
   }
 }
