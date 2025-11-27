@@ -11,7 +11,7 @@ interface OptimizedQueryOptions<TData> extends Omit<UseQueryOptions<TData>, 'que
  * @param options - Additional options including custom cache time
  */
 export function useOptimizedQuery<TData>(
-  queryKey: any[],
+  queryKey: Array<unknown>,
   queryFn: () => Promise<TData>,
   options?: OptimizedQueryOptions<TData>
 ) {
@@ -32,7 +32,7 @@ export function useOptimizedQuery<TData>(
  * Hook for frequently accessed static data with longer cache
  */
 export function useStaticDataQuery<TData>(
-  queryKey: any[],
+  queryKey: Array<unknown>,
   queryFn: () => Promise<TData>,
   options?: OptimizedQueryOptions<TData>
 ) {
@@ -47,7 +47,7 @@ export function useStaticDataQuery<TData>(
  * Hook for real-time data that needs frequent updates
  */
 export function useRealtimeQuery<TData>(
-  queryKey: any[],
+  queryKey: Array<unknown>,
   queryFn: () => Promise<TData>,
   options?: OptimizedQueryOptions<TData>
 ) {
