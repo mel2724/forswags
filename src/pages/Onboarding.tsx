@@ -300,6 +300,9 @@ const Onboarding = () => {
         if (membershipError) throw membershipError;
       }
 
+      // Small delay to ensure database writes are committed
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       toast.success("Welcome to ForSWAGs!");
       navigate("/dashboard");
     } catch (error: any) {
@@ -551,8 +554,8 @@ const Onboarding = () => {
         }, 2000);
       }
       
-      // Small delay to ensure database writes are fully committed and readable
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Longer delay to ensure database writes are fully committed and readable
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       navigate("/dashboard");
     } catch (error: any) {

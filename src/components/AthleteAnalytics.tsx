@@ -94,14 +94,17 @@ function AthleteAnalyticsContent() {
         });
       }
 
-      // Get engagement stats
+      // Get engagement stats with error handling
       const { data: engagementData, error: engagementError } = await supabase
         .rpc("get_engagement_stats", {
           p_user_id: user.id,
           p_days: parseInt(timeRange),
         });
 
-      if (engagementError) throw engagementError;
+      if (engagementError) {
+        console.error("Error fetching engagement stats:", engagementError);
+        // Don't throw - let component continue with null data
+      }
       if (engagementData && engagementData.length > 0) {
         const stats = engagementData[0];
         setEngagementStats({
