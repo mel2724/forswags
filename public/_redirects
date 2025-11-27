@@ -1,0 +1,3 @@
+# SPA fallback - all routes should serve index.html
+# This ensures all client-side routes return 200 status
+/*    /index.html   200
