@@ -120,6 +120,8 @@ export type Database = {
         Row: {
           available_for_calls: boolean | null
           bio: string | null
+          claim_token: string | null
+          claim_token_expires_at: string | null
           company: string | null
           created_at: string
           graduation_year: number
@@ -127,6 +129,7 @@ export type Database = {
           linkedin_url: string | null
           position: string | null
           professional_role: string | null
+          profile_claimed: boolean | null
           school_id: string | null
           sport: string
           updated_at: string
@@ -136,6 +139,8 @@ export type Database = {
         Insert: {
           available_for_calls?: boolean | null
           bio?: string | null
+          claim_token?: string | null
+          claim_token_expires_at?: string | null
           company?: string | null
           created_at?: string
           graduation_year: number
@@ -143,6 +148,7 @@ export type Database = {
           linkedin_url?: string | null
           position?: string | null
           professional_role?: string | null
+          profile_claimed?: boolean | null
           school_id?: string | null
           sport: string
           updated_at?: string
@@ -152,6 +158,8 @@ export type Database = {
         Update: {
           available_for_calls?: boolean | null
           bio?: string | null
+          claim_token?: string | null
+          claim_token_expires_at?: string | null
           company?: string | null
           created_at?: string
           graduation_year?: number
@@ -159,6 +167,7 @@ export type Database = {
           linkedin_url?: string | null
           position?: string | null
           professional_role?: string | null
+          profile_claimed?: boolean | null
           school_id?: string | null
           sport?: string
           updated_at?: string

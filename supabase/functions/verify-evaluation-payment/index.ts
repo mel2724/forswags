@@ -60,6 +60,33 @@ serve(async (req) => {
       const isReevaluation = metadata!.is_reevaluation === "true";
       const requestedCoachId = metadata!.requested_coach_id || null;
 
+      // Get payment intent ID to check for duplicates
+      const paymentIntentId = typeof session.payment_intent === 'string' 
+        ? session.payment_intent 
+        : session.payment_intent?.id;
+
+      // Check if evaluation already exists for this payment
+      const { data: existingEval } = await supabaseClient
+        .from("evaluations")
+        .select("id")
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .maybeSingle();
+
+      if (existingEval) {
+        console.log("[VERIFY-EVALUATION-PAYMENT] Evaluation already exists:", existingEval.id);
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            evaluation_id: existingEval.id,
+            message: "Evaluation already created for this payment"
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          }
+        );
+      }
+
       // Check if requested coach is still active
       let assignedCoachId = null;
       let needsAdminAssignment = false;
@@ -79,11 +106,6 @@ serve(async (req) => {
           needsAdminAssignment = true;
         }
       }
-
-      // Get payment intent ID
-      const paymentIntentId = typeof session.payment_intent === 'string' 
-        ? session.payment_intent 
-        : session.payment_intent?.id;
 
       // Create evaluation record
       const { data: evaluation, error: evalError } = await supabaseClient
