@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { getStripeKey, getEnvironmentName } from "../_shared/stripeHelper.ts";
+import { STRIPE_PRODUCT_IDS, mapProductIdToPlan } from "../_shared/productConfig.ts";
 
 // Helper to get webhook secret based on environment
 function getWebhookSecret(req: Request): string {
@@ -20,17 +21,7 @@ function getWebhookSecret(req: Request): string {
   return secret;
 }
 
-// Environment-aware product ID mapping
-const PRODUCT_ID_MAP = {
-  sandbox: {
-    pro_monthly: 'prod_SoqPRCb0fKL4OW',
-    championship_yearly: 'prod_SoqOdBi1QDaZTE'
-  },
-  production: {
-    pro_monthly: 'prod_TF4xtIZXfWy5sa',
-    championship_yearly: 'prod_TF4zr2EcShQH1M'
-  }
-};
+// NOTE: Product ID mapping is now centralized in _shared/productConfig.ts
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -63,9 +54,7 @@ serve(async (req) => {
   }
   
   const environment = getEnvironmentName(req);
-  const productMap = PRODUCT_ID_MAP[environment];
-
-  console.log("Processing webhook event:", event.type);
+  console.log("Processing webhook event:", event.type, "for environment:", environment);
 
   try {
     switch (event.type) {
@@ -119,12 +108,10 @@ serve(async (req) => {
           if (user) {
             const productId = subscription.items.data[0].price.product as string;
             
-            // Map product ID to plan using environment-aware mapping
-            let plan = 'free';
-            if (productId === productMap.pro_monthly) plan = 'pro_monthly';
-            if (productId === productMap.championship_yearly) plan = 'championship_yearly';
+            // Map product ID to plan using centralized config
+            const plan = mapProductIdToPlan(productId, environment);
             
-            console.log(`[WEBHOOK] Product ID ${productId} mapped to plan: ${plan}`);
+            console.log(`[WEBHOOK] Product ID ${productId} mapped to plan: ${plan} (environment: ${environment})`);
 
             // Check if upgrading from free
             const { data: currentMembership } = await supabase

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { getStripeKey } from "../_shared/stripeHelper.ts";
+import { getStripeKey, getEnvironmentName } from "../_shared/stripeHelper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,9 +69,33 @@ serve(async (req) => {
     }
     
     const { priceId, promoCode, returnPath } = validationResult.data;
-    logStep("Request data", { priceId, promoCode, returnPath });
+    const environment = getEnvironmentName(req);
+    logStep("Request data", { priceId, promoCode, returnPath, environment });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+    // DIAGNOSTIC: Verify price exists in Stripe before creating session
+    try {
+      const price = await stripe.prices.retrieve(priceId);
+      logStep("Price verification successful", { 
+        priceId, 
+        productId: price.product,
+        active: price.active,
+        currency: price.currency,
+        unitAmount: price.unit_amount,
+        recurring: price.recurring 
+      });
+      
+      if (!price.active) {
+        throw new Error(`Price ${priceId} is inactive in Stripe`);
+      }
+    } catch (priceError) {
+      logStep("ERROR - Price verification failed", { 
+        priceId, 
+        error: priceError instanceof Error ? priceError.message : String(priceError) 
+      });
+      throw new Error(`Invalid price ID ${priceId}: ${priceError instanceof Error ? priceError.message : 'Price not found'}`);
+    }
 
     // Check if customer exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
