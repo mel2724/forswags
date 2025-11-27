@@ -115,28 +115,12 @@ const Dashboard = () => {
         setCurrentOnboardingStep(completedSteps);
       }
 
-      // SAFETY NET: Check if user has completed onboarding (with retry logic)
-      const checkOnboardingWithRetry = async (retries = 3) => {
-        for (let i = 0; i < retries; i++) {
-          const { data: roleData } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", effectiveUserId)
-            .maybeSingle();
-
-          if (roleData) {
-            return roleData; // Success!
-          }
-          
-          // If no role found and not last retry, wait and try again
-          if (i < retries - 1) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }
-        }
-        return null; // All retries failed
-      };
-
-      const roleData = await checkOnboardingWithRetry();
+      // Check if user has completed onboarding (single attempt - no aggressive polling)
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", effectiveUserId)
+        .maybeSingle();
 
       // If no role, user didn't complete onboarding
       if (!roleData) {
@@ -153,35 +137,20 @@ const Dashboard = () => {
         return;
       }
       
-      // If athlete, get athlete data (with retry logic)
+      // If athlete, get athlete data (single attempt - no aggressive polling)
       if (roleData.role === "athlete") {
-        const checkAthleteWithRetry = async (retries = 3) => {
-          for (let i = 0; i < retries; i++) {
-            const { data: athleteData } = await supabase
-              .from("athletes")
-              .select(`
-                id, user_id, parent_id, sport, position, graduation_year, high_school,
-                height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
-                created_at, updated_at, dominant_hand, profile_photo_url, 
-                profile_completion_pct, visibility, secondary_sports, club_team_name,
-                ncaa_eligibility_number, jersey_number, username, twitter_handle,
-                instagram_handle, team_logo_url, profile_claimed
-              `)
-              .eq("user_id", effectiveUserId)
-              .maybeSingle();
-
-            if (athleteData) {
-              return athleteData;
-            }
-            
-            if (i < retries - 1) {
-              await new Promise(resolve => setTimeout(resolve, 300));
-            }
-          }
-          return null;
-        };
-
-        const athleteData = await checkAthleteWithRetry();
+        const { data: athleteData } = await supabase
+          .from("athletes")
+          .select(`
+            id, user_id, parent_id, sport, position, graduation_year, high_school,
+            height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
+            created_at, updated_at, dominant_hand, profile_photo_url, 
+            profile_completion_pct, visibility, secondary_sports, club_team_name,
+            ncaa_eligibility_number, jersey_number, username, twitter_handle,
+            instagram_handle, team_logo_url, profile_claimed
+          `)
+          .eq("user_id", effectiveUserId)
+          .maybeSingle();
         
         // If role is athlete but no athlete profile exists, redirect to onboarding
         if (!athleteData) {
@@ -289,13 +258,22 @@ const Dashboard = () => {
             
             setProfileViews(viewsData?.[0] || null);
 
-            const { data: engagementData } = await supabase
-              .rpc("get_engagement_stats", { 
-                p_user_id: effectiveUserId,
-                p_days: 30 
-              });
-            
-              setEngagementStats(engagementData?.[0] || null);
+            // Get engagement stats with error handling
+            try {
+              const { data: engagementData, error: engagementError } = await supabase
+                .rpc("get_engagement_stats", { 
+                  p_user_id: effectiveUserId,
+                  p_days: 30 
+                });
+              
+              if (engagementError) {
+                console.error("Error fetching engagement stats:", engagementError);
+              } else {
+                setEngagementStats(engagementData?.[0] || null);
+              }
+            } catch (err) {
+              console.error("Failed to fetch engagement stats:", err);
+            }
           }
         }
 

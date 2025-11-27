@@ -34,7 +34,18 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const stripeKey = await getStripeKey(req);
+    // Get Stripe key with detailed error logging
+    let stripeKey: string;
+    try {
+      stripeKey = await getStripeKey(req);
+      logStep("Stripe key retrieved successfully");
+    } catch (keyError) {
+      logStep("ERROR - Failed to get Stripe key", { 
+        error: keyError instanceof Error ? keyError.message : String(keyError),
+        origin: req.headers.get("origin")
+      });
+      throw new Error(`Stripe configuration error: ${keyError instanceof Error ? keyError.message : String(keyError)}`);
+    }
     
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
