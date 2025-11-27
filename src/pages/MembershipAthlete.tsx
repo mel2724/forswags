@@ -63,9 +63,11 @@ export default function MembershipAthlete() {
   const checkSubscription = async () => {
     setCheckingStatus(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error("No active session");
+      // Refresh session to ensure valid token
+      const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError || !session) {
+        throw new Error("No valid session after refresh");
       }
 
       const { data, error } = await supabase.functions.invoke("check-subscription", {
@@ -94,11 +96,13 @@ export default function MembershipAthlete() {
   const handleSubscribe = async (priceId: string) => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      // Refresh session to ensure valid token
+      const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
+      
+      if (sessionError || !session) {
         toast({
-          title: "Authentication required",
-          description: "Please log in to subscribe.",
+          title: "Session expired",
+          description: "Please log in again to continue.",
           variant: "destructive",
         });
         navigate("/auth");

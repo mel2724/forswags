@@ -56,17 +56,11 @@ export default function Membership() {
   const checkSubscription = async () => {
     setCheckingStatus(true);
     try {
-      // Verify user is authenticated first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log("User not authenticated, skipping subscription check");
-        setCheckingStatus(false);
-        return;
-      }
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        console.log("No valid session token, skipping subscription check");
+      // Refresh session to ensure valid token
+      const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError || !session?.access_token) {
+        console.log("No valid session after refresh, skipping subscription check");
         setCheckingStatus(false);
         return;
       }
@@ -88,11 +82,13 @@ export default function Membership() {
   const handleSubscribe = async (priceId: string, productName: string, priceAmount: number, interval: string) => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      // Refresh session to ensure valid token
+      const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
+      
+      if (sessionError || !session) {
         toast({
-          title: "Authentication required",
-          description: "Please log in to subscribe.",
+          title: "Session expired",
+          description: "Please log in again to continue.",
           variant: "destructive",
         });
         navigate("/auth");
