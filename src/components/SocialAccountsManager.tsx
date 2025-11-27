@@ -155,11 +155,15 @@ export const SocialAccountsManager = () => {
   }
 
   if (queryError) {
+    console.error('Error loading connected accounts:', queryError);
+    
     return (
       <Card>
         <CardContent className="p-8">
           <div className="text-center space-y-4">
-            <p className="text-destructive">Failed to load accounts</p>
+            <p className="text-destructive">
+              Failed to load accounts: {queryError.message.substring(0, 50)}
+            </p>
             <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["connected-accounts"] })}>
               Try Again
             </Button>
