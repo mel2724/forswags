@@ -24,7 +24,8 @@ export default function ClaimProfile() {
 
   const validateToken = async () => {
     try {
-      const { data, error } = await supabase
+      // Check athletes table first
+      const { data: athleteData } = await supabase
         .from("athletes")
         .select(`
           *,
@@ -34,9 +35,24 @@ export default function ClaimProfile() {
           )
         `)
         .eq("claim_token", token)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      // Check alumni table if not found in athletes
+      const { data: alumniData } = await supabase
+        .from("alumni")
+        .select(`
+          *,
+          profiles!alumni_user_id_fkey (
+            email,
+            full_name
+          )
+        `)
+        .eq("claim_token", token)
+        .maybeSingle();
+
+      const data = athleteData || alumniData;
+
+      if (!data) {
         toast.error("Invalid or expired claim link");
         navigate("/");
         return;
@@ -80,25 +96,16 @@ export default function ClaimProfile() {
     setClaiming(true);
 
     try {
-      // Update password for the user
-      const { error: updateError } = await supabase.auth.admin.updateUserById(
-        athleteData.user_id,
-        { password }
-      );
+      // Call secure edge function to claim profile
+      const { data, error } = await supabase.functions.invoke("claim-athlete-profile", {
+        body: {
+          claim_token: token,
+          password,
+        },
+      });
 
-      if (updateError) throw updateError;
-
-      // Mark profile as claimed
-      const { error: claimError } = await supabase
-        .from("athletes")
-        .update({
-          profile_claimed: true,
-          claim_token: null,
-          claim_token_expires_at: null,
-        })
-        .eq("id", athleteData.id);
-
-      if (claimError) throw claimError;
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       // Sign in the user
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -110,9 +117,9 @@ export default function ClaimProfile() {
 
       toast.success("Profile claimed successfully! Complete your profile to get started.");
       navigate("/onboarding?claimed=true");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Claim error:", error);
-      toast.error("Failed to claim profile");
+      toast.error(error.message || "Failed to claim profile");
     } finally {
       setClaiming(false);
     }
