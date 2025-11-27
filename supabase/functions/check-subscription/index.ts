@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
-import { getStripeKey } from "../_shared/stripeHelper.ts";
+import { getStripeKey, getEnvironmentName } from "../_shared/stripeHelper.ts";
+import { mapProductIdToPlan, mapProductIdToTier } from "../_shared/productConfig.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -137,28 +138,12 @@ serve(async (req) => {
       
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
 
-      // Map product ID to tier and plan
-      let tier = 'free';
-      let planName = 'free';
+      // Determine environment and map product ID to tier and plan using centralized config
+      const environment = getEnvironmentName(req);
+      const tier = mapProductIdToTier(productId as string, environment);
+      const planName = mapProductIdToPlan(productId as string, environment);
       
-      // Recruiter products
-      if (productId === 'prod_T9VqwYb5CEEool') {
-        tier = 'college_scout';
-        planName = 'recruiter_yearly';
-      } else if (productId === 'prod_T9Vq2TSF3rfzDp') {
-        tier = 'college_scout';
-        planName = 'recruiter_monthly';
-      }
-      // Athlete products
-      else if (productId === 'prod_SoqOdBi1QDaZTE') {
-        tier = 'premium';
-        planName = 'championship_yearly';
-      } else if (productId === 'prod_SoqPRCb0fKL4OW') {
-        tier = 'premium';
-        planName = 'pro_monthly';
-      }
-      
-      logStep("Determined membership tier", { productId, tier, planName });
+      logStep("Determined membership tier", { productId, tier, planName, environment });
       
       // Update the database membership record
       const { error: updateError } = await supabaseClient
