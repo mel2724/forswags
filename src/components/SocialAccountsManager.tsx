@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +30,6 @@ const parsePlatformFromState = (state: string): string | null => {
 
 export const SocialAccountsManager = () => {
   const queryClient = useQueryClient();
-  const [isConnecting, setIsConnecting] = useState(false);
 
   // Fetch connected accounts status (no access tokens exposed to client)
   const { data: accounts, isLoading, error: queryError } = useQuery({
@@ -90,8 +89,6 @@ export const SocialAccountsManager = () => {
   // Start OAuth flow
   const startOAuthFlow = async (platform: 'twitter' | 'instagram') => {
     try {
-      setIsConnecting(true);
-      
       // Generate secure state parameter for CSRF protection
       const state = generateOAuthState(platform);
       const redirectUri = `${window.location.origin}${window.location.pathname}`;
@@ -108,7 +105,6 @@ export const SocialAccountsManager = () => {
     } catch (error) {
       console.error('OAuth start error:', error);
       toast.error("Failed to start OAuth flow");
-      setIsConnecting(false);
     }
   };
 
@@ -185,21 +181,19 @@ export const SocialAccountsManager = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Button
             onClick={() => startOAuthFlow('twitter')}
-            disabled={isConnecting}
             variant="outline"
             className="w-full"
           >
             <Twitter className="h-4 w-4 mr-2" />
-            {isConnecting ? "Connecting..." : "Connect Twitter"}
+            Connect Twitter
           </Button>
           <Button
             onClick={() => startOAuthFlow('instagram')}
-            disabled={isConnecting}
             variant="outline"
             className="w-full"
           >
             <Instagram className="h-4 w-4 mr-2" />
-            {isConnecting ? "Connecting..." : "Connect Instagram"}
+            Connect Instagram
           </Button>
         </div>
 
