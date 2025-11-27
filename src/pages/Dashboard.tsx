@@ -66,6 +66,15 @@ const Dashboard = () => {
   const { tier, isLoading: tierLoading, isFree, isPaid } = useUserTier();
 
   useEffect(() => {
+    // Set up auth state change listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/auth");
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setUser(session.user);
+      }
+    });
+
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -305,6 +314,10 @@ const Dashboard = () => {
     };
 
     checkAuth();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate, getEffectiveUserId]);
 
   const handleTutorialComplete = async () => {
