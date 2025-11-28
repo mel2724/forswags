@@ -350,9 +350,31 @@ const Auth = () => {
 
       console.log("[SIGNIN] User roles:", rolesData);
 
-      // If user has no roles, they didn't complete onboarding
+      // If user has no roles, check if they have profile data before redirecting
       if (!rolesData || rolesData.length === 0) {
-        console.log("[SIGNIN] No roles found, redirecting to onboarding");
+        console.log("[SIGNIN] No roles found, checking for existing profile data");
+
+        // Check if user has athlete profile
+        const { data: athleteData } = await supabase
+          .from("athletes")
+          .select("id")
+          .eq("user_id", authData.user.id)
+          .maybeSingle();
+
+        if (athleteData) {
+          // User has athlete profile but no role - assign athlete role
+          console.log("[SIGNIN] Found athlete profile, assigning athlete role");
+          await supabase
+            .from("user_roles")
+            .insert({ user_id: authData.user.id, role: "athlete" });
+
+          toast.success('Welcome back!');
+          navigate("/dashboard");
+          return;
+        }
+
+        // No profile data found, need to complete onboarding
+        console.log("[SIGNIN] No profile data found, redirecting to onboarding");
         toast.info("Please complete your profile setup");
         navigate("/onboarding");
         return;
