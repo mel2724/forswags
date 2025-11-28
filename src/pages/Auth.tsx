@@ -93,6 +93,14 @@ const Auth = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[AUTH] Auth state change:", event, "on path:", window.location.pathname);
+
+      // Don't process auth changes during active login/signup flows
+      if (loading) {
+        console.log("[AUTH] Skipping navigation - login/signup in progress");
+        return;
+      }
+
       // Sync membership status on sign in
       if (event === "SIGNED_IN" && session) {
         try {
@@ -104,15 +112,10 @@ const Auth = () => {
           console.error("[AUTH] Failed to sync membership:", error);
         }
       }
-      
-      // Navigate to dashboard for existing users, don't interfere with signup flow
-      if (event === "SIGNED_IN" && session && window.location.pathname === "/auth") {
-        return;
-      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, loading]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -303,6 +306,8 @@ const Auth = () => {
     }
 
     try {
+      console.log("[SIGNIN] Starting sign in process");
+
       // Now using sessionStorage in main client to avoid localStorage quota issues
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -310,89 +315,60 @@ const Auth = () => {
       });
 
       if (authError) {
-        console.error("Auth error:", authError);
+        console.error("[SIGNIN] Auth error:", authError);
         throw authError;
       }
 
-      if (!authData.user) {
+      if (!authData.user || !authData.session) {
         throw new Error("Sign in failed - no user data returned");
       }
 
-      // Check if user can login (membership status)
-      try {
-        const { data: loginCheck, error: checkError } = await supabase.rpc('can_user_login', {
-          p_user_id: authData.user.id
-        });
-
-        if (checkError) {
-          console.warn("Membership check failed:", checkError);
-        } else {
-          const loginStatus = loginCheck as unknown as { can_login: boolean; reason: string };
-          
-          if (!loginStatus.can_login) {
-            await supabase.auth.signOut();
-            
-            if (loginStatus.reason === 'membership_expired') {
-              toast.error('Your membership has expired. Please renew to continue accessing your account.');
-            } else if (loginStatus.reason === 'payment_failed') {
-              toast.error('Your payment has failed. Please update your payment method to continue.');
-            } else {
-              toast.error('Unable to login. Please contact support.');
-            }
-            setLoading(false);
-            return;
-          }
-        }
-      } catch (membershipError) {
-        console.warn("Membership check error:", membershipError);
-      }
+      console.log("[SIGNIN] User authenticated successfully:", authData.user.id);
 
       // Check for pending subscription plan
       const pendingPlan = sessionStorage.getItem('pending_subscription_plan');
       if (pendingPlan) {
+        console.log("[SIGNIN] Pending subscription plan found, redirecting to membership");
         toast.success('Redirecting to complete your subscription...');
-        // Don't remove yet - let MembershipAthlete page handle it
         navigate('/membership/athlete');
         return;
       }
 
       // Check if user has completed onboarding
-      try {
-        console.log("Checking user role for:", authData.user.id);
-        const { data: rolesData, error: roleError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", authData.user.id);
+      console.log("[SIGNIN] Checking user roles for:", authData.user.id);
+      const { data: rolesData, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authData.user.id);
 
-        if (roleError) {
-          console.error("Role check error:", roleError);
-        }
-        
-        console.log("User roles data:", rolesData);
-        
-        // If user has no roles, they didn't complete onboarding
-        if (!rolesData || rolesData.length === 0) {
-          toast.info("Please complete your profile setup");
-          navigate("/onboarding");
-          return;
-        }
-        
-        // Check if user is admin
-        const isAdmin = rolesData?.some(r => r.role === "admin");
-        console.log("Is admin:", isAdmin);
-        
-        if (isAdmin) {
-          toast.success('Welcome back, Admin!');
-          console.log("Navigating to /admin");
-          navigate("/admin");
-        } else {
-          toast.success('Welcome back!');
-          console.log("Navigating to /dashboard");
-          navigate("/dashboard");
-        }
-      } catch (roleError) {
-        console.error("Role check failed:", roleError);
+      if (roleError) {
+        console.error("[SIGNIN] Role check error:", roleError);
         toast.success('Welcome back!');
+        navigate("/dashboard");
+        return;
+      }
+
+      console.log("[SIGNIN] User roles:", rolesData);
+
+      // If user has no roles, they didn't complete onboarding
+      if (!rolesData || rolesData.length === 0) {
+        console.log("[SIGNIN] No roles found, redirecting to onboarding");
+        toast.info("Please complete your profile setup");
+        navigate("/onboarding");
+        return;
+      }
+
+      // Check if user is admin
+      const isAdmin = rolesData?.some(r => r.role === "admin");
+      console.log("[SIGNIN] Is admin:", isAdmin);
+
+      if (isAdmin) {
+        toast.success('Welcome back, Admin!');
+        console.log("[SIGNIN] Navigating to /admin");
+        navigate("/admin");
+      } else {
+        toast.success('Welcome back!');
+        console.log("[SIGNIN] Navigating to /dashboard");
         navigate("/dashboard");
       }
     } catch (error: any) {
