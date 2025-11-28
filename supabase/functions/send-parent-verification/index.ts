@@ -97,6 +97,9 @@ serve(async (req) => {
     // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Calculate expiration time (24 hours from now)
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
     // Store verification code
     // athlete_id is set to null and will be linked by database trigger when athlete profile is created
     const { data: insertedVerification, error: insertError } = await supabaseClient
@@ -107,6 +110,7 @@ serve(async (req) => {
         parent_email,
         verification_code: verificationCode,
         ip_address: ipAddress,
+        expires_at: expiresAt,
       })
       .select()
       .single();
