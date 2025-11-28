@@ -39,6 +39,18 @@ export default function MembershipAthlete() {
         return;
       }
 
+      // Check for pending subscription plan from auth redirect
+      const pendingPlan = sessionStorage.getItem('pending_subscription_plan');
+      if (pendingPlan) {
+        sessionStorage.removeItem('pending_subscription_plan');
+        toast({
+          title: "Resuming checkout",
+          description: "Starting your subscription checkout...",
+        });
+        // Trigger checkout with the saved plan
+        handleSubscribe(pendingPlan);
+      }
+
       checkSubscription();
 
       const status = searchParams.get("subscription");
