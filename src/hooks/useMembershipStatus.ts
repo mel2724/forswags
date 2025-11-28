@@ -18,6 +18,8 @@ export function useMembershipStatus() {
       const { data } = await supabase.auth.getSession();
       return data.session;
     },
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
   });
 
   const { data: status, isLoading, refetch } = useQuery({
