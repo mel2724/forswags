@@ -177,27 +177,42 @@ serve(async (req) => {
 
       logStep("Promo code valid", { validation: validationResult });
 
-      // Use persistent coupon ID (no timestamp)
-      const couponId = `promo_${validationResult.code}`;
       let coupon: Stripe.Coupon;
 
-      // Try to retrieve existing coupon first
+      // First, try to retrieve a permanent Stripe coupon using just the promo code
       try {
-        coupon = await stripe.coupons.retrieve(couponId);
-        logStep("Retrieved existing Stripe coupon", { couponId: coupon.id });
+        coupon = await stripe.coupons.retrieve(validationResult.code);
+        logStep("Retrieved existing permanent Stripe coupon", { couponId: coupon.id });
       } catch (retrieveError: any) {
-        // Only create if coupon doesn't exist
+        // Coupon doesn't exist as permanent, need to create one
         if (retrieveError?.type === 'StripeInvalidRequestError' && retrieveError?.code === 'resource_missing') {
-          logStep("Coupon not found, creating new one", { couponId });
+          logStep("Permanent coupon not found, creating disposable coupon");
           
-          const couponParams: Stripe.CouponCreateParams = validationResult.discount_type === 'percentage'
-            ? { percent_off: validationResult.discount_value, duration: 'once', id: couponId }
-            : { amount_off: Math.round(validationResult.discount_value * 100), currency: 'usd', duration: 'once', id: couponId };
+          // Use user+product based ID for disposable coupons to prevent duplicates
+          const couponId = `${validationResult.code}_${user.id}_${productId}`;
           
-          coupon = await stripe.coupons.create(couponParams);
-          logStep("Created new Stripe coupon", { couponId: coupon.id });
+          // Try to retrieve disposable coupon first (may exist from previous attempt)
+          try {
+            coupon = await stripe.coupons.retrieve(couponId);
+            logStep("Retrieved existing disposable Stripe coupon", { couponId: coupon.id });
+          } catch (disposableRetrieveError: any) {
+            // Create new disposable coupon
+            if (disposableRetrieveError?.type === 'StripeInvalidRequestError' && disposableRetrieveError?.code === 'resource_missing') {
+              logStep("Creating new disposable coupon", { couponId });
+              
+              const couponParams: Stripe.CouponCreateParams = validationResult.discount_type === 'percentage'
+                ? { percent_off: validationResult.discount_value, duration: 'once', id: couponId }
+                : { amount_off: Math.round(validationResult.discount_value * 100), currency: 'usd', duration: 'once', id: couponId };
+              
+              coupon = await stripe.coupons.create(couponParams);
+              logStep("Created new disposable Stripe coupon", { couponId: coupon.id });
+            } else {
+              logStep("Error retrieving disposable coupon", { error: disposableRetrieveError });
+              throw disposableRetrieveError;
+            }
+          }
         } else {
-          logStep("Error retrieving coupon", { error: retrieveError });
+          logStep("Error retrieving permanent coupon", { error: retrieveError });
           throw retrieveError;
         }
       }
