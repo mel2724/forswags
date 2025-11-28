@@ -102,8 +102,9 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // DIAGNOSTIC: Verify price exists in Stripe before creating session
+    let price: Stripe.Price;
     try {
-      const price = await stripe.prices.retrieve(priceId);
+      price = await stripe.prices.retrieve(priceId);
       logStep("Price verification successful", { 
         priceId, 
         productId: price.product,
@@ -154,8 +155,7 @@ serve(async (req) => {
     if (promoCode) {
       logStep("Validating promo code", { promoCode });
       
-      // Get price details to get product_id
-      const price = await stripe.prices.retrieve(priceId);
+      // Reuse price from earlier verification to avoid redundant API call
       const productId = typeof price.product === 'string' ? price.product : price.product.id;
       
       // Validate promo code via database function
