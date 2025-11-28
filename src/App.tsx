@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { BadgeNotificationProvider } from "@/contexts/BadgeNotificationContext";
 import { initLocalStorageCleanup, emergencyStorageCleanup } from "@/lib/localStorageCleanup";
 import { AlertCircle } from "lucide-react";
@@ -180,11 +181,12 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <BadgeNotificationProvider>
-          <BrowserRouter>
-            <AppLayout>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
+        <AuthProvider>
+          <BadgeNotificationProvider>
+            <BrowserRouter>
+              <AppLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/maintenance" element={<Maintenance />} />
               <Route path="/join" element={<JoinMovement />} />
@@ -282,9 +284,10 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-        </AppLayout>
-      </BrowserRouter>
-    </BadgeNotificationProvider>
+          </AppLayout>
+        </BrowserRouter>
+      </BadgeNotificationProvider>
+    </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
   );
