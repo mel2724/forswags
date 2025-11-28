@@ -40,9 +40,29 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
+    
+    // Extract IP address early for security logging
+    const cfIp = req.headers.get("cf-connecting-ip");
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const ipAddress = cfIp 
+      ? cfIp 
+      : (forwardedFor ? forwardedFor.split(',')[0].trim() : "unknown");
+    
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
     if (userError || !user) {
+      // Log failed authentication attempt for audit trail
+      await supabaseClient.from("security_events").insert({
+        user_id: null,
+        event_type: "parent_verification_failed_auth",
+        severity: "warning",
+        description: "Failed authentication attempt on parent verification endpoint",
+        ip_address: ipAddress,
+        metadata: {
+          error: userError?.message || "No user found"
+        }
+      });
+      
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -79,13 +99,6 @@ serve(async (req) => {
 
     // Store verification code
     // athlete_id is set to null and will be linked by database trigger when athlete profile is created
-    // Extract IP address: prioritize Cloudflare header, then x-forwarded-for, finally default to unknown
-    const cfIp = req.headers.get("cf-connecting-ip");
-    const forwardedFor = req.headers.get("x-forwarded-for");
-    const ipAddress = cfIp 
-      ? cfIp 
-      : (forwardedFor ? forwardedFor.split(',')[0].trim() : "unknown");
-
     const { data: insertedVerification, error: insertError } = await supabaseClient
       .from("parent_verifications")
       .insert({
