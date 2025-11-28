@@ -354,6 +354,23 @@ const Auth = () => {
       if (!rolesData || rolesData.length === 0) {
         console.log("[SIGNIN] No roles found, checking for existing profile data");
 
+        // Check if user is in auth.users as admin (Supabase admin panel)
+        // Admins might not have roles assigned yet
+        const { data: { user } } = await supabase.auth.getUser();
+        const isSupabaseAdmin = user?.app_metadata?.role === 'admin' ||
+                                user?.app_metadata?.is_admin === true;
+
+        if (isSupabaseAdmin) {
+          console.log("[SIGNIN] User has admin metadata, assigning admin role");
+          await supabase
+            .from("user_roles")
+            .insert({ user_id: authData.user.id, role: "admin" });
+
+          toast.success('Welcome back, Admin!');
+          navigate("/admin");
+          return;
+        }
+
         // Check if user has athlete profile
         const { data: athleteData } = await supabase
           .from("athletes")
