@@ -177,14 +177,30 @@ serve(async (req) => {
 
       logStep("Promo code valid", { validation: validationResult });
 
-      // Create Stripe coupon if needed
-      const couponId = `promo_${validationResult.code}_${Date.now()}`;
-      const couponParams: Stripe.CouponCreateParams = validationResult.discount_type === 'percentage'
-        ? { percent_off: validationResult.discount_value, duration: 'once', id: couponId }
-        : { amount_off: Math.round(validationResult.discount_value * 100), currency: 'usd', duration: 'once', id: couponId };
-      
-      const coupon = await stripe.coupons.create(couponParams);
-      logStep("Created Stripe coupon", { couponId: coupon.id });
+      // Use persistent coupon ID (no timestamp)
+      const couponId = `promo_${validationResult.code}`;
+      let coupon: Stripe.Coupon;
+
+      // Try to retrieve existing coupon first
+      try {
+        coupon = await stripe.coupons.retrieve(couponId);
+        logStep("Retrieved existing Stripe coupon", { couponId: coupon.id });
+      } catch (retrieveError: any) {
+        // Only create if coupon doesn't exist
+        if (retrieveError?.type === 'StripeInvalidRequestError' && retrieveError?.code === 'resource_missing') {
+          logStep("Coupon not found, creating new one", { couponId });
+          
+          const couponParams: Stripe.CouponCreateParams = validationResult.discount_type === 'percentage'
+            ? { percent_off: validationResult.discount_value, duration: 'once', id: couponId }
+            : { amount_off: Math.round(validationResult.discount_value * 100), currency: 'usd', duration: 'once', id: couponId };
+          
+          coupon = await stripe.coupons.create(couponParams);
+          logStep("Created new Stripe coupon", { couponId: coupon.id });
+        } else {
+          logStep("Error retrieving coupon", { error: retrieveError });
+          throw retrieveError;
+        }
+      }
       
       sessionConfig.discounts = [{ coupon: coupon.id }];
       
