@@ -79,9 +79,12 @@ serve(async (req) => {
 
     // Store verification code
     // athlete_id is set to null and will be linked by database trigger when athlete profile is created
-    // Extract first IP from x-forwarded-for header (which may contain multiple IPs)
+    // Extract IP address: prioritize Cloudflare header, then x-forwarded-for, finally default to unknown
+    const cfIp = req.headers.get("cf-connecting-ip");
     const forwardedFor = req.headers.get("x-forwarded-for");
-    const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : "unknown";
+    const ipAddress = cfIp 
+      ? cfIp 
+      : (forwardedFor ? forwardedFor.split(',')[0].trim() : "unknown");
 
     const { data: insertedVerification, error: insertError } = await supabaseClient
       .from("parent_verifications")
