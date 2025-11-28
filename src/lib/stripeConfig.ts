@@ -100,16 +100,16 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
       },
       monthly: {
         product_id: "prod_TVHxBQySVpTsl8",
-        price_id: "price_1SYHNeHrmnLSQTHjwdMzrAuQ",
+        price_id: "price_1SIanqQiODnJ02PJV1bZBNhH",
         name: "Pro Monthly",
-        price: 1499,
+        price: 4000,
         interval: "month" as const
       },
       yearly: {
         product_id: "prod_TVHxffiWk8kwsv",
-        price_id: "price_1SYHNfHrmnLSQTHjyFIYiUTA",
+        price_id: "price_1SIapiQiODnJ02PJot4z8Koy",
         name: "Championship Yearly",
-        price: 9700,
+        price: 26000,
         interval: "year" as const
       }
     },
