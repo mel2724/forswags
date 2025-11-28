@@ -100,9 +100,11 @@ export default function MembershipAthlete() {
       const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
       
       if (sessionError || !session) {
+        // Store the selected plan before redirecting to auth
+        sessionStorage.setItem('pending_subscription_plan', priceId);
         toast({
-          title: "Session expired",
-          description: "Please log in again to continue.",
+          title: "Authentication required",
+          description: "Please log in to continue with your subscription.",
           variant: "destructive",
         });
         navigate("/auth");

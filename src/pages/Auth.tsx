@@ -347,6 +347,36 @@ const Auth = () => {
         console.warn("Membership check error:", membershipError);
       }
 
+      // Check for pending subscription plan
+      const pendingPlan = sessionStorage.getItem('pending_subscription_plan');
+      if (pendingPlan) {
+        sessionStorage.removeItem('pending_subscription_plan');
+        toast.success('Redirecting to complete your subscription...');
+        
+        // Redirect to membership page and trigger checkout
+        setTimeout(() => {
+          navigate('/membership/athlete');
+          // Trigger the checkout after navigation
+          setTimeout(async () => {
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session) {
+                const { data, error } = await supabase.functions.invoke("create-checkout", {
+                  headers: { Authorization: `Bearer ${session.access_token}` },
+                  body: { priceId: pendingPlan, returnPath: "/membership/athlete" },
+                });
+                if (!error && data?.url) {
+                  window.open(data.url, "_blank");
+                }
+              }
+            } catch (err) {
+              console.error("Auto-checkout error:", err);
+            }
+          }, 500);
+        }, 1000);
+        return;
+      }
+
       // Check if user has completed onboarding
       try {
         console.log("Checking user role for:", authData.user.id);
