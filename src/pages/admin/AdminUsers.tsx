@@ -32,6 +32,7 @@ export default function AdminUsers() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [archivingUser, setArchivingUser] = useState<User | null>(null);
+  const [resettingPasswordUser, setResettingPasswordUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({ email: "", full_name: "" });
   const { toast } = useToast();
   const { startImpersonation } = useImpersonation();
@@ -155,25 +156,52 @@ export default function AdminUsers() {
     });
   };
 
-  const handleResetPassword = async (userEmail: string) => {
+  const handleResetPassword = async () => {
+    if (!resettingPasswordUser) return;
+
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error("No active admin session");
+      }
+
+      const userEmail = resettingPasswordUser.email;
+
+      // Use Supabase's auth admin API to send password reset email
       const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
         redirectTo: `${window.location.origin}/auth`,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle rate limiting gracefully
+        if (error.message?.includes('rate_limit') || error.message?.includes('23 seconds')) {
+          toast({
+            title: "Rate Limit",
+            description: "Please wait a moment before sending another reset email. Supabase limits password reset requests for security.",
+            variant: "destructive",
+            duration: 6000,
+          });
+          setResettingPasswordUser(null);
+          return;
+        }
+        throw error;
+      }
 
       toast({
-        title: "Password Reset Sent",
-        description: `Reset email sent to ${userEmail}`,
+        title: "Password Reset Email Sent",
+        description: `A password reset link has been sent to ${userEmail}. The user can check their email to reset their password.`,
+        duration: 5000,
       });
-    } catch (error) {
+      setResettingPasswordUser(null);
+    } catch (error: any) {
       console.error("Error sending password reset:", error);
       toast({
-        title: "Error",
-        description: "Failed to send password reset email",
+        title: "Error Sending Reset Email",
+        description: error.message || "Failed to send password reset email. Please try again.",
         variant: "destructive",
       });
+      setResettingPasswordUser(null);
     }
   };
 
@@ -451,7 +479,7 @@ export default function AdminUsers() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleResetPassword(user.email)}
+                              onClick={() => setResettingPasswordUser(user)}
                               className="flex-1"
                             >
                               <KeyRound className="h-4 w-4 mr-2" />
@@ -583,7 +611,7 @@ export default function AdminUsers() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user account for {deletingUser?.email}. 
+              This will permanently delete the user account for {deletingUser?.email}.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -591,6 +619,28 @@ export default function AdminUsers() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Password Reset Confirmation Dialog */}
+      <AlertDialog open={!!resettingPasswordUser} onOpenChange={(open) => !open && setResettingPasswordUser(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Password Reset Email?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will send a password reset email to <strong>{resettingPasswordUser?.email}</strong>.
+              <br /><br />
+              The user will receive an email with a link to reset their password. This link will be valid for 60 minutes.
+              <br /><br />
+              <strong>Note:</strong> Due to security rate limiting, you can only send one reset email every 60 seconds per user.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetPassword}>
+              Send Reset Email
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
