@@ -103,7 +103,7 @@ serve(async (req) => {
     console.log("Verification created successfully:", insertedVerification.id);
 
     // Send email with verification link using the frontend app URL
-    const verificationUrl = `${app_url}/parent-verify?email=${encodeURIComponent(parent_email)}&name=${encodeURIComponent(child_name)}`;
+    const verificationUrl = `${app_url}/parent-verify?email=${encodeURIComponent(parent_email)}&code=${verificationCode}&name=${encodeURIComponent(child_name)}`;
     
     const emailResponse = await resend.emails.send({
       from: "ForSWAGs <noreply@updates.forswags.com>",
