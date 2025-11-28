@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { callGemini } from "../_shared/geminiHelper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -186,8 +187,7 @@ serve(async (req) => {
       .eq('id', selectedAthlete.athlete_id)
       .single();
 
-    // Generate copy using Lovable AI
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    // Generate copy using Google Gemini
     
     const prompt = `Create an exciting "Athlete of the Week" social media post for ${athlete.profiles.full_name}.
 
@@ -207,27 +207,12 @@ Write an engaging 200-250 character post that:
 
 Format: Return ONLY the post text, no hashtags.`;
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'user', content: prompt }
-        ],
-        max_completion_tokens: 300,
-      }),
+    const { content: generatedCopy } = await callGemini([
+      { role: 'user', content: prompt }
+    ], {
+      temperature: 0.8,
+      maxOutputTokens: 300
     });
-
-    if (!aiResponse.ok) {
-      throw new Error('AI generation failed');
-    }
-
-    const aiData = await aiResponse.json();
-    const generatedCopy = aiData.choices[0].message.content;
 
     const suggestedHashtags = [
       '#AthleteOfTheWeek',

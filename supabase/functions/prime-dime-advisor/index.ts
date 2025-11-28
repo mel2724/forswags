@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { callGemini } from "../_shared/geminiHelper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -164,8 +165,7 @@ serve(async (req) => {
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get athlete profile data
@@ -224,25 +224,12 @@ serve(async (req) => {
 
 Keep it brief, encouraging, and coach-like.`;
 
-      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...messages
-          ],
-          temperature: 0.7,
-        }),
+      const { content: responseMessage } = await callGemini([
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ], {
+        temperature: 0.7
       });
-
-      if (!aiResponse.ok) throw new Error('AI API error');
-      const aiData = await aiResponse.json();
-      const responseMessage = aiData.choices[0].message.content;
 
       // Mark conversation as complete
       await supabase
@@ -303,30 +290,12 @@ Keep it brief, encouraging, and coach-like.`;
 
 Keep it SHORT - just ask the question with maybe ONE quick sentence of context if needed. No fluff. Be direct and friendly.${knownInfo}`;
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: 'Ask the next question' }
-        ],
-        temperature: 0.8,
-      }),
+    const { content: responseMessage } = await callGemini([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: 'Ask the next question' }
+    ], {
+      temperature: 0.8
     });
-
-    if (!aiResponse.ok) {
-      if (aiResponse.status === 429) throw new Error('Rate limit exceeded. Please try again in a moment.');
-      if (aiResponse.status === 402) throw new Error('AI service unavailable. Please contact support.');
-      throw new Error('AI service error');
-    }
-
-    const aiData = await aiResponse.json();
-    const responseMessage = aiData.choices[0].message.content;
 
     // Update conversation progress
     conversationData.currentQuestion = currentQuestionIndex + 1;

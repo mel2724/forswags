@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { callGemini } from "../_shared/geminiHelper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,8 +22,7 @@ serve(async (req) => {
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get conversation data
@@ -100,39 +100,20 @@ Lower scores (75-84) = Good fit with some trade-offs
 Order colleges by match_score from highest to lowest.`;
 
     console.log('[GENERATE-RECOMMENDATIONS] Calling AI with answers text length:', answersText.length);
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Here are the student-athlete's answers:\n\n${answersText}\n\nPlease provide 10 college recommendations with comprehensive recruiter contact information (name, email, phone, Twitter).` }
-        ],
-        temperature: 0.7,
-      }),
+    const { content } = await callGemini([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Here are the student-athlete's answers:\n\n${answersText}\n\nPlease provide 10 college recommendations with comprehensive recruiter contact information (name, email, phone, Twitter).` }
+    ], {
+      temperature: 0.7,
+      maxOutputTokens: 4096
     });
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('[GENERATE-RECOMMENDATIONS] AI API error:', aiResponse.status, errorText);
-      if (aiResponse.status === 429) throw new Error('Rate limit exceeded');
-      if (aiResponse.status === 402) throw new Error('AI credits depleted');
-      throw new Error(`AI API error: ${aiResponse.status}`);
-    }
-
     console.log('[GENERATE-RECOMMENDATIONS] AI response received');
-    const aiData = await aiResponse.json();
     let recommendations;
-    
+
     try {
-      recommendations = JSON.parse(aiData.choices[0].message.content);
+      recommendations = JSON.parse(content);
     } catch (e) {
-      // If JSON parsing fails, try to extract JSON from the response
-      const content = aiData.choices[0].message.content;
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         recommendations = JSON.parse(jsonMatch[0]);
