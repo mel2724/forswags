@@ -28,15 +28,15 @@ export const STRIPE_PRODUCTS_SANDBOX = {
         interval: "month" as const
       },
       monthly: {
-        product_id: "prod_TUoekzjBHK03sK",
-        price_id: "price_1SXp10HrmnLSQTHjNOoDJOX8",
+        product_id: "prod_TVHxBQySVpTsl8",
+        price_id: "price_1SYHNeHrmnLSQTHjwdMzrAuQ",
         name: "Pro Monthly",
         price: 1499, // $14.99 in cents
         interval: "month" as const
       },
       yearly: {
-        product_id: "prod_TUof9o3BMn9YFH",
-        price_id: "price_1SXp27HrmnLSQTHjWucKbQ9d",
+        product_id: "prod_TVHxffiWk8kwsv",
+        price_id: "price_1SYHNfHrmnLSQTHjyFIYiUTA",
         name: "Championship Yearly",
         price: 9700, // $97.00 in cents
         interval: "year" as const
@@ -99,15 +99,15 @@ export const STRIPE_PRODUCTS_PRODUCTION = {
         interval: "month" as const
       },
       monthly: {
-        product_id: "prod_TF4xtIZXfWy5sa",
-        price_id: "price_1SIanqQiODnJ02PJV1bZBNhH",
+        product_id: "prod_TVHxBQySVpTsl8",
+        price_id: "price_1SYHNeHrmnLSQTHjwdMzrAuQ",
         name: "Pro Monthly",
         price: 1499,
         interval: "month" as const
       },
       yearly: {
-        product_id: "prod_TF4zr2EcShQH1M",
-        price_id: "price_1SIapiQiODnJ02PJot4z8Koy",
+        product_id: "prod_TVHxffiWk8kwsv",
+        price_id: "price_1SYHNfHrmnLSQTHjyFIYiUTA",
         name: "Championship Yearly",
         price: 9700,
         interval: "year" as const
