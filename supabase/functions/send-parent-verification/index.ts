@@ -150,7 +150,18 @@ serve(async (req) => {
 
     console.log("Email sent:", emailResponse);
 
-    // Log security event for audit trail
+    if (emailResponse.error) {
+      console.error("Failed to send email:", emailResponse.error);
+      return new Response(
+        JSON.stringify({ 
+          error: "Failed to send verification email. Please contact support.",
+          details: emailResponse.error.message 
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Log security event for audit trail (only if email sent successfully)
     await supabaseClient.from("security_events").insert({
       user_id: user.id,
       event_type: "parent_verification_sent",
@@ -164,17 +175,6 @@ serve(async (req) => {
         verification_id: insertedVerification.id,
       }
     });
-
-    if (emailResponse.error) {
-      console.error("Failed to send email:", emailResponse.error);
-      return new Response(
-        JSON.stringify({ 
-          error: "Failed to send verification email. Please contact support.",
-          details: emailResponse.error.message 
-        }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     return new Response(
       JSON.stringify({ success: true }),
