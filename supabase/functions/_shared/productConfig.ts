@@ -23,11 +23,11 @@ export const STRIPE_PRODUCT_IDS: Record<'sandbox' | 'production', ProductMapping
   },
   production: {
     // Athlete membership products (production)
-    pro_monthly: 'prod_TF4xtIZXfWy5sa',
-    championship_yearly: 'prod_TF4zr2EcShQH1M',
-    // Recruiter products (production) - using same as sandbox for now
-    recruiter_monthly: 'prod_T9Vq2TSF3rfzDp',
-    recruiter_yearly: 'prod_T9VqwYb5CEEool',
+    pro_monthly: 'prod_TVHxBQySVpTsl8',
+    championship_yearly: 'prod_TVHxffiWk8kwsv',
+    // Recruiter products (production)
+    recruiter_monthly: 'prod_TMZrZBV8hx02zr',
+    recruiter_yearly: 'prod_TMZrLjFnDrJODd',
   }
 };
 

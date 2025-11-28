@@ -58,6 +58,48 @@ serve(async (req) => {
 
   try {
     switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+
+        if (session.mode === 'subscription' && session.subscription) {
+          const customerId = session.customer as string;
+          const subscriptionId = session.subscription as string;
+
+          const { data: customer } = await stripe.customers.retrieve(customerId);
+          const email = (customer as Stripe.Customer).email;
+
+          if (email) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('email', email)
+              .single();
+
+            if (profile) {
+              const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+              const productId = subscription.items.data[0].price.product as string;
+              const plan = mapProductIdToPlan(productId, environment);
+
+              console.log(`[WEBHOOK] Creating initial membership for user ${profile.id} with plan: ${plan}`);
+
+              await supabase
+                .from('memberships')
+                .upsert({
+                  user_id: profile.id,
+                  plan,
+                  status: 'active',
+                  stripe_subscription_id: subscriptionId,
+                  start_date: new Date(subscription.current_period_start * 1000).toISOString(),
+                  end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+                });
+
+              console.log(`[WEBHOOK] Membership created successfully for user ${profile.id}`);
+            }
+          }
+        }
+        break;
+      }
+
       case "customer.subscription.deleted":
       case "invoice.payment_failed": {
         const subscription = event.data.object as Stripe.Subscription;
