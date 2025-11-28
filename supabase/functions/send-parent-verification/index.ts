@@ -77,39 +77,16 @@ serve(async (req) => {
     // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Get athlete_id for this user (may not exist yet during onboarding)
-    const { data: athlete, error: athleteError } = await supabaseClient
-      .from("athletes")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (athleteError) {
-      console.log("Athlete lookup result:", athleteError.message);
-      console.log("This is expected during onboarding before profile completion");
-    } else if (athlete) {
-      console.log("Found athlete record:", athlete.id, "for user:", user.id);
-    } else {
-      console.log("No athlete record found for user:", user.id);
-    }
-
     // Store verification code
-    // During onboarding, athlete_id may be null - we'll link it later when the profile is created
+    // athlete_id is set to null and will be linked by database trigger when athlete profile is created
     // Extract first IP from x-forwarded-for header (which may contain multiple IPs)
     const forwardedFor = req.headers.get("x-forwarded-for");
     const ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : "unknown";
-    
-    console.log("Storing verification with:", {
-      athlete_id: athlete?.id || null,
-      user_id: user.id,
-      parent_email,
-      has_athlete_record: !!athlete,
-    });
 
     const { data: insertedVerification, error: insertError } = await supabaseClient
       .from("parent_verifications")
       .insert({
-        athlete_id: athlete?.id || null,
+        athlete_id: null,
         user_id: user.id,
         parent_email,
         verification_code: verificationCode,
