@@ -1,0 +1,243 @@
+/* ForSWAGs Application Styles REBUILD v4 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* ForSWAGs Dark Athletic Theme */
+    --background: 0 0% 8%; /* Dark background */
+    --foreground: 0 0% 98%; /* Near white text */
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary: Electric Purple #9B51E0 */
+    --primary: 276 67% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 276 67% 70%;
+    
+    /* Accent: Championship Gold #FFD623 */
+    --secondary: 48 100% 57%;
+    --secondary-foreground: 0 0% 0%;
+    --secondary-glow: 48 100% 67%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 48 100% 57%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
+    --ring: 276 67% 60%;
+
+    --radius: 0.75rem;
+    
+    /* Athletic gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(276 67% 60%), hsl(276 67% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 5%), hsl(276 67% 25%));
+    --gradient-accent: linear-gradient(135deg, hsl(48 100% 57%), hsl(48 100% 67%));
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 8%), hsl(0 0% 4%));
+    
+    /* Effects */
+    --shadow-glow: 0 0 60px hsl(276 67% 60% / 0.4);
+    --shadow-gold: 0 0 40px hsl(48 100% 57% / 0.5);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 276 67% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 48 100% 57%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 276 67% 60%;
+  }
+
+  .light {
+    --background: 343 45% 97%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    --primary: 276 67% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 276 67% 70%;
+
+    --secondary: 48 100% 57%;
+    --secondary-foreground: 0 0% 0%;
+    --secondary-glow: 48 100% 67%;
+
+    --muted: 343 45% 95%;
+    --muted-foreground: 0 0% 35%;
+
+    --accent: 48 100% 57%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 276 20% 90%;
+    --input: 276 20% 90%;
+    --ring: 276 67% 60%;
+    
+    --sidebar-background: 343 45% 97%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 276 67% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 48 100% 57%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 276 20% 90%;
+    --sidebar-ring: 276 67% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+  
+  /* Safe area support for mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  /* Touch-friendly targets */
+  @media (hover: none) {
+    button, a, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+  
+  /* Prevent iOS text size adjustment */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Smooth scrolling on mobile */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-secondary to-secondary-glow bg-clip-text text-transparent;
+  }
+  
+  .btn-hero {
+    @apply bg-gradient-to-r from-primary to-primary-glow text-white font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(155,81,224,0.6)];
+  }
+  
+  .btn-accent {
+    @apply bg-gradient-to-r from-secondary to-secondary-glow text-black font-bold px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,214,35,0.6)];
+  }
+  
+  .sports-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(155, 81, 224, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 214, 35, 0.1) 0%, transparent 50%);
+  }
+  
+  .glow-text {
+    text-shadow: 0 0 20px rgba(155, 81, 224, 0.5);
+  }
+  
+  /* Accessibility utilities */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 48 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 276 100% 70%;
+  --secondary-foreground: 0 0% 0%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 100%;
+  --accent: 48 100% 50%;
+  --accent-foreground: 0 0% 0%;
+  --border: 0 0% 100%;
+  --input: 0 0% 100%;
+  --ring: 48 100% 50%;
+}
+
+.high-contrast * {
+  border-color: hsl(var(--border)) !important;
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast [role="button"] {
+  font-weight: 700 !important;
+}
+
+/* Reduced Motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Focus visible styles for better keyboard navigation */
+*:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+}

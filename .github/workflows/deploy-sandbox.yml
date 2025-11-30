@@ -1,0 +1,26 @@
+# Deployment workflow for Namecheap hosting - Sandbox Environment
+name: Deploy to Sandbox (app.forswags.com)
+on:
+  push:
+    branches: [ "main", "sandbox" ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+      - run: npm run build   # must produce a 'dist' folder
+
+      - name: Deploy to Sandbox via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+          server-dir: ${{ secrets.SANDBOX_REMOTE_DIR }}
+          local-dir: ./dist/
+          dangerous-clean-slate: true
