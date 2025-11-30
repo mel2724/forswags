@@ -1,0 +1,39 @@
+# Deployment workflow for Namecheap hosting - Production Environment
+# This workflow requires MANUAL triggering via GitHub Actions UI
+name: Deploy to Production (www.forswags.com)
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "deploy" to confirm production deployment'
+        required: true
+        default: ''
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirmation }}" != "deploy" ]; then
+            echo "❌ Deployment cancelled. You must type 'deploy' to confirm."
+            exit 1
+          fi
+          echo "✅ Confirmation received. Proceeding with production deployment..."
+      
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+      - run: npm run build   # must produce a 'dist' folder
+
+      - name: Deploy to Production via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+          server-dir: ${{ secrets.PRODUCTION_REMOTE_DIR }}
+          local-dir: ./dist/
+          dangerous-clean-slate: true

@@ -1,0 +1,4 @@
+full_name,email,sport,position,graduation_year,high_school,gpa,height_in,weight_lb
+John Smith,john.smith.test@example.com,Football,Quarterback,2025,Lincoln High,3.8,72,185
+Jane Doe,jane.doe.test@example.com,Basketball,Guard,2026,Washington High,3.9,68,140
+Mike Johnson,mike.johnson.test@example.com,Baseball,Pitcher,2020,Jefferson High,3.5,74,190
