@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claim Your ForSwags Profile</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #2563eb;
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+    .highlight-box {
+      background: #f0f9ff;
+      border-left: 4px solid #2563eb;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .cta-button {
+      display: inline-block;
+      background: #2563eb;
+      color: white;
+      padding: 15px 40px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .benefits {
+      background: #f9fafb;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .benefits ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .benefits li {
+      margin: 8px 0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h2 style="color: #2563eb; margin: 0;">ForSwags</h2>
+    </div>
+    
+    <div class="header">
+      <h1>🎉 Your Profile is Ready!</h1>
+      <p>Hi {{full_name}},</p>
+    </div>
+
+    <p>We've created a ForSwags profile for you based on your {{sport}} performance. Your athletic achievements deserve to be showcased!</p>
+
+    <div class="highlight-box">
+      <p><strong>Your Profile Details:</strong></p>
+      <ul style="list-style: none; padding: 0;">
+        <li>🏅 Sport: {{sport}}</li>
+        <li>🎓 Class of {{graduation_year}}</li>
+        <li>📧 Email: Contact information on file</li>
+      </ul>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="{{claim_url}}" class="cta-button">Claim Your Profile Now</a>
+    </div>
+
+    <div class="benefits">
+      <h3 style="margin-top: 0; color: #2563eb;">What You Can Do:</h3>
+      <ul>
+        <li>✅ Complete your athletic profile with stats and highlights</li>
+        <li>✅ Get professional evaluations from certified coaches</li>
+        <li>✅ Connect with college recruiters actively looking for talent</li>
+        <li>✅ Track offers and manage your recruiting process</li>
+        <li>✅ Join a network of successful athletes and alumni</li>
+      </ul>
+    </div>
+
+    <p><strong>Ready to take your recruiting to the next level?</strong></p>
+    <p>Upgrade to a premium membership for access to:</p>
+    <ul>
+      <li>Advanced analytics and performance tracking</li>
+      <li>Priority coach evaluations</li>
+      <li>Direct recruiter messaging</li>
+      <li>College match algorithms</li>
+      <li>Social media integration tools</li>
+    </ul>
+
+    <p style="margin-top: 30px;">This invitation expires in 30 days. Don't miss out on opportunities!</p>
+
+    <div class="footer">
+      <p>Questions? Reply to this email or visit our help center.</p>
+      <p>ForSwags - Connecting Athletes with Opportunities</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /profile/
+
+# Sitemap location
+Sitemap: https://forswags.org/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

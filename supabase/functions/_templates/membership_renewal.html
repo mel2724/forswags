@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #FFD623 0%, #FFA500 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+    .header h1 { color: #000; margin: 0; font-size: 28px; }
+    .content { background: #fff; padding: 30px; border: 1px solid #e0e0e0; }
+    .alert-box { background: #FFF3CD; border-left: 4px solid #FFD623; padding: 15px; margin: 20px 0; }
+    .cta-button { display: inline-block; background: #FFD623; color: #000; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔔 Membership Renewal Reminder</h1>
+    </div>
+    <div class="content">
+      <p>Hi {{full_name}},</p>
+      
+      <div class="alert-box">
+        <strong>Your ForSWAGs {{plan}} membership expires in {{days_until_expiry}} day{{days_plural}} on {{expiry_date}}.</strong>
+      </div>
+      
+      <p>To continue enjoying premium features including:</p>
+      <ul>
+        <li>✅ Unlimited video uploads</li>
+        <li>✅ Advanced profile features</li>
+        <li>✅ Priority support</li>
+        <li>✅ Full Playbook access</li>
+      </ul>
+      
+      <p>Please renew your membership before it expires.</p>
+      
+      <center>
+        <a href="{{renewal_url}}" class="cta-button">Renew Membership Now</a>
+      </center>
+      
+      <p style="margin-top: 30px; font-size: 14px; color: #666;">
+        If you have any questions, feel free to reach out to our support team.
+      </p>
+    </div>
+    <div class="footer">
+      <p>© 2025 ForSWAGs. All rights reserved.</p>
+      <p>You're receiving this email because you have an active ForSWAGs membership.</p>
+    </div>
+  </div>
+</body>
+</html>
