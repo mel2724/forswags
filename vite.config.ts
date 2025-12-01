@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 5000,
+    allowedHosts: true,
   },
   define: {
     'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('https://fejnevxardxejdvjbipc.supabase.co'),
