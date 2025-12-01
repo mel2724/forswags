@@ -12,7 +12,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ProfileActions } from "@/components/ProfileActions";
-import logoIcon from "@/assets/forswags-logo.png";
 import {
   User, Trophy, GraduationCap, Video, ArrowLeft, Save,
   Loader2, LogOut, Ruler, Weight, Award, Target, Heart, Users as UsersIcon, Phone
@@ -335,7 +334,7 @@ export default function ProfileComprehensive() {
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Dashboard

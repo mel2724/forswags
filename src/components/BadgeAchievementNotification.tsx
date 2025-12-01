@@ -6,7 +6,6 @@ import { X, Share2, Download, Trophy, Facebook, Twitter, Linkedin } from "lucide
 import confetti from "canvas-confetti";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
-import forSwagsLogo from "@/assets/forswags-logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -344,7 +343,7 @@ export const BadgeAchievementNotification = ({
               {/* Logo */}
               <div className="flex justify-center mb-2">
                 <img 
-                  src={forSwagsLogo} 
+                  src="/forswags-logo.png" 
                   alt="ForSWAGs Logo" 
                   className="h-12 w-auto"
                   crossOrigin="anonymous"

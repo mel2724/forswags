@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import defaultOgImage from "@/assets/forswags-logo.png";
 
 interface SEOProps {
   title: string;
@@ -14,7 +13,7 @@ export function SEO({
   title, 
   description, 
   keywords, 
-  ogImage = defaultOgImage,
+  ogImage = "/forswags-logo.png",
   canonical,
   structuredData 
 }: SEOProps) {

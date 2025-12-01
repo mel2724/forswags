@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
-import logoFull from "@/assets/forswags-logo.png";
 
 // Password strength checker
 const checkPasswordStrength = (password: string) => {
@@ -555,7 +554,7 @@ const Auth = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src={logoFull} alt="ForSWAGs" className="h-12" />
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12" />
           </div>
           
           <Button variant="ghost" onClick={() => navigate("/")} className="text-primary hover:text-primary/80 font-bold">

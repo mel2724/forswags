@@ -31,7 +31,6 @@ import {
   Lock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import logoIcon from "@/assets/forswags-logo.png";
 import {
   Sidebar,
   SidebarContent,
@@ -297,7 +296,7 @@ export function AppSidebar() {
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
-          <img src={logoIcon} alt="ForSWAGs" className={collapsed ? "h-8" : "h-10"} />
+          <img src="/forswags-logo.png" alt="ForSWAGs" className={collapsed ? "h-8" : "h-10"} />
           {!collapsed && (
             <span className="font-black text-lg">ForSWAGs</span>
           )}

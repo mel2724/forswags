@@ -1,5 +1,4 @@
 import { Construction, Zap } from "lucide-react";
-import logoImage from "@/assets/forswags-logo.png";
 
 export default function Maintenance() {
   return (
@@ -12,7 +11,7 @@ export default function Maintenance() {
         {/* Logo */}
         <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <img 
-            src={logoImage} 
+            src="/forswags-logo.png" 
             alt="ForSWAGs" 
             className="h-20 md:h-28 mx-auto mb-8"
           />

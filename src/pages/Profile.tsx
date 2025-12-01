@@ -11,7 +11,6 @@ import { AcademicInfoSection } from "@/components/profile/AcademicInfoSection";
 import { MediaBioSection } from "@/components/profile/MediaBioSection";
 import { toast } from "sonner";
 import { z } from "zod";
-import logoIcon from "@/assets/forswags-logo.png";
 import { ArrowLeft, Save, Loader2, LogOut } from "lucide-react";
 import { useUserTier } from "@/hooks/useFeatureAccess";
 
@@ -343,7 +342,7 @@ const Profile = () => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
-              <img src={logoIcon} alt="ForSWAGs" className="h-12" />
+              <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12" />
             </div>
             <Separator orientation="vertical" className="h-8" />
             <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-primary hover:text-primary/80 font-bold">

@@ -19,7 +19,9 @@ export function Header({ hideNavigation = false }: HeaderProps) {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <a href="/" className="text-2xl font-bold text-primary">ForSWAGs</a>
+            <a href="/" className="flex items-center">
+              <img src="/forswags-logo.png" alt="ForSWAGs" className="h-10" />
+            </a>
           </div>
           
           {!hideNavigation && (

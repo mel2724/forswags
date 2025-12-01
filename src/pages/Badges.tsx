@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import logoIcon from "@/assets/forswags-logo.png";
 import { ArrowLeft, Trophy, Award, Star } from "lucide-react";
 import { BadgeCard } from "@/components/BadgeCard";
 
@@ -91,7 +90,7 @@ const Badges = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src={logoIcon} alt="ForSWAGs" className="h-12" />
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12" />
           </div>
           
           <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-primary hover:text-primary/80 font-bold">

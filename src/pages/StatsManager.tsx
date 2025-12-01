@@ -12,7 +12,6 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { z } from "zod";
-import logoIcon from "@/assets/forswags-logo.png";
 import { 
   ArrowLeft, BarChart3, Plus, Pencil, Trash2, TrendingUp,
   Calendar, Target, Award, Loader2, Download, Upload, Star,
@@ -587,7 +586,7 @@ const StatsManager = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
             <div>
               <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">Stats Manager</h1>
               <p className="text-xs text-muted-foreground uppercase tracking-wider">Track Your Performance</p>

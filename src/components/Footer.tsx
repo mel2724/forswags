@@ -9,8 +9,8 @@ export const Footer = React.memo(({ hideNavigation = false }: FooterProps) => {
     <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
       <div className="container mx-auto px-4">
         <div className="text-center space-y-6">
-          <div className="text-3xl font-bold text-primary">
-            ForSWAGs
+          <div className="flex justify-center">
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12" />
           </div>
           
           {!hideNavigation && (

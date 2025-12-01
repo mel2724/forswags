@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import logoIcon from "@/assets/forswags-logo.png";
 import { useMembershipStatus } from "@/hooks/useMembershipStatus";
 import { PrimeDimeAdvisor } from "@/components/PrimeDimeAdvisor";
 import { generatePrimeDimePDF } from "@/lib/pdfGenerator";
@@ -331,7 +330,7 @@ const PrimeDime = () => {
         <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
+              <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
               <div>
                 <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">"Prime Dime"</h1>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 "Prime Dime" Matches</p>
@@ -400,7 +399,7 @@ const PrimeDime = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img src={logoIcon} alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12 cursor-pointer" onClick={() => navigate("/")} />
             <div>
               <h1 className="text-xl font-black uppercase tracking-tight text-gradient-primary">"Prime Dime"</h1>
               <p className="text-xs text-muted-foreground uppercase tracking-wider">Top 10 "Prime Dime" Matches</p>

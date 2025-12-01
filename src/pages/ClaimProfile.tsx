@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, CheckCircle } from "lucide-react";
-import logoFull from "@/assets/forswags-logo.png";
 
 export default function ClaimProfile() {
   const { token } = useParams<{ token: string }>();
@@ -137,7 +136,7 @@ export default function ClaimProfile() {
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
       <div className="w-full max-w-md space-y-6">
         <div className="flex justify-center">
-          <img src={logoFull} alt="ForSwags" className="h-16" />
+          <img src="/forswags-logo.png" alt="ForSWAGs" className="h-16" />
         </div>
 
         <Card>

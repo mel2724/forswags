@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, TrendingUp, Users, BookOpen, DollarSign, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import logoFull from "@/assets/forswags-logo.png";
 
 const Sponsors = () => {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ const Sponsors = () => {
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src={logoFull} alt="ForSWAGs" className="h-12" />
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-12" />
           </div>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Button variant="ghost" onClick={() => navigate("/")} className="text-primary hover:text-primary/80 font-bold">
@@ -339,7 +338,7 @@ const Sponsors = () => {
       <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-6">
-            <img src={logoFull} alt="ForSWAGs" className="h-20 mx-auto" />
+            <img src="/forswags-logo.png" alt="ForSWAGs" className="h-20 mx-auto" />
             
             <div className="max-w-3xl mx-auto">
               <p className="text-xs text-muted-foreground leading-relaxed border-l-4 border-secondary pl-4 text-left">

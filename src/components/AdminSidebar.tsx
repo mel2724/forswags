@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import logoIcon from "@/assets/forswags-logo.png";
 
 type MenuItem = {
   title: string;
@@ -164,7 +163,7 @@ export function AdminSidebar() {
   return (
     <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
       <SidebarHeader className="p-4 flex items-center gap-2">
-        <img src={logoIcon} alt="ForSWAGs" className="h-8" />
+        <img src="/forswags-logo.png" alt="ForSWAGs" className="h-8" />
         {open && <span className="font-bold text-lg">Admin</span>}
       </SidebarHeader>
 
