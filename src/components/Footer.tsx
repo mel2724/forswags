@@ -11,8 +11,12 @@ export const Footer = React.memo(({ hideNavigation = false }: FooterProps) => {
     <footer className="relative bg-gradient-to-b from-background to-card py-12 border-t border-border">
       <div className="container mx-auto px-4">
         <div className="text-center space-y-6">
-          <div>
-            <img src={logoFull} alt="ForSWAGs" className="h-20 mx-auto" />
+          <div><img
+  src={forswagsLogo}
+  alt="ForSWAGs"
+  className="h-20 mx-auto"
+/>
+/>
           </div>
           
           {!hideNavigation && (
