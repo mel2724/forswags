@@ -16,7 +16,6 @@ export const Footer = React.memo(({ hideNavigation = false }: FooterProps) => {
   alt="ForSWAGs"
   className="h-20 mx-auto"
 />
-/>
           </div>
           
           {!hideNavigation && (
