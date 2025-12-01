@@ -1,3 +1,4 @@
+import forswagsLogo from '../assets/forswags-logo.png';
 import React from "react";
 import logoFull from "@/assets/forswags-logo.png";
 
