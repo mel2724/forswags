@@ -6,9 +6,10 @@ expertMode = true
 channel = "stable-25_05"
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "static"
 run = ["npm", "run", "start"]
 build = ["npm", "run", "build"]
+publicDir = "dist"
 
 [workflows]
 runButton = "Project"
@@ -37,7 +38,3 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 41767
-externalPort = 3000
