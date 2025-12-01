@@ -1,0 +1,1541 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import AthleteAnalytics from "@/components/AthleteAnalytics";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import logoIcon from "@/assets/forswags-logo.png";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
+import NotificationCard from "@/components/NotificationCard";
+import SponsorCard from "@/components/SponsorCard";
+import { UpgradeNudge } from "@/components/UpgradeNudge";
+import { MembershipStatusBanner } from "@/components/MembershipStatusBanner";
+import { TutorialProgressCard } from "@/components/TutorialProgressCard";
+import { SEO } from "@/components/SEO";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { Footer } from "@/components/Footer";
+import { InteractiveTutorial } from "@/components/InteractiveTutorial";
+import { useBadgeListener } from "@/hooks/useBadgeListener";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { OnboardingProgressMeter } from "@/components/OnboardingProgressMeter";
+import {
+  Trophy, GraduationCap, FileText, Star, LogOut, TrendingUp, 
+  School, Target, CheckCircle2, Clock, Edit, BarChart3,
+  Video, User, MapPin, Calendar, Award, Share2, Users, 
+  MessageSquare, Eye, Sparkles, BookOpen, Briefcase, Search, Crown
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useFeatureAccess, useUserTier } from "@/hooks/useFeatureAccess";
+
+const Dashboard = () => {
+  // Hooks MUST be called unconditionally at the top level
+  const navigate = useNavigate();
+  
+  // Safe defaults for impersonation (feature temporarily disabled)
+  const isImpersonating = false;
+  const getEffectiveUserId = () => null;
+  
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [athlete, setAthlete] = useState<any>(null);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [stats, setStats] = useState<any[]>([]);
+  const [membership, setMembership] = useState<any>(null);
+  const [offers, setOffers] = useState<any[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const [needsStatsUpdate, setNeedsStatsUpdate] = useState(false);
+  const [needsHighlightsUpdate, setNeedsHighlightsUpdate] = useState(false);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
+  const [profileViews, setProfileViews] = useState<any>(null);
+  const [engagementStats, setEngagementStats] = useState<any>(null);
+
+  // Listen for badge achievements
+  useBadgeListener(user?.id);
+  
+  // Get user tier for feature gating
+  const { tier, isLoading: tierLoading, isFree, isPaid } = useUserTier();
+
+  useEffect(() => {
+    // Set up auth state change listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/auth");
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setUser(session.user);
+      }
+    });
+
+    const checkAuth = async () => {
+      try {
+        // First, refresh the session to ensure it's valid
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError || !refreshData.session) {
+          console.error("Session refresh failed:", refreshError);
+          navigate("/auth");
+          return;
+        }
+        
+        const session = refreshData.session;
+        setUser(session.user);
+
+      // Check if parent is viewing athlete's dashboard
+      let parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
+      
+      // Validate sessionStorage value if present
+      if (parentViewingAthlete && parentViewingAthlete !== session.user.id) {
+        const { data: validChild } = await supabase
+          .from("athletes")
+          .select("user_id")
+          .eq("user_id", parentViewingAthlete)
+          .eq("parent_id", session.user.id)
+          .maybeSingle();
+        
+        if (!validChild) {
+          sessionStorage.removeItem("parent_viewing_athlete");
+          parentViewingAthlete = null;
+        }
+      }
+      
+      // Use impersonated user if available, parent viewing if available, otherwise use actual session user
+      const effectiveUserId = getEffectiveUserId() || parentViewingAthlete || session.user.id;
+
+      // Get profile with error handling
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", effectiveUserId)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
+        if (profileError.message?.includes('JWT') || profileError.code === 'PGRST301') {
+          toast.error("Session expired. Please log in again.");
+          navigate("/auth");
+          return;
+        }
+      }
+
+      setProfile(profileData);
+
+      // Check if user should see tutorial (new user, hasn't completed tutorial)
+      if (profileData && !profileData.tutorial_completed) {
+        setShowTutorial(true);
+        // Determine onboarding step - default to 0 if no progress
+        const progress = profileData.tutorial_progress || {};
+        const completedSteps = Object.keys(progress).filter(key => progress[key]).length;
+        setCurrentOnboardingStep(completedSteps);
+      }
+
+      // Check if user has completed onboarding (single attempt - no aggressive polling)
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", effectiveUserId)
+        .maybeSingle();
+
+      // If no role, user didn't complete onboarding
+      if (!roleData) {
+        toast.info("Please complete your profile setup");
+        navigate("/onboarding");
+        return;
+      }
+
+      setRole(roleData.role);
+      
+      // If parent role, redirect to parent dashboard unless viewing athlete
+      if (roleData.role === "parent" && !parentViewingAthlete) {
+        navigate("/parent/dashboard");
+        return;
+      }
+      
+      // If athlete, get athlete data (single attempt - no aggressive polling)
+      if (roleData.role === "athlete") {
+        const { data: athleteData } = await supabase
+          .from("athletes")
+          .select(`
+            id, user_id, parent_id, sport, position, graduation_year, high_school,
+            height_in, weight_lb, gpa, sat_score, act_score, bio, highlights_url,
+            created_at, updated_at, dominant_hand, profile_photo_url, 
+            profile_completion_pct, visibility, secondary_sports, club_team_name,
+            ncaa_eligibility_number, jersey_number, username, twitter_handle,
+            instagram_handle, team_logo_url, profile_claimed
+          `)
+          .eq("user_id", effectiveUserId)
+          .maybeSingle();
+        
+        // If role is athlete but no athlete profile exists, redirect to onboarding
+        if (!athleteData) {
+          toast.info("Please complete your athlete profile");
+          navigate("/onboarding");
+          return;
+        }
+        
+        setAthlete(athleteData);
+
+          // Get "Prime Dime" recommendations
+          if (athleteData) {
+            const { data: recommendations } = await supabase
+              .from("college_recommendations")
+              .select("recommendations")
+              .eq("athlete_id", athleteData.id)
+              .maybeSingle();
+            
+            // Parse and format recommendations for display
+            if (recommendations?.recommendations) {
+              try {
+                const parsed = typeof recommendations.recommendations === 'string' 
+                  ? JSON.parse(recommendations.recommendations)
+                  : recommendations.recommendations;
+                
+                const colleges = parsed.colleges || [];
+                const formatted = colleges.map((college: any) => ({
+                  id: college.name,
+                  schools: {
+                    name: college.name,
+                    location_city: college.location?.split(', ')[0] || '',
+                    location_state: college.location?.split(', ')[1] || '',
+                    division: college.division,
+                    conference: ''
+                  },
+                  match_score: college.match_score || 85,
+                  academic_fit: 80,
+                  athletic_fit: 85,
+                  financial_fit: 80
+                }));
+                
+                setMatches(formatted);
+              } catch (error) {
+                console.error('Error parsing recommendations:', error);
+                setMatches([]);
+              }
+            } else {
+              setMatches([]);
+            }
+
+            // Get athlete stats
+            const { data: statsData } = await supabase
+              .from("athlete_stats")
+              .select("*")
+              .eq("athlete_id", athleteData.id)
+              .order("season", { ascending: false })
+              .limit(5);
+            
+            setStats(statsData || []);
+
+            // Check if stats need updating (last update > 30 days ago)
+            if (statsData && statsData.length > 0) {
+              const lastStatDate = new Date(statsData[0].created_at);
+              const daysSinceLastUpdate = Math.floor(
+                (Date.now() - lastStatDate.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              setNeedsStatsUpdate(daysSinceLastUpdate > 30);
+            } else {
+              setNeedsStatsUpdate(false);
+            }
+
+            // Check if highlights need updating (if URL exists but older than 90 days)
+            if (athleteData.highlights_url && athleteData.updated_at) {
+              const lastUpdate = new Date(athleteData.updated_at);
+              const daysSinceUpdate = Math.floor(
+                (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              setNeedsHighlightsUpdate(daysSinceUpdate > 90);
+            }
+
+            // Load completed tasks
+            const { data: tasksData } = await supabase
+              .from("next_steps_tasks")
+              .select("task_key")
+              .eq("user_id", effectiveUserId);
+            
+            if (tasksData) {
+              setCompletedTasks(new Set(tasksData.map(t => t.task_key)));
+            }
+
+            // Get offers
+            const { data: offersData } = await supabase
+              .from("college_offers")
+              .select("*")
+              .eq("athlete_id", athleteData.id);
+            
+            setOffers(offersData || []);
+
+            // Get profile views and engagement stats
+            const { data: viewsData } = await supabase
+              .rpc("get_profile_view_stats", { 
+                p_athlete_id: athleteData.id,
+                p_days: 30 
+              });
+            
+            setProfileViews(viewsData?.[0] || null);
+
+            // Get engagement stats with error handling
+            try {
+              const { data: engagementData, error: engagementError } = await supabase
+                .rpc("get_engagement_stats", { 
+                  p_user_id: effectiveUserId,
+                  p_days: 30 
+                });
+              
+              if (engagementError) {
+                console.error("Error fetching engagement stats:", engagementError);
+              } else {
+                setEngagementStats(engagementData?.[0] || null);
+              }
+            } catch (err) {
+              console.error("Failed to fetch engagement stats:", err);
+            }
+          }
+        }
+
+      // Check for unread notifications
+      const { data: notificationsData } = await supabase
+        .from("notifications")
+        .select("id, is_read")
+        .eq("user_id", effectiveUserId)
+        .eq("is_read", false)
+        .limit(1);
+      
+      setHasUnreadNotifications((notificationsData?.length || 0) > 0);
+
+      // Get membership after syncing
+      const { data: membershipData } = await supabase
+        .from("memberships")
+        .select("*")
+        .eq("user_id", effectiveUserId)
+        .maybeSingle();
+      
+      setMembership(membershipData);
+
+      } catch (error) {
+        console.error("Error loading dashboard:", error);
+        toast.error("Failed to load dashboard data. Please refresh the page.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, getEffectiveUserId]);
+
+  const handleTutorialComplete = async () => {
+    setShowTutorial(false);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ tutorial_completed: true })
+        .eq("id", user?.id);
+      
+      if (error) throw error;
+      toast.success("Tutorial completed! You're all set! 🎉");
+    } catch (error) {
+      console.error("Error completing tutorial:", error);
+    }
+  };
+
+  const handleCompleteTask = async (taskKey: string) => {
+    try {
+      const { error } = await supabase
+        .from("next_steps_tasks")
+        .upsert({ 
+          user_id: user?.id, 
+          task_key: taskKey 
+        });
+
+      if (error) throw error;
+
+      setCompletedTasks(prev => new Set([...prev, taskKey]));
+      
+      toast.success("Task completed! Keep up the great work! 🎉");
+    } catch (error) {
+      console.error("Error completing task:", error);
+    }
+  };
+
+  // Feature Card component for gating premium features
+  const FeatureCard = ({ 
+    title, 
+    subtitle, 
+    icon: Icon, 
+    onClick, 
+    requiresFeature,
+    isPremium = false,
+    comingSoon = false 
+  }: {
+    title: string;
+    subtitle: string;
+    icon: any;
+    onClick: () => void;
+    requiresFeature?: string;
+    isPremium?: boolean;
+    comingSoon?: boolean;
+  }) => {
+    const { hasAccess } = useFeatureAccess(requiresFeature || 'profile_type');
+    const isLocked = requiresFeature && !hasAccess;
+
+    return (
+      <Card 
+        className={cn(
+          "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 transition-all",
+          comingSoon ? "opacity-50 cursor-not-allowed grayscale" : "cursor-pointer hover:shadow-lg",
+          isLocked && !comingSoon && "opacity-60 cursor-not-allowed"
+        )}
+        onClick={() => {
+          if (comingSoon) {
+            toast.info('This feature is coming soon!');
+            return;
+          }
+          if (isLocked) {
+            toast.error('This feature requires a premium membership', {
+              action: {
+                label: 'Upgrade',
+                onClick: () => navigate('/membership'),
+              },
+            });
+          } else {
+            onClick();
+          }
+        }}
+      >
+        <CardContent className="p-6 relative">
+          {comingSoon && (
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="gap-1">
+                Coming Soon
+              </Badge>
+            </div>
+          )}
+          {isLocked && !comingSoon && (
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="gap-1">
+                <Crown className="h-3 w-3" />
+                Premium
+              </Badge>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground uppercase tracking-wide font-semibold mb-1">
+                {title}
+              </p>
+              <p className="text-lg font-bold">{subtitle}</p>
+            </div>
+            <Icon className="h-8 w-8 text-primary" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const profileCompleteness = () => {
+    if (!athlete) return 0;
+    const fields = [
+      athlete.sport,
+      athlete.position,
+      athlete.height_in,
+      athlete.weight_lb,
+      athlete.high_school,
+      athlete.graduation_year,
+      athlete.gpa,
+      athlete.sat_score || athlete.act_score,
+      athlete.highlights_url,
+      athlete.bio
+    ];
+    const filled = fields.filter(f => f).length;
+    return Math.round((filled / fields.length) * 100);
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Error signing out");
+    } else {
+      toast.success("Signed out successfully");
+      navigate("/");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="space-y-6 animate-fade-in p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <Skeleton className="h-10 w-32" />
+          </div>
+
+          {/* Stats Cards Skeleton */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardHeader className="pb-2">
+                  <Skeleton className="h-4 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Quick Access Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Content Grid Skeleton */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const parentViewingAthlete = sessionStorage.getItem("parent_viewing_athlete");
+
+  const handleBackToParentDashboard = () => {
+    sessionStorage.removeItem("parent_viewing_athlete");
+    navigate("/parent/dashboard");
+  };
+
+  return (
+    <div className="min-h-screen bg-background sports-pattern">
+      <InteractiveTutorial
+        currentOnboardingStep={currentOnboardingStep}
+        onComplete={handleTutorialComplete}
+        enabled={showTutorial && role === "athlete"}
+      />
+      {isImpersonating && <div className="h-14" />}
+      {parentViewingAthlete && (
+        <div className="bg-secondary/20 border-b border-secondary">
+          <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+            <p className="text-sm font-medium">Viewing athlete's dashboard as parent</p>
+            <Button size="sm" variant="outline" onClick={handleBackToParentDashboard}>
+              Back to Parent Dashboard
+            </Button>
+          </div>
+        </div>
+      )}
+      <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80" style={{ marginTop: isImpersonating ? '52px' : '0' }}>
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logoIcon} alt="ForSWAGs" className="h-12" />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <NotificationDropdown />
+            <Button variant="ghost" onClick={handleSignOut} className="text-primary hover:text-primary/80 font-bold">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 pb-20 md:pb-8">
+        <MembershipStatusBanner />
+        
+        {isFree && !tierLoading && (
+          <div className="mb-6">
+            <UpgradeNudge 
+              variant="compact"
+              title="🚀 Unlock Premium Features"
+              description="Get college matching, rankings, and social media tools"
+              highlight="Premium athletes get 3x more profile views"
+            />
+          </div>
+        )}
+        
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl md:text-5xl font-black mb-2 uppercase tracking-tight">
+            Welcome back, {athlete?.full_name?.split(' ')[0] || profile?.full_name?.split(' ')[0] || "Athlete"}!
+          </h1>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="uppercase font-bold">
+              {membership?.plan || "Free"} Plan
+            </Badge>
+            {role && (
+              <span className="text-sm text-muted-foreground capitalize">• {role}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Notifications - Show only if there are unread notifications */}
+        {hasUnreadNotifications && (
+          <div className="mb-6">
+            <NotificationCard />
+          </div>
+        )}
+
+        {role === "athlete" ? (
+          athlete ? (
+          <div className="grid gap-6">
+            {/* Profile Completion */}
+            <Card className="bg-card/80 backdrop-blur border-2 border-primary/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="uppercase tracking-tight">Profile Strength</CardTitle>
+                    <CardDescription>Complete your profile to attract more colleges</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/profile/${athlete.id}`)}>
+                      <User className="h-4 w-4 mr-2" />
+                      View Profile
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/stats")}>
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Stats
+                    </Button>
+                    <Button size="sm" onClick={() => navigate("/offers")}>
+                      <Award className="h-4 w-4 mr-2" />
+                      Offers
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{profileCompleteness()}% Complete</span>
+                    <span className="text-muted-foreground">
+                      {profileCompleteness() === 100 ? "All set!" : "Keep going!"}
+                    </span>
+                  </div>
+                  <Progress value={profileCompleteness()} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Navigation */}
+            <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/30">
+              <CardHeader>
+                <CardTitle className="text-2xl uppercase tracking-tight">🚀 Quick Access</CardTitle>
+                <CardDescription>Navigate to key features</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <FeatureCard
+                    title="EDIT PROFILE"
+                    subtitle="Update Info"
+                    icon={Edit}
+                    onClick={() => navigate("/profile")}
+                    requiresFeature="profile_type"
+                  />
+
+                  <FeatureCard
+                    title="SOCIAL MEDIA"
+                    subtitle="Manage Content"
+                    icon={Share2}
+                    onClick={() => navigate("/social-media")}
+                    requiresFeature="social_media_graphics"
+                    isPremium
+                    comingSoon
+                  />
+
+                  <FeatureCard
+                    title="PRIME DIME"
+                    subtitle="College Matches"
+                    icon={Target}
+                    onClick={() => navigate("/prime-dime")}
+                    requiresFeature="college_matching"
+                    isPremium
+                  />
+
+                  <FeatureCard
+                    title="RANKINGS"
+                    subtitle="See Where You Stand"
+                    icon={TrendingUp}
+                    onClick={() => navigate("/rankings")}
+                    requiresFeature="rankings"
+                    isPremium
+                    comingSoon
+                  />
+
+                  <FeatureCard
+                    title="SCHOOL SEARCH"
+                    subtitle="Find Colleges"
+                    icon={Search}
+                    onClick={() => navigate("/school-search")}
+                    requiresFeature="profile_type"
+                  />
+
+                  <FeatureCard
+                    title="PLAYBOOK"
+                    subtitle="Life Skills"
+                    icon={BookOpen}
+                    onClick={() => navigate("/courses")}
+                    requiresFeature="playbook_access"
+                  />
+
+                  <FeatureCard
+                    title="ALUMNI NETWORK"
+                    subtitle="Connect & Learn"
+                    icon={Users}
+                    onClick={() => navigate("/alumni-network")}
+                    requiresFeature="profile_type"
+                  />
+
+                  <FeatureCard
+                    title="EVALUATIONS"
+                    subtitle="Coach Reviews"
+                    icon={Star}
+                    onClick={() => navigate("/evaluations")}
+                    requiresFeature="evaluation_initial_price"
+                  />
+
+                  <FeatureCard
+                    title="SPONSORS"
+                    subtitle="Partnerships"
+                    icon={Briefcase}
+                    onClick={() => navigate("/sponsors")}
+                    requiresFeature="profile_type"
+                  />
+                </div>
+        </CardContent>
+      </Card>
+
+      {/* Analytics */}
+      <Card className="bg-gradient-to-br from-secondary/5 to-primary/5 border-secondary/30">
+        <CardHeader>
+          <CardTitle className="text-2xl uppercase tracking-tight">📊 Your Performance</CardTitle>
+          <CardDescription>Track your visibility and engagement</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Profile Views</p>
+                      <p className="text-2xl font-black mt-1">{profileViews?.total_views || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+                    </div>
+                    <Eye className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Recruiter Views</p>
+                      <p className="text-2xl font-black mt-1">{profileViews?.recruiter_views || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">College scouts</p>
+                    </div>
+                    <Users className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Engagements</p>
+                      <p className="text-2xl font-black mt-1">{engagementStats?.total_engagements || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">All interactions</p>
+                    </div>
+                    <MessageSquare className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Media Shares</p>
+                      <p className="text-2xl font-black mt-1">{engagementStats?.shares || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Content shared</p>
+                    </div>
+                <Share2 className="h-8 w-8 text-secondary" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Stats Overview */}
+    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Sport</p>
+                      <p className="text-2xl font-black mt-1">{athlete.sport}</p>
+                      {athlete.position && (
+                        <p className="text-xs text-muted-foreground mt-1">{athlete.position}</p>
+                      )}
+                    </div>
+                    <Trophy className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Class Of</p>
+                      <p className="text-2xl font-black mt-1">{athlete.graduation_year || "N/A"}</p>
+                      {athlete.high_school && (
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{athlete.high_school}</p>
+                      )}
+                    </div>
+                    <Calendar className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">GPA</p>
+                      <p className="text-2xl font-black mt-1">{athlete.gpa?.toFixed(2) || "N/A"}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {athlete.sat_score ? `SAT: ${athlete.sat_score}` : athlete.act_score ? `ACT: ${athlete.act_score}` : "No test scores"}
+                      </p>
+                    </div>
+                    <GraduationCap className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-secondary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Matches</p>
+                      <p className="text-2xl font-black mt-1">{matches.length}</p>
+                      <p className="text-xs text-muted-foreground mt-1">College options</p>
+                    </div>
+                    <School className="h-8 w-8 text-secondary" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 backdrop-blur border-2 border-primary/20 cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/offers")}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground uppercase tracking-wide">Offers</p>
+                      <p className="text-2xl font-black mt-1">{offers.length}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Active offers</p>
+                    </div>
+                    <Award className="h-8 w-8 text-primary" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Upgrade Nudge for Free Users */}
+            {membership?.plan === "free" && (
+              <>
+                <UpgradeNudge
+                  title="🚀 Take Your Recruiting to the Next Level"
+                  description="Premium athletes get 3x more profile views, unlimited videos, and AI-powered tools"
+                  variant="full"
+                  highlight="Join 1,000+ athletes who upgraded and got recruited faster"
+                  dismissible={false}
+                />
+              </>
+            )}
+
+            {/* Main Content Grid */}
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* The "Prime Dime" - Pro Feature Only */}
+              {membership?.plan !== "free" ? (
+                <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-2 border-primary/20">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+                          <Target className="h-5 w-5 text-primary" />
+                          Top "Prime Dime" Matches
+                        </CardTitle>
+                        <CardDescription>Our team's recommendations based on your profile</CardDescription>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => navigate("/prime-dime")}>
+                        View "Prime Dime"
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {matches.length > 0 ? (
+                      <div className="space-y-4">
+                        {matches.slice(0, 3).map((match) => (
+                        <div key={match.id} className="p-4 rounded-lg border border-border hover:border-primary transition-colors">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="font-bold">{match.schools?.name}</h4>
+                                <Badge variant="outline" className="text-xs">
+                                  {match.schools?.division}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  {match.schools?.location_city}, {match.schools?.location_state}
+                                </span>
+                                {match.schools?.conference && (
+                                  <span>{match.schools.conference}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-black text-primary">
+                                {match.match_score?.toFixed(0)}%
+                              </div>
+                              <p className="text-xs text-muted-foreground">Match</p>
+                            </div>
+                          </div>
+                          <Separator className="my-3" />
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div>
+                              <p className="text-muted-foreground text-xs">Academic</p>
+                              <p className="font-semibold">{match.academic_fit?.toFixed(0)}%</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground text-xs">Athletic</p>
+                              <p className="font-semibold">{match.athletic_fit?.toFixed(0)}%</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground text-xs">Financial</p>
+                              <p className="font-semibold">{match.financial_fit?.toFixed(0)}%</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : athlete?.analysis_requested_at ? (
+                    <div className="text-center py-12">
+                      <Clock className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+                      <h4 className="font-bold mb-2">Analysis In Progress</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Our expert team is analyzing your profile. You'll receive a notification when your "Prime Dime" matches are ready!
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Requested: {new Date(athlete.analysis_requested_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <School className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h4 className="font-bold mb-2">Get Your "Prime Dime" Matches</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Let our expert team analyze your profile and find your perfect "Prime Dime" matches
+                      </p>
+                      <Button onClick={async () => {
+                        try {
+                          const { error } = await supabase.functions.invoke("request-prime-dime-analysis");
+                          if (error) throw error;
+                          toast("Analysis Requested!", {
+                            description: "Our team will analyze your profile. You'll be notified when your matches are ready (usually within 24 hours).",
+                          });
+                          // Refresh athlete data
+                          const { data } = await supabase
+                            .from("athletes")
+                            .select("*")
+                            .eq("user_id", user.id)
+                            .single();
+                          if (data) setAthlete(data);
+                        } catch (error: any) {
+                          toast("Error", {
+                            description: error.message || "Failed to request analysis",
+                          });
+                        }
+                      }}>
+                        <Target className="mr-2 h-4 w-4" />
+                        Request Analysis
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              ) : (
+                <Card className="lg:col-span-2 bg-card/80 backdrop-blur border-2 border-primary/20">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+                          <Target className="h-5 w-5 text-primary" />
+                          The "Prime Dime" Matching
+                        </CardTitle>
+                        <CardDescription>Expert recommendations</CardDescription>
+                      </div>
+                      <Badge variant="secondary">Pro Feature</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12">
+                      <School className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h4 className="font-bold text-xl mb-2">Unlock The "Prime Dime"</h4>
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Get expert recommendations from our team, tailored to your academic, athletic, and financial profile with a Pro membership.
+                      </p>
+                      <Button onClick={() => navigate("/membership")} size="lg">
+                        <Trophy className="h-4 w-4 mr-2" />
+                        Upgrade to Pro
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Next Steps */}
+              <Card className="bg-card/80 backdrop-blur border-2 border-secondary/20">
+                <CardHeader>
+                  <CardTitle className="uppercase tracking-tight flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-secondary" />
+                    Next Steps
+                  </CardTitle>
+                  <CardDescription>Maximize your recruiting potential</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {/* Complete Profile */}
+                    {profileCompleteness() < 100 && !completedTasks.has('complete_profile') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/profile")}>
+                          <h5 className="font-semibold text-sm mb-1">Complete Your Profile</h5>
+                          <p className="text-xs text-muted-foreground">Add missing information to improve visibility ({profileCompleteness()}% complete)</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('complete_profile');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Upload Highlights */}
+                    {!athlete.highlights_url && !completedTasks.has('upload_highlights') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Video className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/profile")}>
+                          <h5 className="font-semibold text-sm mb-1">Upload Highlights</h5>
+                          <p className="text-xs text-muted-foreground">Showcase your best plays to coaches</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('upload_highlights');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Update Highlights (if stale) */}
+                    {needsHighlightsUpdate && !completedTasks.has('update_highlights') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-amber-500/20 bg-amber-500/5 hover:border-amber-500 transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                            <Video className="h-4 w-4 text-amber-500" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/profile")}>
+                          <h5 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                            Update Your Highlights
+                            <span className="text-xs text-amber-500">⚠️</span>
+                          </h5>
+                          <p className="text-xs text-muted-foreground">Your highlights haven't been updated in a while</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('update_highlights');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-amber-500 hover:bg-amber-500/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-amber-500" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Add Stats */}
+                    {stats.length === 0 && !completedTasks.has('add_stats') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <BarChart3 className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/stats")}>
+                          <h5 className="font-semibold text-sm mb-1">Add Your Stats</h5>
+                          <p className="text-xs text-muted-foreground">Track your performance metrics</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('add_stats');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Update Stats (if stale) */}
+                    {needsStatsUpdate && !completedTasks.has('update_stats') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-amber-500/20 bg-amber-500/5 hover:border-amber-500 transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                            <BarChart3 className="h-4 w-4 text-amber-500" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/stats")}>
+                          <h5 className="font-semibold text-sm mb-1 flex items-center gap-1">
+                            Update Your Stats
+                            <span className="text-xs text-amber-500">⚠️</span>
+                          </h5>
+                          <p className="text-xs text-muted-foreground">Keep your stats current to stay visible to coaches</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('update_stats');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-amber-500 hover:bg-amber-500/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-amber-500" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Start Prime Dime */}
+                    {!completedTasks.has('start_prime_dime') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Target className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/prime-dime")}>
+                          <h5 className="font-semibold text-sm mb-1">Start "Prime Dime" Consultation</h5>
+                          <p className="text-xs text-muted-foreground">Get personalized college recommendations</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('start_prime_dime');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Media Gallery */}
+                    {!completedTasks.has('media_gallery') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Video className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/media")}>
+                          <h5 className="font-semibold text-sm mb-1">Media Gallery</h5>
+                          <p className="text-xs text-muted-foreground">Upload introduction and community videos</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('media_gallery');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Explore Courses */}
+                    {!completedTasks.has('explore_courses') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <GraduationCap className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/courses")}>
+                          <h5 className="font-semibold text-sm mb-1">Playbook for Life</h5>
+                          <p className="text-xs text-muted-foreground">Master skills on and off the field</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('explore_courses');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Social Media */}
+                    {!completedTasks.has('setup_social_media') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Share2 className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/social-media")}>
+                          <h5 className="font-semibold text-sm mb-1">Set Up Social Media</h5>
+                          <p className="text-xs text-muted-foreground">Connect accounts and schedule posts</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('setup_social_media');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* School Search */}
+                    {!completedTasks.has('use_school_search') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Search className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/school-search")}>
+                          <h5 className="font-semibold text-sm mb-1">Search for Schools</h5>
+                          <p className="text-xs text-muted-foreground">Find colleges that match your criteria</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('use_school_search');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Rankings */}
+                    {!completedTasks.has('check_rankings') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/rankings")}>
+                          <h5 className="font-semibold text-sm mb-1">Check Your Rankings</h5>
+                          <p className="text-xs text-muted-foreground">See where you stand nationally</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('check_rankings');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Alumni Network */}
+                    {!completedTasks.has('join_alumni_network') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Users className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/alumni-network")}>
+                          <h5 className="font-semibold text-sm mb-1">Connect with Alumni</h5>
+                          <p className="text-xs text-muted-foreground">Learn from former athletes</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('join_alumni_network');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Achievements */}
+                    {!completedTasks.has('view_achievements') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Award className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/badges")}>
+                          <h5 className="font-semibold text-sm mb-1">View Achievements</h5>
+                          <p className="text-xs text-muted-foreground">Track your badges and milestones</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('view_achievements');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Coach Evaluations */}
+                    {!completedTasks.has('coach_evaluations') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-secondary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                            <Star className="h-4 w-4 text-secondary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/evaluations")}>
+                          <h5 className="font-semibold text-sm mb-1">Coach Evaluations</h5>
+                          <p className="text-xs text-muted-foreground">Professional coach assessment</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('coach_evaluations');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-secondary hover:bg-secondary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-secondary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Social Media */}
+                    {!completedTasks.has('social_media') && (
+                      <div className="flex gap-3 p-3 rounded-lg border border-border hover:border-primary transition-colors group">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Share2 className="h-4 w-4 text-primary" />
+                          </div>
+                        </div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate("/social")}>
+                          <h5 className="font-semibold text-sm mb-1">Social Media</h5>
+                          <p className="text-xs text-muted-foreground">Create and share your content</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCompleteTask('social_media');
+                          }}
+                          className="flex-shrink-0 h-6 w-6 rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors flex items-center justify-center"
+                          title="Mark as complete"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Show message if all tasks completed */}
+                    {completedTasks.size > 0 && (
+                      profileCompleteness() >= 100 &&
+                      athlete.highlights_url &&
+                      stats.length > 0 &&
+                      !needsStatsUpdate &&
+                      !needsHighlightsUpdate &&
+                      completedTasks.size >= 9
+                    ) && (
+                      <div className="text-center py-8">
+                        <Trophy className="h-12 w-12 text-primary mx-auto mb-3" />
+                        <p className="font-semibold text-lg mb-1">Amazing Work!</p>
+                        <p className="text-sm text-muted-foreground">You've completed all your next steps. Keep up the momentum!</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Onboarding Progress for Free Users */}
+              <OnboardingProgressMeter 
+                profile={profile}
+                athlete={athlete}
+                stats={stats}
+              />
+
+              {/* Tutorial Progress */}
+              {user?.id && (
+                <TutorialProgressCard userId={user.id} />
+              )}
+
+              {/* Sponsor Card */}
+              <SponsorCard />
+            </div>
+
+            {/* Analytics Section */}
+            <div className="mt-6">
+              <AthleteAnalytics />
+            </div>
+          </div>
+          ) : (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="text-center">
+                <p className="text-muted-foreground">Loading athlete data...</p>
+              </div>
+            </div>
+          )
+        ) : (
+          // Non-athlete dashboard - Role-based cards
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Show Athlete Search ONLY for recruiters/college scouts */}
+            {role === "recruiter" && (
+              <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/recruiter/search")}>
+                <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Search className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Search Athletes</h3>
+                <p className="text-sm text-muted-foreground">Find and evaluate prospects</p>
+              </Card>
+            )}
+
+            {/* Show Parent Dashboard link for parents (backup if they land here) */}
+            {role === "parent" && (
+              <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/parent/dashboard")}>
+                <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">My Athletes</h3>
+                <p className="text-sm text-muted-foreground">View and manage your athletes' profiles</p>
+              </Card>
+            )}
+
+            {/* Playbook for Life - Available to everyone */}
+            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-secondary/20 hover:border-secondary hover:shadow-xl hover:shadow-secondary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/courses")}>
+              <div className="p-3 bg-secondary/10 rounded-lg w-fit mb-4 group-hover:bg-secondary/20 transition-colors">
+                <GraduationCap className="h-8 w-8 text-secondary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Playbook for Life</h3>
+              <p className="text-sm text-muted-foreground">Master the game on and off the field</p>
+            </Card>
+
+            {/* Achievements - Available to everyone */}
+            <Card className="p-6 bg-card/50 backdrop-blur border-2 border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer group" onClick={() => navigate("/badges")}>
+              <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+                <Award className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-bold text-lg mb-2 uppercase tracking-tight">Achievements</h3>
+              <p className="text-sm text-muted-foreground">Earn badges and track milestones</p>
+            </Card>
+          </div>
+        )}
+      </main>
+      
+      {/* Mobile Bottom Navigation - Only for Athletes */}
+      {role === "athlete" && athlete && (
+        <MobileBottomNav athleteId={athlete.id} />
+      )}
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default Dashboard;

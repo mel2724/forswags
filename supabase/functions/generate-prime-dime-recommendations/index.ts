@@ -1,0 +1,175 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { callGemini } from "../_shared/geminiHelper.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    console.log('[GENERATE-RECOMMENDATIONS] Function invoked');
+    const body = await req.json();
+    console.log('[GENERATE-RECOMMENDATIONS] Request body:', JSON.stringify(body));
+    const { athleteId } = body;
+    
+    console.log('[GENERATE-RECOMMENDATIONS] Processing for athlete ID:', athleteId);
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Get conversation data
+    console.log('[GENERATE-RECOMMENDATIONS] Fetching conversation data');
+    const { data: prefs, error: prefsError } = await supabase
+      .from('college_match_prefs')
+      .select('conversation_data')
+      .eq('athlete_id', athleteId)
+      .single();
+
+    if (prefsError) {
+      console.error('[GENERATE-RECOMMENDATIONS] Error fetching prefs:', prefsError);
+      throw prefsError;
+    }
+
+    console.log('[GENERATE-RECOMMENDATIONS] Conversation data retrieved, answers count:', prefs.conversation_data?.answers?.length || 0);
+    const answers = prefs.conversation_data?.answers || [];
+
+    // Build comprehensive prompt from all answers
+    const answersText = answers.map((a: any) => 
+      `Q: ${a.question}\nA: ${a.answer}`
+    ).join('\n\n');
+
+    const systemPrompt = `You are an expert college recruiting advisor. Based on the student-athlete's answers, recommend 10 specific colleges that would be the best fit.
+
+IMPORTANT: Write in SECOND PERSON, addressing the athlete directly (use "you", "your"). Example: "You are a D1-caliber basketball player..." NOT "He/She is a D1-caliber basketball player..."
+
+For each college recommendation, provide:
+1. College name
+2. Division level
+3. Location (City, State)
+4. Official college website URL
+5. Why it's a good fit (2-3 sentences, addressed to the athlete)
+6. Recruiter contact information (name, email, phone, Twitter if known)
+
+Consider:
+- Athletic level and competition
+- Academic programs and GPA fit
+- Financial considerations
+- Location preferences
+- Campus culture fit
+- Career goals
+
+Return your response in this exact JSON format:
+{
+  "summary": "Brief 2-3 sentence summary written in SECOND PERSON addressing the athlete directly (You are... You have... Your strengths...)",
+  "colleges": [
+    {
+      "name": "College Name",
+      "division": "D1/D2/D3/NAIA/JUCO",
+      "location": "City, State",
+      "website": "https://www.college.edu",
+      "match_score": 92,
+      "fit_reason": "Why this is a great match for YOU (written in second person)",
+      "recruiter_name": "Coach Full Name (if known, otherwise null)",
+      "recruiter_email": "coach@school.edu (if known, otherwise null)",
+      "recruiter_phone": "555-123-4567 (if known, otherwise null)",
+      "recruiter_twitter": "@username (if known, otherwise null)"
+    }
+  ],
+  "next_steps": "Advice on YOUR next steps and using ForSWAGs tools (written in second person addressing the athlete)"
+}
+
+IMPORTANT: The match_score should be a number between 75-98, reflecting the overall fit based on:
+- Athletic fit (division level, competition, playing time opportunities)
+- Academic fit (GPA alignment, major offerings)
+- Financial fit (scholarships, tuition, aid opportunities)
+- Cultural fit (location, campus size, student life)
+- Career fit (academic programs, career services)
+
+Higher scores (95-98) = Exceptional fit across all categories
+Mid scores (85-94) = Strong fit with minor considerations
+Lower scores (75-84) = Good fit with some trade-offs
+
+Order colleges by match_score from highest to lowest.`;
+
+    console.log('[GENERATE-RECOMMENDATIONS] Calling AI with answers text length:', answersText.length);
+    const { content } = await callGemini([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Here are the student-athlete's answers:\n\n${answersText}\n\nPlease provide 10 college recommendations with comprehensive recruiter contact information (name, email, phone, Twitter).` }
+    ], {
+      temperature: 0.7,
+      maxOutputTokens: 4096
+    });
+
+    console.log('[GENERATE-RECOMMENDATIONS] AI response received');
+    let recommendations;
+
+    try {
+      recommendations = JSON.parse(content);
+    } catch (e) {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        recommendations = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Failed to parse AI response');
+      }
+    }
+
+    // Store recommendations
+    console.log('[GENERATE-RECOMMENDATIONS] Storing recommendations in database');
+    const { error: insertError } = await supabase
+      .from('college_recommendations')
+      .upsert({
+        athlete_id: athleteId,
+        recommendations: recommendations,
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'athlete_id',
+        ignoreDuplicates: false 
+      });
+
+    if (insertError) {
+      console.error('[GENERATE-RECOMMENDATIONS] Error storing recommendations:', insertError);
+      throw insertError;
+    }
+
+    console.log('[GENERATE-RECOMMENDATIONS] Recommendations stored successfully');
+
+    // Send notification email
+    try {
+      await supabase.functions.invoke('notify-prime-dime-ready', {
+        body: { athleteId }
+      });
+    } catch (emailError) {
+      console.error('Failed to send notification:', emailError);
+      // Don't fail the whole request if email fails
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true,
+        recommendations
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error generating recommendations:', errorMessage);
+    
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+});
