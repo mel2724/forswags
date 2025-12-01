@@ -61,7 +61,7 @@ export default function Landing() {
           style={{ backgroundImage: "url('/forswags-hero.jpg')" }}
         ></div>
         {/* Purple overlay for brand consistency */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/60 via-purple-800/50 to-purple-950/80"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-950/70 via-purple-900/60 to-purple-950/85"></div>
         
         <div className="container mx-auto px-4 py-20 text-center relative z-10">
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 glow-text">
